@@ -99,7 +99,7 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
           fontWeight: 600,
           color: capital.color,
         }}>
-          {capital.emoji} R{player.draftRound} Pick #{player.draftPick}
+          {player.draftRound ? `${capital.emoji} R${player.draftRound} Pick #${player.draftPick}` : 'Draft TBD'}
         </span>
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
@@ -182,19 +182,21 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
         )}
 
         {/* 1QB vs SF ranks */}
-        <div style={{
-          display: 'flex',
-          gap: 8,
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11,
-        }}>
-          <span style={{ color: '#60a5fa' }}>
-            1QB: #{player.rank.oneQB}
-          </span>
-          <span style={{ color: '#a78bfa' }}>
-            SF: #{player.rank.superflex}
-          </span>
-        </div>
+        {player.rank && (
+          <div style={{
+            display: 'flex',
+            gap: 8,
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11,
+          }}>
+            <span style={{ color: '#60a5fa' }}>
+              1QB: #{player.rank.oneQB}
+            </span>
+            <span style={{ color: '#a78bfa' }}>
+              SF: #{player.rank.superflex}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

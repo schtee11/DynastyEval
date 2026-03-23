@@ -8,6 +8,7 @@ import { sortPlayers, filterPlayers } from '../utils/helpers';
 const ScoutBoard = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [filters, setFilters] = useState({
     position: 'ALL',
@@ -21,9 +22,16 @@ const ScoutBoard = () => {
   useEffect(() => {
     const loadPlayers = async () => {
       setLoading(true);
-      const data = await getPlayers();
-      setPlayers(data);
-      setLoading(false);
+      setError(null);
+      try {
+        const data = await getPlayers();
+        setPlayers(data);
+      } catch (err) {
+        console.error('[ScoutBoard] Failed to load players:', err);
+        setError(err.message || 'Failed to load player data');
+      } finally {
+        setLoading(false);
+      }
     };
     loadPlayers();
   }, []);
@@ -95,6 +103,38 @@ const ScoutBoard = () => {
           color: '#6b7280',
         }}>
           {isUsingLiveData() ? 'Loading live stats from CFBD...' : 'Loading prospects...'}
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          textAlign: 'center',
+          padding: 40,
+          fontFamily: "'JetBrains Mono', monospace",
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
+          <div style={{ color: '#ef4444', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+            Failed to load prospects
+          </div>
+          <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 16, maxWidth: 500, margin: '0 auto 16px' }}>
+            {error}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: 13,
+              padding: '8px 20px',
+              border: '1px solid #f59e0b',
+              borderRadius: 4,
+              background: 'rgba(245,158,11,0.15)',
+              color: '#f59e0b',
+              cursor: 'pointer',
+            }}
+          >
+            Reload
+          </button>
         </div>
       )}
 

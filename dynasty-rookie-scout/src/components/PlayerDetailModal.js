@@ -56,9 +56,15 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
   const handleGenerateSummary = async () => {
     setLoadingSummary(true);
-    const result = await generateScoutingSummary(player);
-    setSummary(result);
-    setLoadingSummary(false);
+    try {
+      const result = await generateScoutingSummary(player);
+      setSummary(result);
+    } catch (err) {
+      console.error('[PlayerDetailModal] AI summary failed:', err);
+      setSummary('Failed to generate scouting summary. Check the browser console for details.');
+    } finally {
+      setLoadingSummary(false);
+    }
   };
 
   useEffect(() => {
@@ -130,12 +136,12 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
     ];
   };
 
-  const rankComparisonData = [
+  const rankComparisonData = player.rank && player.dynastyADP ? [
     { format: '1QB', rank: player.rank.oneQB, adp: player.dynastyADP.oneQB },
     { format: 'SF', rank: player.rank.superflex, adp: player.dynastyADP.superflex },
-  ];
+  ] : [];
 
-  const rankDelta = player.rank.oneQB - player.rank.superflex;
+  const rankDelta = player.rank ? (player.rank.oneQB - player.rank.superflex) : 0;
 
   return (
     <div
@@ -447,6 +453,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               </ResponsiveContainer>
 
               {/* 1QB vs SF comparison */}
+              {rankComparisonData.length > 0 && (<>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
@@ -486,6 +493,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                   <span style={{ color: '#f59e0b' }}> — QB premium in Superflex</span>
                 )}
               </div>
+              </>)}
             </div>
           </div>
 
