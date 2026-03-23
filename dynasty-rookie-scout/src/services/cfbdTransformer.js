@@ -311,6 +311,12 @@ export const enrichNonWRStats = async (players) => {
 
   console.info(`[CFBD] Enrichment summary: ${matchCount} matched, ${missCount} missed out of ${nonWR.length} non-WR players`);
 
+  // Diagnostic: sample of what CFBD returned vs what we searched for
+  const sampleRow = allStats.rushing?.[0] || allStats.passing?.[0] || allStats.receiving?.[0];
+  const cfbdKeys = sampleRow ? Object.keys(sampleRow) : [];
+  const cfbdSampleNames = Object.keys(rushingByPlayer).slice(0, 5);
+  const searchedNames = nonWR.map((p) => norm(p.name)).slice(0, 5);
+
   // Expose enrichment status so the UI can display it
   enriched._cfbdStatus = {
     attempted: nonWR.length,
@@ -322,6 +328,17 @@ export const enrichNonWRStats = async (players) => {
       receiving: allStats.receiving?.length ?? 0,
       ppa: ppaData.length,
       usage: usageData.length,
+    },
+    debug: {
+      sampleRowFields: cfbdKeys,
+      sampleRow: sampleRow ? JSON.stringify(sampleRow).slice(0, 300) : null,
+      cfbdNames: cfbdSampleNames,
+      searchedNames,
+      groupedCounts: {
+        passing: Object.keys(passingByPlayer).length,
+        rushing: Object.keys(rushingByPlayer).length,
+        receiving: Object.keys(receivingByPlayer).length,
+      },
     },
   };
 
