@@ -1,5 +1,6 @@
 // Mock data for 35 top 2025 NFL Draft rookies
 // Shape matches real API response so swapping to live data requires no component changes
+import { getReceivingData } from './receivingData';
 
 const mockPlayers = [
   {
@@ -1139,7 +1140,9 @@ const mockPlayers = [
 
 // Filter to only fantasy-relevant players (exclude DL/LB)
 export const getFantasyRelevantPlayers = () => {
-  return mockPlayers.filter(p => ['QB', 'RB', 'WR', 'TE'].includes(p.position) && p.rank.oneQB < 200);
+  return mockPlayers
+    .filter(p => ['QB', 'RB', 'WR', 'TE'].includes(p.position) && p.rank.oneQB < 200)
+    .map(p => ({ ...p, receivingByPerspective: getReceivingData(p.name) || p.receivingByPerspective }));
 };
 
 export const getAllPlayers = () => mockPlayers;
