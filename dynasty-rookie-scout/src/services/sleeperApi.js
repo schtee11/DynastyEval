@@ -11,7 +11,7 @@ import { getReceivingData } from './receivingData';
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
 // ── Cache layer ──────────────────────────────────────────────────────────────
-const CACHE_KEY = 'sleeper_players';
+const CACHE_KEY = 'sleeper_players_v2'; // v2: removed searchRank filter
 const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — player data updates infrequently
 
 const getFromCache = () => {
@@ -84,11 +84,8 @@ export const fetchSleeperPlayers = async () => {
  */
 export const fetchSleeperRookies = async (draftYear = 2026) => {
   const all = await fetchSleeperPlayers();
-  // years_exp === 0 means current-year rookie.
-  // We also check search_rank to filter out deep practice-squad players.
-  return Object.values(all).filter(
-    (p) => p.yearsExp === 0 && p.searchRank != null
-  );
+  // years_exp === 0 means current-year rookie / incoming prospect
+  return Object.values(all).filter((p) => p.yearsExp === 0);
 };
 
 // ── Matching utilities ───────────────────────────────────────────────────────
