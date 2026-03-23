@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { getPlayers } from '../services/dataService';
 import { positionColors, getDraftCapitalInfo, hasInjuryRisk } from '../utils/helpers';
 
