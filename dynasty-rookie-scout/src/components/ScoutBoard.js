@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PlayerCard from './PlayerCard';
 import PlayerDetailModal from './PlayerDetailModal';
 import FilterBar from './FilterBar';
-import { getPlayers, isUsingLiveData } from '../services/dataService';
+import { getPlayers, isUsingLiveData, getDataSourceStatus } from '../services/dataService';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
 
 const ScoutBoard = () => {
@@ -91,6 +91,42 @@ const ScoutBoard = () => {
               2026 CLASS
             </span>
           )}
+          {(() => {
+            const status = getDataSourceStatus();
+            const cfbd = status.cfbd;
+            if (!cfbd) return null;
+            if (cfbd.ok) {
+              return (
+                <span style={{
+                  background: 'rgba(34,197,94,0.15)',
+                  color: '#22c55e',
+                  padding: '2px 8px',
+                  borderRadius: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 1,
+                }}>
+                  CFBD {cfbd.matched}/{cfbd.attempted}
+                </span>
+              );
+            }
+            return (
+              <span
+                title={cfbd.reason || `API rows: pass=${cfbd.apiRows?.passing ?? '?'} rush=${cfbd.apiRows?.rushing ?? '?'} rec=${cfbd.apiRows?.receiving ?? '?'} | matched=${cfbd.matched ?? 0}/${cfbd.attempted ?? 0}`}
+                style={{
+                  background: 'rgba(239,68,68,0.15)',
+                  color: '#ef4444',
+                  padding: '2px 8px',
+                  borderRadius: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 1,
+                  cursor: 'help',
+                }}>
+                CFBD {cfbd.reason ? '✗' : `0/${cfbd.attempted}`}
+              </span>
+            );
+          })()}
         </span>
       </div>
 

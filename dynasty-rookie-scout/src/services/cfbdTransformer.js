@@ -191,8 +191,12 @@ export const enrichNonWRStats = async (players) => {
     }
   }
 
+  // Track enrichment results for UI status
+  let matchCount = 0;
+  let missCount = 0;
+
   // Enrich each player
-  return players.map((player) => {
+  const enriched = players.map((player) => {
     if (player.position === 'WR' || !player._cfbdLookup) return player;
 
     const key = norm(player.name);
@@ -205,10 +209,14 @@ export const enrichNonWRStats = async (players) => {
 
     const matched = !!(passing || rushing || receiving);
     if (!matched) {
+      missCount++;
       console.warn(`[CFBD] ❌ No stat match for "${player.name}" (${player.position}) — normalized key="${key}", team="${team}"`);
-    } else {
-      console.info(`[CFBD] ✅ Matched "${player.name}" (${player.position}) — passing:${!!passing} rushing:${!!rushing} receiving:${!!receiving} ppa:${!!ppa}`);
+      // No CFBD data found — return player unchanged (keep any existing stats)
+      return player;
     }
+
+    matchCount++;
+    console.info(`[CFBD] ✅ Matched "${player.name}" (${player.position}) — passing:${!!passing} rushing:${!!rushing} receiving:${!!receiving} ppa:${!!ppa}`);
 
     // Position-specific stat builder
     let stats;
@@ -297,7 +305,25 @@ export const enrichNonWRStats = async (players) => {
       targetShare,
       yprr,
       yacPerRR,
-      _liveData: !!(passing || rushing || receiving),
+      _liveData: true,
     };
   });
+
+  console.info(`[CFBD] Enrichment summary: ${matchCount} matched, ${missCount} missed out of ${nonWR.length} non-WR players`);
+
+  // Expose enrichment status so the UI can display it
+  enriched._cfbdStatus = {
+    attempted: nonWR.length,
+    matched: matchCount,
+    missed: missCount,
+    apiRows: {
+      passing: allStats.passing?.length ?? 0,
+      rushing: allStats.rushing?.length ?? 0,
+      receiving: allStats.receiving?.length ?? 0,
+      ppa: ppaData.length,
+      usage: usageData.length,
+    },
+  };
+
+  return enriched;
 };
