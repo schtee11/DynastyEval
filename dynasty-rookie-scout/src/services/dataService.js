@@ -63,12 +63,16 @@ export const getPlayers = async () => {
 
     // Step 2: Enrich QB/RB/TE with CFBD API stats (WRs are skipped)
     if (hasCfbdKey) {
+      console.info('[DataService] CFBD key present — attempting QB/RB/TE enrichment...');
       try {
         players = await enrichNonWRStats(players);
+        console.info('[DataService] CFBD enrichment complete');
       } catch (err) {
-        console.warn('[CFBD] Enrichment failed, using static stats for QB/RB/TE:', err.message);
+        console.error('[DataService] CFBD enrichment failed:', err);
         // QB/RB/TE keep whatever stats came from the prospect cross-reference
       }
+    } else {
+      console.warn('[DataService] No CFBD API key — skipping live stat enrichment for QB/RB/TE');
     }
 
     // Clean up internal fields before exposing to UI

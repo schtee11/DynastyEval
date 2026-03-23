@@ -103,23 +103,50 @@ const calcTargetShare = (playerTargets, teamTargetsTotal) => {
 export const enrichNonWRStats = async (players) => {
   // Only enrich players that have a cfbdLookup and are not WR
   const nonWR = players.filter((p) => p.position !== 'WR' && p._cfbdLookup);
-  if (nonWR.length === 0) return players;
+  if (nonWR.length === 0) {
+    console.warn('[CFBD] No non-WR players with _cfbdLookup found — skipping enrichment');
+    return players;
+  }
 
   // Unique college teams for non-WR players
   const teams = [...new Set(nonWR.map((p) => p._cfbdLookup.team))];
   const year = 2025;
 
+  console.info(`[CFBD] Enriching ${nonWR.length} non-WR players from ${teams.length} teams:`, teams);
+  console.info('[CFBD] Players to enrich:', nonWR.map((p) => `${p.name} (${p.position}) → team="${p._cfbdLookup.team}"`));
+
   // Fetch all stat categories + PPA + usage in parallel
   const [allStats, ppaData, usageData] = await Promise.all([
-    fetchAllSeasonStats(year).catch(() => ({ passing: [], rushing: [], receiving: [] })),
-    fetchPPAForTeams(year, teams).catch(() => []),
-    fetchUsageForTeams(year, teams).catch(() => []),
+    fetchAllSeasonStats(year).catch((err) => {
+      console.error('[CFBD] fetchAllSeasonStats failed:', err.message);
+      return { passing: [], rushing: [], receiving: [] };
+    }),
+    fetchPPAForTeams(year, teams).catch((err) => {
+      console.error('[CFBD] fetchPPAForTeams failed:', err.message);
+      return [];
+    }),
+    fetchUsageForTeams(year, teams).catch((err) => {
+      console.error('[CFBD] fetchUsageForTeams failed:', err.message);
+      return [];
+    }),
   ]);
+
+  console.info(`[CFBD] API results — passing: ${allStats.passing?.length ?? 0} rows, rushing: ${allStats.rushing?.length ?? 0} rows, receiving: ${allStats.receiving?.length ?? 0} rows, PPA: ${ppaData.length} rows, usage: ${usageData.length} rows`);
 
   // Group stats by normalised player name
   const passingByPlayer = groupByPlayer(allStats.passing || []);
   const rushingByPlayer = groupByPlayer(allStats.rushing || []);
   const receivingByPlayer = groupByPlayer(allStats.receiving || []);
+
+  console.info(`[CFBD] Grouped stats — passing players: ${Object.keys(passingByPlayer).length}, rushing players: ${Object.keys(rushingByPlayer).length}, receiving players: ${Object.keys(receivingByPlayer).length}`);
+
+  // Log a sample row to see the actual shape coming from the API
+  if (allStats.passing?.length > 0) {
+    console.info('[CFBD] Sample passing row shape:', JSON.stringify(allStats.passing[0]));
+  }
+  if (allStats.rushing?.length > 0) {
+    console.info('[CFBD] Sample rushing row shape:', JSON.stringify(allStats.rushing[0]));
+  }
 
   // Group PPA by normalised player name
   const ppaByPlayer = {};
@@ -175,6 +202,13 @@ export const enrichNonWRStats = async (players) => {
     const ppa = ppaByPlayer[key];
     const usageRow = usageByPlayer[key];
     const team = player._cfbdLookup.team;
+
+    const matched = !!(passing || rushing || receiving);
+    if (!matched) {
+      console.warn(`[CFBD] ❌ No stat match for "${player.name}" (${player.position}) — normalized key="${key}", team="${team}"`);
+    } else {
+      console.info(`[CFBD] ✅ Matched "${player.name}" (${player.position}) — passing:${!!passing} rushing:${!!rushing} receiving:${!!receiving} ppa:${!!ppa}`);
+    }
 
     // Position-specific stat builder
     let stats;
