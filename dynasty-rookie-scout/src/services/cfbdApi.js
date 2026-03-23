@@ -56,14 +56,53 @@ export const searchPlayer = (searchTerm, year) =>
 export const fetchDraftPicks = (year) =>
   cfbdFetch('/draft/picks', { year });
 
-// ── In-memory cache so we only hit the API once per session ──────────────────
+// ── Two-layer cache: localStorage (persists across sessions) + in-memory ─────
 
-const cache = {};
+const CACHE_VERSION = 'v1';
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+const memCache = {};
+
+const lsKey = (key) => `cfbd_${CACHE_VERSION}_${key}`;
+
+const readLocalStorage = (key) => {
+  try {
+    const raw = localStorage.getItem(lsKey(key));
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL_MS) {
+      localStorage.removeItem(lsKey(key));
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+};
+
+const writeLocalStorage = (key, data) => {
+  try {
+    localStorage.setItem(lsKey(key), JSON.stringify({ data, ts: Date.now() }));
+  } catch {
+    // localStorage full or unavailable — silent fail
+  }
+};
 
 const cachedFetch = async (key, fetcher) => {
-  if (cache[key]) return cache[key];
+  // 1. In-memory (instant)
+  if (memCache[key]) return memCache[key];
+
+  // 2. localStorage (no network)
+  const stored = readLocalStorage(key);
+  if (stored) {
+    memCache[key] = stored;
+    return stored;
+  }
+
+  // 3. Network fetch
   const data = await fetcher();
-  cache[key] = data;
+  memCache[key] = data;
+  writeLocalStorage(key, data);
   return data;
 };
 
@@ -124,5 +163,12 @@ export const fetchDraftPicksIfAvailable = async (year) => {
 };
 
 export const clearCache = () => {
-  Object.keys(cache).forEach((k) => delete cache[k]);
+  Object.keys(memCache).forEach((k) => delete memCache[k]);
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(`cfbd_${CACHE_VERSION}_`))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // localStorage unavailable
+  }
 };

@@ -12,6 +12,7 @@ const mockPlayers = [
     weight: 223,
     draftRound: 1,
     draftPick: 1,
+    draftIsProjected: true,
     draftTeam: "TEN",
     stats: {
       epa: 0.34,
@@ -43,6 +44,7 @@ const mockPlayers = [
     weight: 215,
     draftRound: 1,
     draftPick: 5,
+    draftIsProjected: true,
     draftTeam: "CLE",
     stats: {
       epa: 0.28,
@@ -74,6 +76,7 @@ const mockPlayers = [
     weight: 185,
     draftRound: 1,
     draftPick: 2,
+    draftIsProjected: true,
     draftTeam: "JAX",
     stats: {
       epa: 0.31,
@@ -104,6 +107,7 @@ const mockPlayers = [
     weight: 212,
     draftRound: 1,
     draftPick: 8,
+    draftIsProjected: true,
     draftTeam: "CAR",
     stats: {
       epa: 0.27,
@@ -134,6 +138,7 @@ const mockPlayers = [
     weight: 215,
     draftRound: 1,
     draftPick: 7,
+    draftIsProjected: true,
     draftTeam: "NYG",
     stats: {
       epa: 0.41,
@@ -164,6 +169,7 @@ const mockPlayers = [
     weight: 208,
     draftRound: 1,
     draftPick: 14,
+    draftIsProjected: true,
     draftTeam: "IND",
     stats: {
       epa: 0.19,
@@ -194,6 +200,7 @@ const mockPlayers = [
     weight: 205,
     draftRound: 1,
     draftPick: 18,
+    draftIsProjected: true,
     draftTeam: "CIN",
     stats: {
       epa: 0.22,
@@ -224,6 +231,7 @@ const mockPlayers = [
     weight: 180,
     draftRound: 1,
     draftPick: 22,
+    draftIsProjected: true,
     draftTeam: "PIT",
     stats: {
       epa: 0.18,
@@ -254,6 +262,7 @@ const mockPlayers = [
     weight: 220,
     draftRound: 1,
     draftPick: 24,
+    draftIsProjected: true,
     draftTeam: "GB",
     stats: {
       epa: 0.22,
@@ -284,6 +293,7 @@ const mockPlayers = [
     weight: 225,
     draftRound: 1,
     draftPick: 16,
+    draftIsProjected: true,
     draftTeam: "MIN",
     stats: {
       epa: 0.18,
@@ -315,6 +325,7 @@ const mockPlayers = [
     weight: 318,
     draftRound: 1,
     draftPick: 3,
+    draftIsProjected: true,
     draftTeam: "NYJ",
     stats: {
       epa: 0.05,
@@ -344,6 +355,7 @@ const mockPlayers = [
     weight: 260,
     draftRound: 1,
     draftPick: 4,
+    draftIsProjected: true,
     draftTeam: "NE",
     stats: {
       epa: 0.24,
@@ -374,6 +386,7 @@ const mockPlayers = [
     weight: 245,
     draftRound: 1,
     draftPick: 30,
+    draftIsProjected: true,
     draftTeam: "BUF",
     stats: {
       epa: 0.16,
@@ -404,6 +417,7 @@ const mockPlayers = [
     weight: 225,
     draftRound: 2,
     draftPick: 38,
+    draftIsProjected: true,
     draftTeam: "LAC",
     stats: {
       epa: 0.26,
@@ -434,6 +448,7 @@ const mockPlayers = [
     weight: 205,
     draftRound: 1,
     draftPick: 28,
+    draftIsProjected: true,
     draftTeam: "DEN",
     stats: {
       epa: 0.25,
@@ -467,6 +482,7 @@ const mockPlayers = [
     weight: 210,
     draftRound: 2,
     draftPick: 35,
+    draftIsProjected: true,
     draftTeam: "NYG",
     stats: {
       epa: 0.14,
@@ -500,6 +516,7 @@ const mockPlayers = [
     weight: 210,
     draftRound: 2,
     draftPick: 56,
+    draftIsProjected: true,
     draftTeam: "PIT",
     stats: {
       epa: 0.11,
@@ -531,6 +548,7 @@ const mockPlayers = [
     weight: 205,
     draftRound: 2,
     draftPick: 44,
+    draftIsProjected: true,
     draftTeam: "ATL",
     stats: {
       epa: 0.21,
@@ -561,6 +579,7 @@ const mockPlayers = [
     weight: 210,
     draftRound: 1,
     draftPick: 26,
+    draftIsProjected: true,
     draftTeam: "HOU",
     stats: {
       epa: 0.20,
@@ -591,6 +610,7 @@ const mockPlayers = [
     weight: 195,
     draftRound: 2,
     draftPick: 40,
+    draftIsProjected: true,
     draftTeam: "TB",
     stats: {
       epa: 0.17,
@@ -621,6 +641,7 @@ const mockPlayers = [
     weight: 192,
     draftRound: 2,
     draftPick: 48,
+    draftIsProjected: true,
     draftTeam: "SF",
     stats: {
       epa: 0.15,
@@ -651,6 +672,7 @@ const mockPlayers = [
     weight: 220,
     draftRound: 2,
     draftPick: 50,
+    draftIsProjected: true,
     draftTeam: "ARI",
     stats: {
       epa: 0.16,
@@ -681,6 +703,7 @@ const mockPlayers = [
     weight: 215,
     draftRound: 2,
     draftPick: 54,
+    draftIsProjected: true,
     draftTeam: "PHI",
     stats: {
       epa: 0.29,
@@ -711,6 +734,7 @@ const mockPlayers = [
     weight: 320,
     draftRound: 1,
     draftPick: 10,
+    draftIsProjected: true,
     draftTeam: "NO",
     stats: {
       epa: 0.04,
@@ -741,6 +765,7 @@ const mockPlayers = [
     weight: 215,
     draftRound: 2,
     draftPick: 42,
+    draftIsProjected: true,
     draftTeam: "MIA",
     stats: {
       epa: 0.19,
@@ -771,6 +796,7 @@ const mockPlayers = [
     weight: 215,
     draftRound: 3,
     draftPick: 68,
+    draftIsProjected: true,
     draftTeam: "LV",
     stats: {
       epa: 0.09,
@@ -805,6 +831,7 @@ const mockPlayers = [
     weight: 250,
     draftRound: 1,
     draftPick: 6,
+    draftIsProjected: true,
     draftTeam: "LV",
     stats: {
       epa: 0.12,
@@ -834,6 +861,7 @@ const mockPlayers = [
     weight: 248,
     draftRound: 2,
     draftPick: 46,
+    draftIsProjected: true,
     draftTeam: "DET",
     stats: {
       epa: 0.14,
@@ -864,6 +892,7 @@ const mockPlayers = [
     weight: 240,
     draftRound: 1,
     draftPick: 12,
+    draftIsProjected: true,
     draftTeam: "DAL",
     stats: {
       epa: 0.03,
@@ -894,6 +923,7 @@ const mockPlayers = [
     weight: 205,
     draftRound: 3,
     draftPick: 72,
+    draftIsProjected: true,
     draftTeam: "SEA",
     stats: {
       epa: 0.14,
@@ -924,6 +954,7 @@ const mockPlayers = [
     weight: 220,
     draftRound: 2,
     draftPick: 52,
+    draftIsProjected: true,
     draftTeam: "KC",
     stats: {
       epa: 0.18,
@@ -954,6 +985,7 @@ const mockPlayers = [
     weight: 255,
     draftRound: 3,
     draftPick: 78,
+    draftIsProjected: true,
     draftTeam: "LAR",
     stats: {
       epa: 0.12,
@@ -984,6 +1016,7 @@ const mockPlayers = [
     weight: 225,
     draftRound: 3,
     draftPick: 82,
+    draftIsProjected: true,
     draftTeam: "SEA",
     stats: {
       epa: 0.22,
@@ -1015,6 +1048,7 @@ const mockPlayers = [
     weight: 215,
     draftRound: 3,
     draftPick: 85,
+    draftIsProjected: true,
     draftTeam: "CHI",
     stats: {
       epa: 0.11,
@@ -1045,6 +1079,7 @@ const mockPlayers = [
     weight: 210,
     draftRound: 3,
     draftPick: 88,
+    draftIsProjected: true,
     draftTeam: "BAL",
     stats: {
       epa: 0.19,

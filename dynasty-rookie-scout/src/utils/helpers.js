@@ -40,14 +40,14 @@ export const getTopStats = (player) => {
     case 'WR':
       return [
         { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-        { label: 'Dom %', value: `${player.dominatorRating}%` },
-        { label: 'Tgt Share', value: `${player.targetShare}%` },
+        { label: 'Dom %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
+        { label: 'Tgt Share', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
       ];
     case 'TE':
       return [
         { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-        { label: 'Dom %', value: `${player.dominatorRating}%` },
-        { label: 'Rec YDs', value: stats.receivingYards?.toLocaleString() },
+        { label: 'Dom %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
+        { label: 'Rec YDs', value: stats.receivingYards?.toLocaleString() || 'N/A' },
       ];
     default:
       return [{ label: 'EPA', value: stats.epa?.toFixed(2) }];

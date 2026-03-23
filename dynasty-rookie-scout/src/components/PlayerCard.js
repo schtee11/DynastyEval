@@ -111,6 +111,19 @@ const PlayerCard = ({ player, onClick }) => {
         }}>
           {capital.label}
         </span>
+        {player.draftIsProjected && (
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 9,
+            color: '#9ca3af',
+            background: '#2a2d3e',
+            padding: '1px 5px',
+            borderRadius: 3,
+            letterSpacing: 0.5,
+          }}>
+            PROJ
+          </span>
+        )}
       </div>
 
       {/* Top 3 stats */}

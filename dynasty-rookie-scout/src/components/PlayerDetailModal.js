@@ -4,7 +4,9 @@ import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRis
 import { generateScoutingSummary } from '../services/anthropicApi';
 
 const StatRow = ({ label, value, benchmark, unit = '' }) => {
-  const isAbove = benchmark && parseFloat(value) >= benchmark;
+  const displayValue = value == null || value === '' ? 'N/A' : value;
+  const isNA = displayValue === 'N/A';
+  const isAbove = !isNA && benchmark && parseFloat(value) >= benchmark;
   return (
     <div style={{
       display: 'flex',
@@ -23,9 +25,9 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 14,
           fontWeight: 700,
-          color: isAbove ? '#22c55e' : '#f1f5f9',
+          color: isNA ? '#6b7280' : isAbove ? '#22c55e' : '#f1f5f9',
         }}>
-          {value}{unit}
+          {isNA ? 'N/A' : `${displayValue}${unit}`}
         </span>
         {benchmark && (
           <span style={{
@@ -196,14 +198,14 @@ const PlayerDetailModal = ({ player, onClose }) => {
                 fontWeight: 700,
                 color: capital.color,
               }}>
-                {capital.emoji} Round {player.draftRound}, Pick #{player.draftPick}
+                {capital.emoji} {player.draftIsProjected ? 'Projected ' : ''}Round {player.draftRound}, Pick #{player.draftPick}
               </div>
               <div style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 11,
                 color: '#6b7280',
               }}>
-                {player.draftTeam} · {capital.label} Capital
+                {player.draftTeam} · {capital.label} Capital{player.draftIsProjected ? ' (Mock)' : ''}
               </div>
             </div>
           </div>

@@ -64,7 +64,7 @@ const ScoutBoard = () => {
               fontWeight: 700,
               letterSpacing: 1,
             }}>
-              LIVE — 2026 CLASS
+              LIVE — 2025 CLASS
             </span>
           )}
         </span>

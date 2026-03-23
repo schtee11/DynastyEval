@@ -226,7 +226,7 @@ export const buildPlayersFromAPI = async () => {
       targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
     }
 
-    // If the draft has happened, use real data
+    // If the draft has happened, use real data; otherwise mark as projected
     const draft = draftLookup[key];
     const draftRound = draft
       ? draft.round
@@ -237,6 +237,7 @@ export const buildPlayersFromAPI = async () => {
     const draftTeam = draft
       ? draft.nflTeam || prospect.projectedTeam
       : prospect.projectedTeam;
+    const draftIsProjected = !draft;
 
     return {
       id: prospect.id,
@@ -249,6 +250,7 @@ export const buildPlayersFromAPI = async () => {
       draftRound,
       draftPick,
       draftTeam,
+      draftIsProjected,
       stats,
       breakoutAge: prospect.breakoutAge,
       dominatorRating,
