@@ -150,6 +150,7 @@ const ScoutBoard = () => {
             </div>
             <div>Source: <span style={{ color: '#22c55e' }}>{status.source}</span></div>
             <div>Sleeper: {status.sleeper?.ok ? `✅ ${status.sleeper.count} rookies` : `❌ ${status.sleeper?.reason}`}</div>
+            <div>API base: <span style={{ color: '#60a5fa' }}>{debug.apiBase || '?'}</span></div>
             <div>CFBD matched: <span style={{ color: cfbd.matched > 0 ? '#22c55e' : '#ef4444' }}>{cfbd.matched ?? '?'}/{cfbd.attempted ?? '?'}</span></div>
             <div>API rows → pass: {cfbd.apiRows?.passing ?? '?'}, rush: {cfbd.apiRows?.rushing ?? '?'}, rec: {cfbd.apiRows?.receiving ?? '?'}</div>
             <div>Grouped → pass: {debug.groupedCounts?.passing ?? '?'}, rush: {debug.groupedCounts?.rushing ?? '?'}, rec: {debug.groupedCounts?.receiving ?? '?'}</div>
