@@ -132,17 +132,21 @@ export const buildPlayersFromAPI = async () => {
     if (key) ppaByPlayer[key] = row;
   }
 
-  // Team receiving totals for dominator + target share
-  const teamRecTotals = {};
-  const teamTargetTotals = {};
+  // Team receiving totals for dominator (yards) + reception share
+  const teamRecYdsTotals = {};  // sum of receiving yards per team
+  const teamRecTotals = {};     // sum of receptions per team
   for (const row of allStats.receiving) {
     const team = row.team;
     if (!team) continue;
-    teamRecTotals[team] =
-      (teamRecTotals[team] || 0) + val(row, 'stat', 'value');
-    teamTargetTotals[team] =
-      (teamTargetTotals[team] || 0) +
-      (row.statType === 'REC' || row.category === 'REC' ? val(row, 'stat', 'value') : 0);
+    const st = row.statType || row.category || '';
+    if (st === 'YDS' || st === 'REC_YDS') {
+      teamRecYdsTotals[team] =
+        (teamRecYdsTotals[team] || 0) + val(row, 'stat', 'value');
+    }
+    if (st === 'REC' || st === 'RECEPTIONS') {
+      teamRecTotals[team] =
+        (teamRecTotals[team] || 0) + val(row, 'stat', 'value');
+    }
   }
 
   // If draft has happened, build a lookup for actual picks
@@ -200,30 +204,34 @@ export const buildPlayersFromAPI = async () => {
 
     if (['WR', 'TE'].includes(prospect.position) && receiving) {
       const recYds = val(receiving, 'YDS', 'REC_YDS');
+      const receptions = val(receiving, 'REC', 'RECEPTIONS');
       const targets = val(receiving, 'TARGETS', 'TGT');
+      // Use targets when available, fall back to receptions
+      const usage = targets > 0 ? targets : receptions;
       dominatorRating = calcDominatorRating(
         recYds,
-        teamRecTotals[team] || 1
+        teamRecYdsTotals[team] || 1
       );
-      targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
-      // YPRR approximation: recYds / (team pass attempts * snap share)
-      // Without route data, use recYds / targets as a rough proxy
-      if (targets > 0) {
-        yprr = +(recYds / targets).toFixed(2);
+      targetShare = calcTargetShare(usage, teamRecTotals[team] || 1);
+      // YPRR: use targets if available, otherwise approximate with receptions
+      if (usage > 0) {
+        yprr = +(recYds / usage).toFixed(2);
         const yac = val(receiving, 'YAC', 'YARDS_AFTER_CATCH');
-        if (yac > 0) yacPerRR = +(yac / targets).toFixed(2);
+        if (yac > 0) yacPerRR = +(yac / usage).toFixed(2);
       }
     }
 
     if (prospect.position === 'RB') {
       const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
       const recYds = val(receiving, 'YDS', 'REC_YDS');
-      const teamTotal = (teamRecTotals[team] || 0) + rushYds;
+      const teamTotal = (teamRecYdsTotals[team] || 0) + rushYds;
       dominatorRating = teamTotal > 0
         ? +((( rushYds + recYds) / teamTotal) * 100).toFixed(1)
         : 0;
+      const receptions = val(receiving, 'REC', 'RECEPTIONS');
       const targets = val(receiving, 'TARGETS', 'TGT');
-      targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
+      const usage = targets > 0 ? targets : receptions;
+      targetShare = calcTargetShare(usage, teamRecTotals[team] || 1);
     }
 
     // If the draft has happened, use real data; otherwise mark as projected

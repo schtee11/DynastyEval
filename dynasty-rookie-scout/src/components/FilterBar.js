@@ -127,7 +127,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy }) => {
           <option value="adp">ADP</option>
           <option value="draftCapital">Draft Capital</option>
           <option value="breakoutAge">Breakout Age</option>
-          <option value="yprr">YPRR</option>
+          <option value="yprr">YPR</option>
           <option value="dominator">Dominator Rating</option>
         </select>
       </div>

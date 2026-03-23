@@ -39,14 +39,14 @@ export const getTopStats = (player) => {
       ];
     case 'WR':
       return [
-        { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-        { label: 'Dom %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
-        { label: 'Tgt Share', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
+        { label: 'YPR', value: player.yprr?.toFixed(2) || 'N/A' },
+        { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
+        { label: 'REC SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
       ];
     case 'TE':
       return [
-        { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-        { label: 'Dom %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
+        { label: 'YPR', value: player.yprr?.toFixed(2) || 'N/A' },
+        { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
         { label: 'Rec YDs', value: stats.receivingYards?.toLocaleString() || 'N/A' },
       ];
     default:
