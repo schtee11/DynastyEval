@@ -39,7 +39,7 @@ const Header = ({ activeTab, setActiveTab }) => {
           padding: '2px 8px',
           borderRadius: 4,
         }}>
-          2025 CLASS
+          2026 CLASS
         </span>
       </div>
 
