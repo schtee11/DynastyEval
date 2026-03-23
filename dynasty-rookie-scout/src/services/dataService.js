@@ -1,50 +1,21 @@
-// Data service abstraction layer
-// Pulls live college stats from CFBD API when a key is configured,
-// otherwise falls back to static rookieProspects2026 data.
-// WR receiving perspective data (from PFF images) is always merged in.
-// Post-draft: validates prospects against Sleeper API to filter out non-2026 rookies.
+// Data service — Sleeper-first architecture
+// 1. Fetch rookies from Sleeper API (source of truth for valid rookies)
+// 2. Cross-reference with prospect metadata for scouting data
+// 3. WR stats come from receivingData.js (no API calls)
+// 4. QB/RB/TE stats enriched via CFBD API with fallback to static data
 
+import { buildRookiePlayersFromSleeper } from './sleeperApi';
+import { enrichNonWRStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
-import { buildPlayersFromAPI } from './cfbdTransformer';
-import { validateProspects } from './sleeperApi';
 
 const hasCfbdKey = !!process.env.REACT_APP_CFBD_API_KEY;
-const forceMock = process.env.REACT_APP_USE_MOCK === 'true';
-const useLive = hasCfbdKey && !forceMock;
 
 // Cache live data so we only fetch once per session
-let livePlayersCache = null;
+let playersCache = null;
 
 /**
- * Filter players through Sleeper API validation.
- * Removes any prospect that Sleeper identifies as a prior-year draft pick
- * (years_exp > 0). Keeps prospects not yet in Sleeper (pre-draft) and
- * confirmed 2026 rookies.
- */
-const filterWithSleeperValidation = async (players) => {
-  try {
-    const results = await validateProspects(players);
-    const filtered = [];
-    for (const { prospect, sleeperMatch, status } of results) {
-      if (status === 'wrong_year') {
-        console.warn(
-          `[Sleeper] Removing ${prospect.name} — already drafted (years_exp=${sleeperMatch.yearsExp}, team=${sleeperMatch.team})`
-        );
-        continue;
-      }
-      // Keep confirmed rookies and not-yet-in-Sleeper prospects
-      filtered.push(prospect);
-    }
-    return filtered;
-  } catch (err) {
-    console.warn('[Sleeper] Validation failed, returning unfiltered list:', err.message);
-    return players;
-  }
-};
-
-/**
- * Map raw prospect metadata into the shape the UI expects.
- * Used as fallback when CFBD API is unavailable.
+ * Map a raw prospect (from rookieProspects2026.js) into the UI player shape.
+ * Used as static fallback when Sleeper/CFBD are unavailable.
  */
 const mapProspectToPlayer = (p) => ({
   id: p.id,
@@ -68,7 +39,6 @@ const mapProspectToPlayer = (p) => ({
   dynastyADP: p.dynastyADP,
   rank: p.rank,
   playerComps: p.playerComps,
-  // Only attach perspective data for WRs
   receivingByPerspective: p.position === 'WR' ? (p.receivingByPerspective || null) : null,
 });
 
@@ -78,31 +48,34 @@ const getStaticPlayers = () =>
     .map(mapProspectToPlayer);
 
 export const getPlayers = async () => {
-  if (!useLive) {
-    return getStaticPlayers();
-  }
-
-  // Live path — fetch from CFBD API + merge with prospect metadata
-  if (livePlayersCache) return livePlayersCache;
+  if (playersCache) return playersCache;
 
   try {
-    let players = await buildPlayersFromAPI();
-    // Validate against Sleeper to remove any prior-year picks
-    players = await filterWithSleeperValidation(players);
-    livePlayersCache = players;
+    // Step 1: Build rookie list from Sleeper (source of truth)
+    let players = await buildRookiePlayersFromSleeper();
+
+    // Step 2: Enrich QB/RB/TE with CFBD API stats (WRs are skipped)
+    if (hasCfbdKey) {
+      try {
+        players = await enrichNonWRStats(players);
+      } catch (err) {
+        console.warn('[CFBD] Enrichment failed, using static stats for QB/RB/TE:', err.message);
+        // QB/RB/TE keep whatever stats came from the prospect cross-reference
+      }
+    }
+
+    // Clean up internal fields before exposing to UI
+    players = players.map(({ _cfbdLookup, _prospect, ...player }) => player);
+
+    playersCache = players;
     return players;
   } catch (err) {
-    console.error('Live data fetch failed, falling back to static data:', err);
+    console.error('Sleeper-first data fetch failed, falling back to static data:', err);
     return getStaticPlayers();
   }
 };
 
 export const getPlayerById = async (id) => {
-  if (!useLive) {
-    const p = getRawProspectById(id);
-    return p ? mapProspectToPlayer(p) : undefined;
-  }
-
   const players = await getPlayers();
   const found = players.find((p) => p.id === id);
   if (found) return found;
@@ -111,5 +84,5 @@ export const getPlayerById = async (id) => {
   return p ? mapProspectToPlayer(p) : undefined;
 };
 
-export const isUsingMockData = () => !useLive;
-export const isUsingLiveData = () => useLive;
+export const isUsingMockData = () => false;
+export const isUsingLiveData = () => true;

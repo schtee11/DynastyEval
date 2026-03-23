@@ -1,10 +1,12 @@
-// Sleeper API service — validates prospects against Sleeper's NFL player database.
+// Sleeper API service — the source of truth for identifying valid rookies.
 // Sleeper API is free, requires no auth key.
 // Docs: https://docs.sleeper.com
 //
-// Primary use: after the 2026 NFL Draft (April 23-25), cross-reference our
-// prospect list to ensure we only show actual rookies, not players drafted in
-// prior years or still in college.
+// Primary use: fetch all rookies (years_exp === 0) from Sleeper, then
+// cross-reference with our prospect metadata to build the full player list.
+
+import { getProspects } from './rookieProspects2026';
+import { getReceivingData } from './receivingData';
 
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
@@ -159,11 +161,93 @@ export const validateProspects = async (prospects) => {
   });
 };
 
+// ── Sleeper-first player builder ─────────────────────────────────────────────
+
+/**
+ * Build the rookie player list using Sleeper as the source of truth.
+ * 1. Fetch all rookies (years_exp === 0) from Sleeper
+ * 2. Cross-reference with rookieProspects2026 for scouting metadata
+ * 3. Attach WR receiving perspective data from receivingData.js
+ * Returns player objects in the shape the UI expects.
+ */
+export const buildRookiePlayersFromSleeper = async () => {
+  const rookies = await fetchSleeperRookies();
+
+  // Build a normalised-name lookup from our prospect metadata
+  const prospects = getProspects();
+  const prospectByNorm = {};
+  for (const p of prospects) {
+    prospectByNorm[normName(p.name)] = p;
+  }
+
+  // Also build a last-name + position + college lookup for fuzzy matching
+  const prospectByFuzzy = {};
+  for (const p of prospects) {
+    const parts = normName(p.name).split(' ');
+    const key = `${parts[parts.length - 1]}|${p.position}|${(p.college || '').toLowerCase()}`;
+    prospectByFuzzy[key] = p;
+  }
+
+  let nextId = 10000; // IDs for Sleeper-only players not in our prospect list
+
+  return rookies.map((sleeperPlayer) => {
+    // Try to find a matching prospect: exact name first, then fuzzy
+    const key = normName(sleeperPlayer.name);
+    let prospect = prospectByNorm[key];
+
+    if (!prospect) {
+      const parts = key.split(' ');
+      const fuzzyKey = `${parts[parts.length - 1]}|${sleeperPlayer.position}|${(sleeperPlayer.college || '').toLowerCase()}`;
+      prospect = prospectByFuzzy[fuzzyKey];
+    }
+
+    const id = prospect?.id ?? nextId++;
+
+    // Base fields from Sleeper
+    const player = {
+      id,
+      name: sleeperPlayer.name,
+      position: sleeperPlayer.position,
+      college: sleeperPlayer.college || prospect?.college || null,
+      age: sleeperPlayer.age ?? prospect?.age ?? null,
+      height: prospect?.height ?? null,
+      weight: prospect?.weight ?? null,
+      draftRound: prospect?.projectedRound ?? null,
+      draftPick: prospect?.projectedPick ?? null,
+      draftTeam: sleeperPlayer.team || prospect?.projectedTeam || null,
+      draftIsProjected: !sleeperPlayer.team,
+      stats: prospect?.stats || {},
+      breakoutAge: prospect?.breakoutAge ?? null,
+      dominatorRating: prospect?.dominatorRating ?? null,
+      targetShare: prospect?.advancedStats?.targetShare ?? null,
+      yprr: prospect?.advancedStats?.yprr ?? null,
+      yacPerRR: prospect?.yacPerRR ?? null,
+      injuries: prospect?.injuries || [],
+      dynastyADP: prospect?.dynastyADP ?? null,
+      rank: prospect?.rank ?? null,
+      playerComps: prospect?.playerComps || [],
+      receivingByPerspective: null,
+      // Carry forward cfbdLookup for CFBD enrichment of QB/RB/TE
+      _cfbdLookup: prospect?.cfbdLookup ?? null,
+      _prospect: prospect, // reference for fallback stats
+    };
+
+    // Attach WR receiving perspective data from JSON
+    if (sleeperPlayer.position === 'WR') {
+      player.receivingByPerspective = getReceivingData(sleeperPlayer.name)
+        || (prospect ? getReceivingData(prospect.name) : null);
+    }
+
+    return player;
+  });
+};
+
 const sleeperApi = {
   fetchSleeperPlayers,
   fetchSleeperRookies,
   matchProspectToSleeper,
   validateProspects,
+  buildRookiePlayersFromSleeper,
 };
 
 export default sleeperApi;

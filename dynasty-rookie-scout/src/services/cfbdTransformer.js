@@ -1,12 +1,10 @@
-// Transforms raw CFBD API data into the player shape used by components.
-// Merges live college stats with prospect metadata (draft projections, dynasty ranks, etc.)
+// Enriches QB/RB/TE players with live college stats from CFBD API.
+// WR stats come exclusively from receivingData.js — this module skips WRs entirely.
 
-import { getProspects } from './rookieProspects2026';
 import {
   fetchAllSeasonStats,
   fetchPPAForTeams,
   fetchUsageForTeams,
-  fetchDraftPicksIfAvailable,
 } from './cfbdApi';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -45,7 +43,7 @@ const val = (obj, ...keys) => {
   return 0;
 };
 
-// ── stat builders (position-aware) ──────────────────────────────────────────
+// ── stat builders (QB/RB/TE only) ────────────────────────────────────────────
 
 const buildQBStats = (passing, rushing) => ({
   passingYards: val(passing, 'YDS', 'PASS_YDS', 'NET_PASS_YDS'),
@@ -74,16 +72,6 @@ const buildRBStats = (rushing, receiving) => ({
   epa: null,
 });
 
-const buildWRStats = (receiving, rushing) => ({
-  receptions: val(receiving, 'REC', 'RECEPTIONS'),
-  receivingYards: val(receiving, 'YDS', 'REC_YDS'),
-  receivingTDs: val(receiving, 'TD', 'REC_TD'),
-  targets: val(receiving, 'TARGETS', 'TGT'),
-  rushingYards: val(rushing, 'YDS', 'RUSH_YDS'),
-  rushingTDs: val(rushing, 'TD', 'RUSH_TD'),
-  epa: null,
-});
-
 const buildTEStats = (receiving) => ({
   receptions: val(receiving, 'REC', 'RECEPTIONS'),
   receivingYards: val(receiving, 'YDS', 'REC_YDS'),
@@ -104,22 +92,28 @@ const calcTargetShare = (playerTargets, teamTargetsTotal) => {
   return +((playerTargets / teamTargetsTotal) * 100).toFixed(1);
 };
 
-// ── main transformer ────────────────────────────────────────────────────────
+// ── main enrichment function ────────────────────────────────────────────────
 
-export const buildPlayersFromAPI = async () => {
-  const prospects = getProspects();
+/**
+ * Enrich QB/RB/TE players with live college stats from CFBD API.
+ * Accepts pre-built player objects (from Sleeper cross-reference).
+ * Returns the same players array with stats, EPA, dominator, targetShare populated.
+ * WR players in the array are returned unchanged.
+ */
+export const enrichNonWRStats = async (players) => {
+  // Only enrich players that have a cfbdLookup and are not WR
+  const nonWR = players.filter((p) => p.position !== 'WR' && p._cfbdLookup);
+  if (nonWR.length === 0) return players;
 
-  // Unique teams we need stats for
-  const teams = [...new Set(prospects.map((p) => p.cfbdLookup.team))];
-  // Use the most common year (2025) but some prospects may have 2024 data
+  // Unique college teams for non-WR players
+  const teams = [...new Set(nonWR.map((p) => p._cfbdLookup.team))];
   const year = 2025;
 
   // Fetch all stat categories + PPA + usage in parallel
-  const [allStats, ppaData, usageData, draftPicks] = await Promise.all([
+  const [allStats, ppaData, usageData] = await Promise.all([
     fetchAllSeasonStats(year),
     fetchPPAForTeams(year, teams).catch(() => []),
     fetchUsageForTeams(year, teams).catch(() => []),
-    fetchDraftPicksIfAvailable(2026),
   ]);
 
   // Group stats by normalised player name
@@ -135,7 +129,6 @@ export const buildPlayersFromAPI = async () => {
   }
 
   // Group usage by normalised player name
-  // Usage endpoint returns { player, team, position, usage: { overall, pass, rush, ... } }
   const usageByPlayer = {};
   for (const row of usageData) {
     const key = norm(row.player || row.name || '');
@@ -143,8 +136,8 @@ export const buildPlayersFromAPI = async () => {
   }
 
   // Team receiving totals for dominator (yards) and target share
-  const teamRecYdsTotals = {};  // sum of receiving yards per team
-  const teamTargetTotals = {};  // sum of targets per team (fallback to receptions)
+  const teamRecYdsTotals = {};
+  const teamTargetTotals = {};
   for (const row of allStats.receiving) {
     const team = row.team;
     if (!team) continue;
@@ -153,14 +146,12 @@ export const buildPlayersFromAPI = async () => {
       teamRecYdsTotals[team] =
         (teamRecYdsTotals[team] || 0) + val(row, 'stat', 'value');
     }
-    // Prefer targets for target share; if unavailable the API won't return these rows
     if (st === 'TARGETS' || st === 'TGT') {
       teamTargetTotals[team] =
         (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
     }
   }
-  // If no target data was found, estimate from team pass attempts via usage
-  // or fall back to receptions as a rough proxy
+  // Fallback: use receptions as proxy for targets
   if (Object.keys(teamTargetTotals).length === 0) {
     for (const row of allStats.receiving) {
       const team = row.team;
@@ -173,34 +164,26 @@ export const buildPlayersFromAPI = async () => {
     }
   }
 
-  // If draft has happened, build a lookup for actual picks
-  const draftLookup = {};
-  if (draftPicks && draftPicks.length > 0) {
-    for (const pick of draftPicks) {
-      const key = norm(pick.name || pick.playerName || '');
-      if (key) draftLookup[key] = pick;
-    }
-  }
+  // Enrich each player
+  return players.map((player) => {
+    if (player.position === 'WR' || !player._cfbdLookup) return player;
 
-  // Build final player objects
-  return prospects.map((prospect) => {
-    const key = norm(prospect.name);
+    const key = norm(player.name);
     const passing = passingByPlayer[key];
     const rushing = rushingByPlayer[key];
     const receiving = receivingByPlayer[key];
     const ppa = ppaByPlayer[key];
+    const usageRow = usageByPlayer[key];
+    const team = player._cfbdLookup.team;
 
     // Position-specific stat builder
     let stats;
-    switch (prospect.position) {
+    switch (player.position) {
       case 'QB':
         stats = buildQBStats(passing, rushing);
         break;
       case 'RB':
         stats = buildRBStats(rushing, receiving);
-        break;
-      case 'WR':
-        stats = buildWRStats(receiving, rushing);
         break;
       case 'TE':
         stats = buildTEStats(receiving);
@@ -219,38 +202,26 @@ export const buildPlayersFromAPI = async () => {
       if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
     }
 
-    // Dominator rating + target share (WR/TE)
-    const team = prospect.cfbdLookup.team;
-    let dominatorRating = 0;
-    let targetShare = null;
-    let yprr = null;
-    let yacPerRR = null;
+    // Dominator rating + target share for TE
+    let dominatorRating = player.dominatorRating || 0;
+    let targetShare = player.targetShare;
+    let yprr = player.yprr;
+    let yacPerRR = player.yacPerRR;
 
-    // Usage endpoint provides pass/overall usage rates
-    const usageRow = usageByPlayer[key];
-
-    if (['WR', 'TE'].includes(prospect.position) && receiving) {
+    if (player.position === 'TE' && receiving) {
       const recYds = val(receiving, 'YDS', 'REC_YDS');
       const targets = val(receiving, 'TARGETS', 'TGT');
 
-      dominatorRating = calcDominatorRating(
-        recYds,
-        teamRecYdsTotals[team] || 1
-      );
+      dominatorRating = calcDominatorRating(recYds, teamRecYdsTotals[team] || 1);
 
-      // Target share: use actual targets if API provides them,
-      // otherwise derive from usage endpoint's pass usage rate
       if (targets > 0) {
         targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
       } else if (usageRow?.usage?.pass != null) {
-        // Pass usage rate is already a proportion of team passing involvement
         targetShare = +(usageRow.usage.pass * 100).toFixed(1);
       }
 
-      // YPRR: yards / routes run. Without route data, approximate from
-      // usage rate: routes ≈ team pass plays × pass usage rate
+      // Approximate YPRR
       if (usageRow?.usage?.pass != null && usageRow.usage.pass > 0) {
-        // Estimate routes run from team pass attempts and player's pass usage
         const teamPassAtts = val(passingByPlayer[norm(team)] || {}, 'ATT', 'PASS_ATT');
         if (teamPassAtts > 0) {
           const estRoutes = teamPassAtts * usageRow.usage.pass;
@@ -261,20 +232,14 @@ export const buildPlayersFromAPI = async () => {
       } else if (targets > 0) {
         yprr = +(recYds / targets).toFixed(2);
       }
-
-      const yac = val(receiving, 'YAC', 'YARDS_AFTER_CATCH');
-      if (yac > 0 && yprr != null) {
-        // Scale YAC by same route estimate
-        yacPerRR = +(yac * (yprr / recYds)).toFixed(2);
-      }
     }
 
-    if (prospect.position === 'RB') {
+    if (player.position === 'RB') {
       const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
       const recYds = val(receiving, 'YDS', 'REC_YDS');
       const teamTotal = (teamRecYdsTotals[team] || 0) + rushYds;
       dominatorRating = teamTotal > 0
-        ? +((( rushYds + recYds) / teamTotal) * 100).toFixed(1)
+        ? +(((rushYds + recYds) / teamTotal) * 100).toFixed(1)
         : 0;
       const targets = val(receiving, 'TARGETS', 'TGT');
       if (targets > 0) {
@@ -284,50 +249,20 @@ export const buildPlayersFromAPI = async () => {
       }
     }
 
-    // Prefer hardcoded advanced stats from prospect data (PFF-sourced)
-    // over any calculated/estimated values from the CFBD API
-    if (prospect.advancedStats) {
+    // Prefer hardcoded advanced stats (PFF-sourced) if available
+    const prospect = player._prospect;
+    if (prospect?.advancedStats) {
       if (prospect.advancedStats.yprr != null) yprr = prospect.advancedStats.yprr;
       if (prospect.advancedStats.targetShare != null) targetShare = prospect.advancedStats.targetShare;
     }
 
-    // If the draft has happened, use real data; otherwise mark as projected
-    const draft = draftLookup[key];
-    const draftRound = draft
-      ? draft.round
-      : prospect.projectedRound;
-    const draftPick = draft
-      ? draft.overall || draft.pick
-      : prospect.projectedPick;
-    const draftTeam = draft
-      ? draft.nflTeam || prospect.projectedTeam
-      : prospect.projectedTeam;
-    const draftIsProjected = !draft;
-
     return {
-      id: prospect.id,
-      name: prospect.name,
-      position: prospect.position,
-      college: prospect.college,
-      age: prospect.age,
-      height: prospect.height,
-      weight: prospect.weight,
-      draftRound,
-      draftPick,
-      draftTeam,
-      draftIsProjected,
+      ...player,
       stats,
-      breakoutAge: prospect.breakoutAge,
       dominatorRating,
       targetShare,
       yprr,
       yacPerRR,
-      injuries: prospect.injuries,
-      dynastyADP: prospect.dynastyADP,
-      rank: prospect.rank,
-      playerComps: prospect.playerComps,
-      // Only attach perspective data for WRs
-      receivingByPerspective: prospect.position === 'WR' ? (prospect.receivingByPerspective || null) : null,
       _liveData: !!(passing || rushing || receiving),
     };
   });
