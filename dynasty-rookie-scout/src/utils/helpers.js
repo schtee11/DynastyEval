@@ -22,55 +22,84 @@ export const getDraftCapitalInfo = (pick) => {
 
 export const hasInjuryRisk = (player) => player.injuries && player.injuries.length > 0;
 
-export const getTopStats = (player) => {
-  const { position, stats } = player;
-  switch (position) {
-    case 'QB':
+export const getTopStats = (player, perspective = 'overall') => {
+  const { position } = player;
+  const pData = player.receivingByPerspective?.[perspective];
+
+  // WR / TE — show receiving perspective data from converted images
+  if ((position === 'WR' || position === 'TE') && pData) {
+    if (perspective === 'deepBall') {
       return [
-        { label: 'EPA', value: stats.epa?.toFixed(2) },
-        { label: 'CPOE', value: stats.cpoe ? `${stats.cpoe > 0 ? '+' : ''}${stats.cpoe}` : 'N/A' },
-        { label: 'Pass YDs', value: stats.passingYards?.toLocaleString() },
+        { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
+        { label: 'REC GRADE', value: pData.recGrade?.toFixed(1) || 'N/A' },
+        { label: 'CONT %', value: pData.contestedCatchRate != null ? `${pData.contestedCatchRate}%` : 'N/A' },
       ];
-    case 'RB':
-      return [
-        { label: 'EPA', value: stats.epa?.toFixed(2) },
-        { label: 'Rush YDs', value: stats.rushingYards?.toLocaleString() },
-        { label: 'YPC', value: stats.yardsPerCarry?.toFixed(1) },
-      ];
-    case 'WR':
-      return [
-        { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-        { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
-        { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
-      ];
-    case 'TE':
-      return [
-        { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-        { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
-        { label: 'Rec YDs', value: stats.receivingYards?.toLocaleString() || 'N/A' },
-      ];
-    default:
-      return [{ label: 'EPA', value: stats.epa?.toFixed(2) }];
+    }
+    return [
+      { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
+      { label: 'REC GRADE', value: pData.recGrade?.toFixed(1) || 'N/A' },
+      { label: 'TGT/RR', value: pData.tgtPerRR != null ? `${pData.tgtPerRR}%` : 'N/A' },
+    ];
   }
+
+  // WR / TE fallback — advancedStats only (no perspective data for this player)
+  if (position === 'WR' || position === 'TE') {
+    return [
+      { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
+      { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
+      { label: 'BO AGE', value: player.breakoutAge || 'N/A' },
+    ];
+  }
+
+  // QB — profile-based (no CFBD stats)
+  if (position === 'QB') {
+    return [
+      { label: 'PICK', value: player.draftPick ? `#${player.draftPick}` : 'N/A' },
+      { label: 'BO AGE', value: player.breakoutAge || 'N/A' },
+      { label: 'SF RANK', value: player.rank?.superflex ? `#${player.rank.superflex}` : 'N/A' },
+    ];
+  }
+
+  // RB — profile-based (no CFBD stats)
+  if (position === 'RB') {
+    return [
+      { label: 'PICK', value: player.draftPick ? `#${player.draftPick}` : 'N/A' },
+      { label: 'BO AGE', value: player.breakoutAge || 'N/A' },
+      { label: '1QB RANK', value: player.rank?.oneQB ? `#${player.rank.oneQB}` : 'N/A' },
+    ];
+  }
+
+  return [
+    { label: 'PICK', value: player.draftPick ? `#${player.draftPick}` : 'N/A' },
+    { label: 'BO AGE', value: player.breakoutAge || 'N/A' },
+    { label: 'RANK', value: player.rank?.oneQB ? `#${player.rank.oneQB}` : 'N/A' },
+  ];
 };
 
-export const sortPlayers = (players, sortBy, leagueType = 'oneQB') => {
+export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective = 'overall') => {
   const sorted = [...players];
+  const getRank = (p) => p.rank?.[leagueType] ?? 999;
+  const getAdp = (p) => p.dynastyADP?.[leagueType] ?? 999;
+  const getYprr = (p) => p.receivingByPerspective?.[perspective]?.yprr ?? p.yprr ?? 0;
+  const getRecGrade = (p) => p.receivingByPerspective?.[perspective]?.recGrade ?? 0;
+  const getTgtPerRR = (p) => p.receivingByPerspective?.[perspective]?.tgtPerRR ?? 0;
   switch (sortBy) {
     case 'rank':
-      return sorted.sort((a, b) => a.rank[leagueType] - b.rank[leagueType]);
+      return sorted.sort((a, b) => getRank(a) - getRank(b));
     case 'adp':
-      return sorted.sort((a, b) => a.dynastyADP[leagueType] - b.dynastyADP[leagueType]);
+      return sorted.sort((a, b) => getAdp(a) - getAdp(b));
     case 'draftCapital':
-      return sorted.sort((a, b) => a.draftPick - b.draftPick);
+      return sorted.sort((a, b) => (a.draftPick || 999) - (b.draftPick || 999));
     case 'breakoutAge':
       return sorted.sort((a, b) => (a.breakoutAge || 99) - (b.breakoutAge || 99));
     case 'yprr':
-      return sorted.sort((a, b) => (b.yprr || 0) - (a.yprr || 0));
-    case 'dominator':
-      return sorted.sort((a, b) => b.dominatorRating - a.dominatorRating);
+      return sorted.sort((a, b) => getYprr(b) - getYprr(a));
+    case 'recGrade':
+      return sorted.sort((a, b) => getRecGrade(b) - getRecGrade(a));
+    case 'tgtPerRR':
+      return sorted.sort((a, b) => getTgtPerRR(b) - getTgtPerRR(a));
     default:
-      return sorted.sort((a, b) => a.rank[leagueType] - b.rank[leagueType]);
+      return sorted.sort((a, b) => getRank(a) - getRank(b));
   }
 };
 

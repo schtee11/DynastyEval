@@ -326,6 +326,7 @@ export const buildPlayersFromAPI = async () => {
       dynastyADP: prospect.dynastyADP,
       rank: prospect.rank,
       playerComps: prospect.playerComps,
+      receivingByPerspective: prospect.receivingByPerspective || null,
       _liveData: !!(passing || rushing || receiving),
     };
   });
