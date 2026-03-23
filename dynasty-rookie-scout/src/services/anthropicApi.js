@@ -11,9 +11,9 @@ const buildScoutingPrompt = (player) => {
 
 Player: ${player.name}
 Position: ${player.position}
-College: ${player.college}
-Draft Pick: Round ${player.draftRound}, Pick #${player.draftPick} (${player.draftTeam})
-Age: ${player.age}
+College: ${player.college || 'Unknown'}
+Draft Pick: ${player.draftRound ? `Round ${player.draftRound}, Pick #${player.draftPick} (${player.draftTeam || 'TBD'})` : 'Pre-draft prospect'}
+Age: ${player.age || 'Unknown'}
 
 ${positionStats}
 

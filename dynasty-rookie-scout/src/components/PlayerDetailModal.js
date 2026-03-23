@@ -219,7 +219,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 fontSize: 13,
                 color: '#9ca3af',
               }}>
-                {player.college} · {player.height} / {player.weight} lbs · Age {player.age}
+                {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' · ') || 'TBD'}
               </div>
             </div>
 

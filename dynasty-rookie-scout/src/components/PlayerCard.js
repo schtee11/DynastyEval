@@ -69,7 +69,7 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
             color: '#9ca3af',
             marginTop: 2,
           }}>
-            {player.college} · {player.draftTeam}
+            {[player.college, player.draftTeam].filter(Boolean).join(' · ') || 'TBD'}
           </div>
         </div>
         <span style={{
