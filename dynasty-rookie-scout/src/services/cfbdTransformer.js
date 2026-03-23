@@ -308,7 +308,9 @@ export const enrichNonWRStats = async (players) => {
   const cfbdErrors = [];
   let cfbdResults = new Map();
 
-  if (stillNeedsAPI.length > 0) {
+  const hasCfbdKey = !!process.env.REACT_APP_CFBD_API_KEY;
+
+  if (stillNeedsAPI.length > 0 && hasCfbdKey) {
     const teams = [...new Set(stillNeedsAPI.map((p) => p._cfbdLookup.team))];
     const year = 2025;
 
