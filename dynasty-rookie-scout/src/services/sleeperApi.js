@@ -159,9 +159,11 @@ export const validateProspects = async (prospects) => {
   });
 };
 
-export default {
+const sleeperApi = {
   fetchSleeperPlayers,
   fetchSleeperRookies,
   matchProspectToSleeper,
   validateProspects,
 };
+
+export default sleeperApi;
