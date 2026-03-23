@@ -326,7 +326,8 @@ export const buildPlayersFromAPI = async () => {
       dynastyADP: prospect.dynastyADP,
       rank: prospect.rank,
       playerComps: prospect.playerComps,
-      receivingByPerspective: prospect.receivingByPerspective || null,
+      // Only attach perspective data for WRs
+      receivingByPerspective: prospect.position === 'WR' ? (prospect.receivingByPerspective || null) : null,
       _liveData: !!(passing || rushing || receiving),
     };
   });
