@@ -15,11 +15,16 @@ const cfbdFetch = async (path, params = {}) => {
   ).toString();
   const url = `${BASE_URL}${path}${qs ? `?${qs}` : ''}`;
 
+  console.info(`[CFBD API] Fetching: ${path}${qs ? `?${qs}` : ''}`);
   const res = await fetch(url, { headers: headers() });
   if (!res.ok) {
-    throw new Error(`CFBD ${path} → ${res.status} ${res.statusText}`);
+    const body = await res.text().catch(() => '');
+    console.error(`[CFBD API] ❌ ${path} → ${res.status} ${res.statusText}`, body);
+    throw new Error(`CFBD ${path} → ${res.status} ${res.statusText}: ${body}`);
   }
-  return res.json();
+  const data = await res.json();
+  console.info(`[CFBD API] ✅ ${path} → ${Array.isArray(data) ? data.length + ' rows' : 'object'}`);
+  return data;
 };
 
 // ── Bulk endpoints (one call per category, returns ALL players) ──────────────
