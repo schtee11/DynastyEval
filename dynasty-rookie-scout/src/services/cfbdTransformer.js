@@ -284,6 +284,13 @@ export const buildPlayersFromAPI = async () => {
       }
     }
 
+    // Prefer hardcoded advanced stats from prospect data (PFF-sourced)
+    // over any calculated/estimated values from the CFBD API
+    if (prospect.advancedStats) {
+      if (prospect.advancedStats.yprr != null) yprr = prospect.advancedStats.yprr;
+      if (prospect.advancedStats.targetShare != null) targetShare = prospect.advancedStats.targetShare;
+    }
+
     // If the draft has happened, use real data; otherwise mark as projected
     const draft = draftLookup[key];
     const draftRound = draft

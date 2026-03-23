@@ -1,6 +1,10 @@
 // 2026 NFL Draft prospect metadata
 // College stats come from CFBD API — this file holds scouting data, projections, and dynasty valuations
 // Update projectedPick/projectedTeam after the draft (April 23–25, 2026)
+//
+// advancedStats: hardcoded college YPRR + target share from PFF / scouting reports.
+// These override any calculated values in cfbdTransformer.js.
+// Sources: PFF, TruMedia, Steelers Depot, collegefootballnetwork.com, various scouting profiles.
 
 const prospects2026 = [
   {
@@ -19,6 +23,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 1, superflex: 1 },
     rank: { oneQB: 1, superflex: 1 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
   },
   {
@@ -37,6 +42,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 10, superflex: 2 },
     rank: { oneQB: 10, superflex: 2 },
     injuries: [],
+    advancedStats: null, // QB
     cfbdLookup: { team: "Indiana", year: 2025 },
   },
   {
@@ -55,6 +61,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 2, superflex: 4 },
     rank: { oneQB: 2, superflex: 4 },
     injuries: [],
+    advancedStats: { yprr: 3.02, targetShare: 25.0 }, // PFF 2025: 89.0 recv grade, 0% drop rate
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
   {
@@ -73,6 +80,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 3, superflex: 3 },
     rank: { oneQB: 3, superflex: 5 },
     injuries: [{ type: "Knee", date: "2025-10", severity: "Moderate", gamesOut: 3 }],
+    advancedStats: { yprr: 2.37, targetShare: 35.0 }, // 2025 (injury-shortened); career 31.2% routes targeted (98th %ile)
     cfbdLookup: { team: "Arizona State", year: 2025 },
   },
   {
@@ -91,6 +99,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 4, superflex: 5 },
     rank: { oneQB: 4, superflex: 6 },
     injuries: [],
+    advancedStats: { yprr: 3.13, targetShare: 30.0 }, // PFF 2025: 91.4 recv grade, Biletnikoff winner; career 3.09 YPRR (1st in class)
     cfbdLookup: { team: "USC", year: 2025 },
   },
   {
@@ -109,6 +118,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 5, superflex: 6 },
     rank: { oneQB: 5, superflex: 8 },
     injuries: [],
+    advancedStats: { yprr: 1.98, targetShare: 15.0 }, // 2025 pre-injury: 26th among TEs, 155.1 passer rating when targeted
     cfbdLookup: { team: "Oregon", year: 2025 },
   },
   {
@@ -127,6 +137,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 7, superflex: 7 },
     rank: { oneQB: 7, superflex: 11 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Penn State", year: 2025 },
   },
   {
@@ -145,6 +156,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 6, superflex: 8 },
     rank: { oneQB: 6, superflex: 9 },
     injuries: [],
+    advancedStats: { yprr: 2.46, targetShare: 27.0 }, // 2025: 112.9 passer rating when targeted; 88.1% open target rate
     cfbdLookup: { team: "Texas A&M", year: 2025 },
   },
   {
@@ -163,6 +175,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 8, superflex: 9 },
     rank: { oneQB: 8, superflex: 12 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arkansas", year: 2025 },
   },
   {
@@ -181,6 +194,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 15, superflex: 10 },
     rank: { oneQB: 16, superflex: 3 },
     injuries: [],
+    advancedStats: null, // QB
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
   {
@@ -199,6 +213,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 9, superflex: 11 },
     rank: { oneQB: 9, superflex: 13 },
     injuries: [],
+    advancedStats: { yprr: 2.44, targetShare: 28.0 }, // 2025 personal best; led Huskies in all receiving categories
     cfbdLookup: { team: "Washington", year: 2025 },
   },
   {
@@ -217,6 +232,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 11, superflex: 12 },
     rank: { oneQB: 11, superflex: 15 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Washington", year: 2025 },
   },
   {
@@ -235,6 +251,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 12, superflex: 14 },
     rank: { oneQB: 12, superflex: 16 },
     injuries: [],
+    advancedStats: { yprr: 2.49, targetShare: 21.0 }, // 2025: 13 TDs, 145.2 passer rating when targeted; elite vs zone
     cfbdLookup: { team: "Indiana", year: 2025 },
   },
   {
@@ -253,6 +270,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 13, superflex: 15 },
     rank: { oneQB: 13, superflex: 17 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
   },
   {
@@ -271,6 +289,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 14, superflex: 16 },
     rank: { oneQB: 14, superflex: 18 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Nebraska", year: 2025 },
   },
   {
@@ -289,6 +308,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 18, superflex: 13 },
     rank: { oneQB: 20, superflex: 7 },
     injuries: [{ type: "Shoulder", date: "2025-11", severity: "Minor", gamesOut: 1 }],
+    advancedStats: null, // QB
     cfbdLookup: { team: "LSU", year: 2025 },
   },
   {
@@ -307,6 +327,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 16, superflex: 17 },
     rank: { oneQB: 15, superflex: 19 },
     injuries: [],
+    advancedStats: { yprr: 1.80, targetShare: 18.0 }, // 2025: career-low YPRR at Florida, declining each season
     cfbdLookup: { team: "Florida", year: 2025 },
   },
   {
@@ -325,6 +346,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 17, superflex: 18 },
     rank: { oneQB: 17, superflex: 20 },
     injuries: [],
+    advancedStats: { yprr: 2.55, targetShare: 22.0 }, // 2025: top 3% FBS, John Mackey winner, 3.08 YPRR vs zone
     cfbdLookup: { team: "Vanderbilt", year: 2025 },
   },
   {
@@ -343,6 +365,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 19, superflex: 19 },
     rank: { oneQB: 18, superflex: 21 },
     injuries: [],
+    advancedStats: { yprr: 2.35, targetShare: 22.0 }, // 2025 (Missouri): 66 rec, 732 yds; strong YAC profile
     cfbdLookup: { team: "Florida State", year: 2025 },
   },
   {
@@ -361,6 +384,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 22, superflex: 20 },
     rank: { oneQB: 25, superflex: 10 },
     injuries: [{ type: "Elbow (UCL)", date: "2025-01", severity: "Severe", gamesOut: 8 }],
+    advancedStats: null, // QB
     cfbdLookup: { team: "Miami", year: 2025 },
   },
   {
@@ -379,6 +403,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 24, superflex: 21 },
     rank: { oneQB: 28, superflex: 14 },
     injuries: [],
+    advancedStats: null, // QB
     cfbdLookup: { team: "Penn State", year: 2025 },
   },
   {
@@ -397,6 +422,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 26, superflex: 22 },
     rank: { oneQB: 30, superflex: 15 },
     injuries: [],
+    advancedStats: null, // QB
     cfbdLookup: { team: "Clemson", year: 2025 },
   },
   {
@@ -415,6 +441,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 28, superflex: 23 },
     rank: { oneQB: 32, superflex: 17 },
     injuries: [],
+    advancedStats: null, // QB
     cfbdLookup: { team: "Arkansas", year: 2025 },
   },
   {
@@ -433,6 +460,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 20, superflex: 24 },
     rank: { oneQB: 19, superflex: 22 },
     injuries: [],
+    advancedStats: { yprr: 1.71, targetShare: 12.0 }, // 2025: limited targets in Ohio State's WR-heavy offense
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
   {
@@ -451,6 +479,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 21, superflex: 25 },
     rank: { oneQB: 21, superflex: 23 },
     injuries: [{ type: "Knee (ACL)", date: "2024-11", severity: "Severe", gamesOut: 10 }],
+    advancedStats: { yprr: 5.12, targetShare: 35.0 }, // 2024: historic — 1st Power Conf WR >5.0 YPRR (PFF); 11.06 YPRR vs man
     cfbdLookup: { team: "Ole Miss", year: 2024 },
   },
   {
@@ -469,6 +498,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 23, superflex: 26 },
     rank: { oneQB: 22, superflex: 24 },
     injuries: [],
+    advancedStats: { yprr: 1.62, targetShare: 18.0 }, // Career: historically low for Day 2 WR; gadget/RB hybrid usage
     cfbdLookup: { team: "TCU", year: 2025 },
   },
   {
@@ -487,6 +517,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 30, superflex: 27 },
     rank: { oneQB: 35, superflex: 20 },
     injuries: [],
+    advancedStats: null, // QB
     cfbdLookup: { team: "North Dakota State", year: 2025 },
   },
   {
@@ -505,6 +536,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 25, superflex: 28 },
     rank: { oneQB: 23, superflex: 25 },
     injuries: [],
+    advancedStats: { yprr: 1.90, targetShare: 18.0 }, // 2025: 49 rec, 489 yds, 7 TDs; 81.4 PFF recv grade
     cfbdLookup: { team: "NC State", year: 2025 },
   },
   {
@@ -523,6 +555,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 27, superflex: 29 },
     rank: { oneQB: 24, superflex: 26 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null }, // No PFF college data publicly available
     cfbdLookup: { team: "Miami", year: 2025 },
   },
   {
@@ -541,6 +574,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 29, superflex: 30 },
     rank: { oneQB: 26, superflex: 27 },
     injuries: [],
+    advancedStats: { yprr: 2.10, targetShare: 25.0 }, // College career avg across two 1,000-yd seasons at Stanford
     cfbdLookup: { team: "Stanford", year: 2025 },
   },
   {
@@ -559,6 +593,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 31, superflex: 31 },
     rank: { oneQB: 27, superflex: 28 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Kansas", year: 2025 },
   },
   {
@@ -577,6 +612,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 33, superflex: 32 },
     rank: { oneQB: 29, superflex: 29 },
     injuries: [],
+    advancedStats: { yprr: 3.30, targetShare: 30.0 }, // 2025: 87 rec/109 tgt/1,243 yds; #1 career YPRR among CFB WRs
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
   {
@@ -595,6 +631,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 32, superflex: 33 },
     rank: { oneQB: 30, superflex: 30 },
     injuries: [],
+    advancedStats: { yprr: 2.87, targetShare: 30.0 }, // College final season at Arizona; 1,300+ yd seasons
     cfbdLookup: { team: "Arizona", year: 2025 },
   },
   {
@@ -613,6 +650,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 34, superflex: 34 },
     rank: { oneQB: 31, superflex: 31 },
     injuries: [],
+    advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arizona State", year: 2025 },
   },
   {
@@ -631,6 +669,7 @@ const prospects2026 = [
     dynastyADP: { oneQB: 35, superflex: 35 },
     rank: { oneQB: 32, superflex: 32 },
     injuries: [],
+    advancedStats: { yprr: 2.50, targetShare: 28.0 }, // 2024 final college season (declined from 3.50 in 2023 due to QB/offense regression)
     cfbdLookup: { team: "Missouri", year: 2025 },
   },
 ];
