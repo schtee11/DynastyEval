@@ -68,43 +68,65 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
   }, [onClose]);
 
   const getRadarData = () => {
+    const s = player.stats || {};
     const pick = player.draftPick || 33;
     const draftCapVal = Math.min(100, ((33 - pick) / 32) * 100);
-    const boVal = player.breakoutAge ? Math.min(100, ((25 - player.breakoutAge) / 5) * 100) : 0;
-    const rankVal = (r) => r ? Math.min(100, ((40 - r) / 39) * 100) : 0;
 
-    if (player.position === 'QB' || player.position === 'RB') {
+    if (player.position === 'QB') {
       return [
-        { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
-        { stat: 'Breakout', value: boVal, fullMark: 100 },
-        { stat: '1QB Rank', value: rankVal(player.rank?.oneQB), fullMark: 100 },
-        { stat: 'SF Rank', value: rankVal(player.rank?.superflex), fullMark: 100 },
-        { stat: '1QB ADP', value: rankVal(player.dynastyADP?.oneQB), fullMark: 100 },
-        { stat: 'SF ADP', value: rankVal(player.dynastyADP?.superflex), fullMark: 100 },
-      ];
-    }
-
-    // WR / TE — receiving perspective data
-    const pData = player.receivingByPerspective?.[modalPerspective];
-    if (pData) {
-      return [
-        { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
-        { stat: 'Rec Grade', value: Math.min(100, (pData.recGrade || 0)), fullMark: 100 },
-        { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-        { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-        { stat: 'Breakout', value: boVal, fullMark: 100 },
+        { stat: 'EPA', value: Math.min(100, ((s.epa || 0) / 0.4) * 100), fullMark: 100 },
+        { stat: 'CPOE', value: Math.min(100, (((s.cpoe || 0) + 5) / 10) * 100), fullMark: 100 },
+        { stat: 'Pass TDs', value: Math.min(100, ((s.passingTDs || 0) / 45) * 100), fullMark: 100 },
+        { stat: 'Comp %', value: Math.min(100, ((s.completionPct || 0) / 80) * 100), fullMark: 100 },
+        { stat: 'Rush', value: Math.min(100, ((s.rushingYards || 0) / 800) * 100), fullMark: 100 },
         { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
       ];
     }
 
-    // WR / TE fallback (no perspective data)
+    if (player.position === 'RB') {
+      return [
+        { stat: 'EPA', value: Math.min(100, ((s.epa || 0) / 0.4) * 100), fullMark: 100 },
+        { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 2000) * 100), fullMark: 100 },
+        { stat: 'YPC', value: Math.min(100, ((s.yardsPerCarry || 0) / 8) * 100), fullMark: 100 },
+        { stat: 'Receiving', value: Math.min(100, ((s.receivingYards || 0) / 500) * 100), fullMark: 100 },
+        { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
+        { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
+      ];
+    }
+
+    // WR — receiving perspective data
+    if (player.position === 'WR') {
+      const pData = player.receivingByPerspective?.[modalPerspective];
+      const boVal = player.breakoutAge ? Math.min(100, ((25 - player.breakoutAge) / 5) * 100) : 0;
+      if (pData) {
+        return [
+          { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
+          { stat: 'Rec Grade', value: Math.min(100, (pData.recGrade || 0)), fullMark: 100 },
+          { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
+          { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
+          { stat: 'Breakout', value: boVal, fullMark: 100 },
+          { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
+        ];
+      }
+      // WR fallback (no perspective data)
+      return [
+        { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
+        { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
+        { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
+        { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
+        { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
+        { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
+      ];
+    }
+
+    // TE — CFBD stats
     return [
       { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
+      { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
       { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-      { stat: 'Breakout', value: boVal, fullMark: 100 },
+      { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
+      { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
       { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
-      { stat: '1QB Rank', value: rankVal(player.rank?.oneQB), fullMark: 100 },
-      { stat: 'SF Rank', value: rankVal(player.rank?.superflex), fullMark: 100 },
     ];
   };
 
@@ -251,33 +273,52 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 letterSpacing: 1,
                 textTransform: 'uppercase',
                 marginBottom: 12,
-              }}>{(player.position === 'WR' || player.position === 'TE') ? 'Receiving Breakdown' : 'Dynasty Profile'}</h3>
+              }}>{player.position === 'WR' && player.receivingByPerspective ? 'Receiving Breakdown' : 'Full Stat Breakdown'}</h3>
 
+              {/* QB stats — from CFBD API */}
               {player.position === 'QB' && (
                 <>
-                  <StatRow label="Draft Round" value={player.draftRound} />
-                  <StatRow label="Draft Pick" value={player.draftPick ? `#${player.draftPick}` : null} />
-                  <StatRow label="Draft Team" value={player.draftTeam} />
-                  <StatRow label="1QB Rank" value={player.rank?.oneQB ? `#${player.rank.oneQB}` : null} />
-                  <StatRow label="SF Rank" value={player.rank?.superflex ? `#${player.rank.superflex}` : null} />
-                  <StatRow label="1QB ADP" value={player.dynastyADP?.oneQB ? `#${player.dynastyADP.oneQB}` : null} />
-                  <StatRow label="SF ADP" value={player.dynastyADP?.superflex ? `#${player.dynastyADP.superflex}` : null} />
+                  <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
+                  <StatRow label="CPOE" value={player.stats?.cpoe} benchmark={2.0} />
+                  <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" />
+                  <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} />
+                  <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} />
+                  <StatRow label="Interceptions" value={player.stats?.interceptions} />
+                  <StatRow label="Rushing Yards" value={player.stats?.rushingYards} />
+                  <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} />
                 </>
               )}
 
+              {/* RB stats — from CFBD API */}
               {player.position === 'RB' && (
                 <>
-                  <StatRow label="Draft Round" value={player.draftRound} />
-                  <StatRow label="Draft Pick" value={player.draftPick ? `#${player.draftPick}` : null} />
-                  <StatRow label="Draft Team" value={player.draftTeam} />
-                  <StatRow label="1QB Rank" value={player.rank?.oneQB ? `#${player.rank.oneQB}` : null} />
-                  <StatRow label="SF Rank" value={player.rank?.superflex ? `#${player.rank.superflex}` : null} />
-                  <StatRow label="1QB ADP" value={player.dynastyADP?.oneQB ? `#${player.dynastyADP.oneQB}` : null} />
-                  <StatRow label="SF ADP" value={player.dynastyADP?.superflex ? `#${player.dynastyADP.superflex}` : null} />
+                  <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
+                  <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} />
+                  <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} />
+                  <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} />
+                  <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} />
+                  <StatRow label="Receiving Yards" value={player.stats?.receivingYards} />
+                  <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
                 </>
               )}
 
-              {(player.position === 'WR' || player.position === 'TE') && (() => {
+              {/* TE stats — from CFBD API */}
+              {player.position === 'TE' && (
+                <>
+                  <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
+                  <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
+                  <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
+                  <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
+                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                  <StatRow label="Receptions" value={player.stats?.receptions} />
+                  <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
+                  <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
+                  <StatRow label="Targets" value={player.stats?.targets} />
+                </>
+              )}
+
+              {/* WR — perspective-based receiving data */}
+              {player.position === 'WR' && (() => {
                 const pData = player.receivingByPerspective?.[modalPerspective];
                 const val = (key) => pData?.[key] ?? null;
                 return (
@@ -309,7 +350,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                     )}
                     {pData ? (
                       <>
-                        <StatRow label="YPRR" value={val('yprr')} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
+                        <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                         {modalPerspective === 'deepBall' ? (
                           <>
                             <StatRow label="Targets" value={val('targets')} />
@@ -342,11 +383,16 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                       </>
                     ) : (
                       <>
-                        <StatRow label="YPRR" value={player.yprr} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
+                        {/* WR fallback — CFBD stats */}
+                        <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
+                        <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
+                        <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
+                        <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
                         <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                        <StatRow label="Draft Pick" value={player.draftPick ? `#${player.draftPick}` : null} />
-                        <StatRow label="1QB Rank" value={player.rank?.oneQB ? `#${player.rank.oneQB}` : null} />
-                        <StatRow label="SF Rank" value={player.rank?.superflex ? `#${player.rank.superflex}` : null} />
+                        <StatRow label="Receptions" value={player.stats?.receptions} />
+                        <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
+                        <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
+                        <StatRow label="Targets" value={player.stats?.targets} />
                       </>
                     )}
                   </>

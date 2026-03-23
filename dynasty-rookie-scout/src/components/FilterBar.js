@@ -47,6 +47,8 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
     { value: '3', label: 'Day 3' },
   ];
 
+  const isWR = filters.position === 'WR';
+
   return (
     <div style={{
       background: '#151825',
@@ -100,25 +102,27 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         </select>
       </div>
 
-      {/* Receiving perspective filter */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 11,
-          color: '#6b7280',
-          letterSpacing: 1,
-          textTransform: 'uppercase',
-        }}>VIEW</span>
-        <select
-          value={perspective}
-          onChange={e => setPerspective(e.target.value)}
-          style={selectStyle}
-        >
-          {perspectives.map(p => (
-            <option key={p.value} value={p.value}>{p.label}</option>
-          ))}
-        </select>
-      </div>
+      {/* Receiving perspective filter — WR only */}
+      {isWR && (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 11,
+            color: '#6b7280',
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+          }}>VIEW</span>
+          <select
+            value={perspective}
+            onChange={e => setPerspective(e.target.value)}
+            style={selectStyle}
+          >
+            {perspectives.map(p => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Injury toggle */}
       <label style={{
@@ -158,8 +162,9 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
           <option value="draftCapital">Draft Capital</option>
           <option value="breakoutAge">Breakout Age</option>
           <option value="yprr">YPRR</option>
-          <option value="recGrade">Rec Grade</option>
-          <option value="tgtPerRR">Tgt/RR</option>
+          <option value="dominator">Dominator Rating</option>
+          {isWR && <option value="recGrade">Rec Grade</option>}
+          {isWR && <option value="tgtPerRR">Tgt/RR</option>}
         </select>
       </div>
     </div>
