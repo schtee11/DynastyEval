@@ -1,9 +1,9 @@
 // Data service abstraction layer
-// Pulls live 2025 college stats from CFBD API when a key is configured,
-// otherwise falls back to mock data.
+// Pulls live college stats from CFBD API when a key is configured,
+// otherwise falls back to prospect metadata from rookieProspects2026.
 // Post-draft: validates prospects against Sleeper API to filter out non-2026 rookies.
 
-import { getFantasyRelevantPlayers, getPlayerById as getMockPlayerById } from './mockData';
+import { getProspects, getProspectById } from './rookieProspects2026';
 import { buildPlayersFromAPI } from './cfbdTransformer';
 import { validateProspects } from './sleeperApi';
 
@@ -13,6 +13,35 @@ const useLive = hasCfbdKey && !forceMock;
 
 // Cache live data so we only fetch once per session
 let livePlayersCache = null;
+
+/**
+ * Map raw prospect metadata into the shape the UI expects.
+ * When running without CFBD API, stats come from advancedStats only.
+ */
+const mapProspectToPlayer = (p) => ({
+  id: p.id,
+  name: p.name,
+  position: p.position,
+  college: p.college,
+  age: p.age,
+  height: p.height,
+  weight: p.weight,
+  draftRound: p.projectedRound,
+  draftPick: p.projectedPick,
+  draftTeam: p.projectedTeam,
+  draftIsProjected: true,
+  stats: p.stats || null,
+  breakoutAge: p.breakoutAge,
+  dominatorRating: p.dominatorRating ?? null,
+  targetShare: p.advancedStats?.targetShare ?? null,
+  yprr: p.advancedStats?.yprr ?? null,
+  yacPerRR: p.yacPerRR ?? null,
+  injuries: p.injuries,
+  dynastyADP: p.dynastyADP,
+  rank: p.rank,
+  playerComps: p.playerComps,
+  receivingByPerspective: p.receivingByPerspective || null,
+});
 
 /**
  * Filter players through Sleeper API validation.
@@ -43,7 +72,9 @@ const filterWithSleeperValidation = async (players) => {
 
 export const getPlayers = async () => {
   if (!useLive) {
-    return getFantasyRelevantPlayers();
+    return getProspects()
+      .filter(p => ['QB', 'RB', 'WR', 'TE'].includes(p.position))
+      .map(mapProspectToPlayer);
   }
 
   // Live path — fetch from CFBD API + merge with prospect metadata
@@ -56,18 +87,24 @@ export const getPlayers = async () => {
     livePlayersCache = players;
     return players;
   } catch (err) {
-    console.error('Live data fetch failed, falling back to mock:', err);
-    return getFantasyRelevantPlayers();
+    console.error('Live data fetch failed, falling back to prospects:', err);
+    return getProspects()
+      .filter(p => ['QB', 'RB', 'WR', 'TE'].includes(p.position))
+      .map(mapProspectToPlayer);
   }
 };
 
 export const getPlayerById = async (id) => {
   if (!useLive) {
-    return getMockPlayerById(id);
+    const p = getProspectById(id);
+    return p ? mapProspectToPlayer(p) : undefined;
   }
 
   const players = await getPlayers();
-  return players.find((p) => p.id === id) || getMockPlayerById(id);
+  const found = players.find((p) => p.id === id);
+  if (found) return found;
+  const p = getProspectById(id);
+  return p ? mapProspectToPlayer(p) : undefined;
 };
 
 export const isUsingMockData = () => !useLive;
