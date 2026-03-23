@@ -1,22 +1,11 @@
-// Data service abstraction layer
-// Pulls live college stats from CFBD API when a key is configured,
-// otherwise falls back to prospect metadata from rookieProspects2026.
-// Post-draft: validates prospects against Sleeper API to filter out non-2026 rookies.
+// Data service — sources all player data from rookieProspects2026.js
+// (prospect metadata + receiving perspective data converted from PFF images).
+// No mock data, no CFBD API dependency.
 
-import { getProspects, getProspectById } from './rookieProspects2026';
-import { buildPlayersFromAPI } from './cfbdTransformer';
-import { validateProspects } from './sleeperApi';
-
-const hasCfbdKey = !!process.env.REACT_APP_CFBD_API_KEY;
-const forceMock = process.env.REACT_APP_USE_MOCK === 'true';
-const useLive = hasCfbdKey && !forceMock;
-
-// Cache live data so we only fetch once per session
-let livePlayersCache = null;
+import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
 
 /**
  * Map raw prospect metadata into the shape the UI expects.
- * When running without CFBD API, stats come from advancedStats only.
  */
 const mapProspectToPlayer = (p) => ({
   id: p.id,
@@ -43,69 +32,12 @@ const mapProspectToPlayer = (p) => ({
   receivingByPerspective: p.receivingByPerspective || null,
 });
 
-/**
- * Filter players through Sleeper API validation.
- * Removes any prospect that Sleeper identifies as a prior-year draft pick
- * (years_exp > 0). Keeps prospects not yet in Sleeper (pre-draft) and
- * confirmed 2026 rookies.
- */
-const filterWithSleeperValidation = async (players) => {
-  try {
-    const results = await validateProspects(players);
-    const filtered = [];
-    for (const { prospect, sleeperMatch, status } of results) {
-      if (status === 'wrong_year') {
-        console.warn(
-          `[Sleeper] Removing ${prospect.name} — already drafted (years_exp=${sleeperMatch.yearsExp}, team=${sleeperMatch.team})`
-        );
-        continue;
-      }
-      // Keep confirmed rookies and not-yet-in-Sleeper prospects
-      filtered.push(prospect);
-    }
-    return filtered;
-  } catch (err) {
-    console.warn('[Sleeper] Validation failed, returning unfiltered list:', err.message);
-    return players;
-  }
-};
-
-export const getPlayers = async () => {
-  if (!useLive) {
-    return getProspects()
-      .filter(p => ['QB', 'RB', 'WR', 'TE'].includes(p.position))
-      .map(mapProspectToPlayer);
-  }
-
-  // Live path — fetch from CFBD API + merge with prospect metadata
-  if (livePlayersCache) return livePlayersCache;
-
-  try {
-    let players = await buildPlayersFromAPI();
-    // Validate against Sleeper to remove any prior-year picks
-    players = await filterWithSleeperValidation(players);
-    livePlayersCache = players;
-    return players;
-  } catch (err) {
-    console.error('Live data fetch failed, falling back to prospects:', err);
-    return getProspects()
-      .filter(p => ['QB', 'RB', 'WR', 'TE'].includes(p.position))
-      .map(mapProspectToPlayer);
-  }
-};
+export const getPlayers = async () =>
+  getProspects()
+    .filter((p) => ['QB', 'RB', 'WR', 'TE'].includes(p.position))
+    .map(mapProspectToPlayer);
 
 export const getPlayerById = async (id) => {
-  if (!useLive) {
-    const p = getProspectById(id);
-    return p ? mapProspectToPlayer(p) : undefined;
-  }
-
-  const players = await getPlayers();
-  const found = players.find((p) => p.id === id);
-  if (found) return found;
-  const p = getProspectById(id);
+  const p = getRawProspectById(id);
   return p ? mapProspectToPlayer(p) : undefined;
 };
-
-export const isUsingMockData = () => !useLive;
-export const isUsingLiveData = () => useLive;
