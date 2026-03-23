@@ -2,7 +2,7 @@
 // Docs: https://apinext.collegefootballdata.com
 // Requires REACT_APP_CFBD_API_KEY env var
 
-const BASE_URL = 'https://api.collegefootballdata.com';
+const BASE_URL = 'https://apinext.collegefootballdata.com';
 
 const headers = () => ({
   Authorization: `Bearer ${process.env.REACT_APP_CFBD_API_KEY}`,
@@ -63,7 +63,7 @@ export const fetchDraftPicks = (year) =>
 
 // ── Two-layer cache: localStorage (persists across sessions) + in-memory ─────
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3'; // bumped to invalidate stale empty results from old API domain
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const memCache = {};
@@ -106,8 +106,12 @@ const cachedFetch = async (key, fetcher) => {
 
   // 3. Network fetch
   const data = await fetcher();
-  memCache[key] = data;
-  writeLocalStorage(key, data);
+  // Don't cache empty arrays — likely an API issue, not real "no data"
+  const isEmpty = Array.isArray(data) && data.length === 0;
+  if (!isEmpty) {
+    memCache[key] = data;
+    writeLocalStorage(key, data);
+  }
   return data;
 };
 

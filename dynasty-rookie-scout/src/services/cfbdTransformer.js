@@ -332,6 +332,7 @@ export const enrichNonWRStats = async (players) => {
     debug: {
       sampleRowFields: cfbdKeys,
       sampleRow: sampleRow ? JSON.stringify(sampleRow).slice(0, 300) : null,
+      apiBase: 'apinext.collegefootballdata.com',
       cfbdNames: cfbdSampleNames,
       searchedNames,
       groupedCounts: {
