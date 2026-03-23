@@ -1,6 +1,13 @@
-// Enriches QB/RB/TE players with live college stats from CFBD API.
+// Enriches QB/RB/TE players with college stats.
 // WR stats come exclusively from receivingData.js — this module skips WRs entirely.
+//
+// Data source priority:
+//   1. Static 2025 stats (collegeStats2025.js) — zero API calls, instant
+//   2. ESPN API (espnApi.js) — free, no auth, no quota
+//   3. CFBD API (cfbdApi.js) — requires key, 1000 calls/month limit
 
+import { getStaticCollegeStats } from './collegeStats2025';
+import { fetchBulkPlayerStatsESPN } from './espnApi';
 import {
   fetchAllSeasonStats,
   fetchPPAForTeams,
@@ -92,259 +99,409 @@ const calcTargetShare = (playerTargets, teamTargetsTotal) => {
   return +((playerTargets / teamTargetsTotal) * 100).toFixed(1);
 };
 
+// ── static stats enrichment (no API calls) ───────────────────────────────────
+
+/**
+ * Enrich a single player using static 2025 college stats.
+ * Returns the enriched player or null if no static data available.
+ */
+const enrichFromStatic = (player) => {
+  const staticData = getStaticCollegeStats(player.name);
+  if (!staticData) return null;
+
+  const { passing, rushing, receiving, ppa, teamRecYdsTotal, teamTargetsTotal } = staticData;
+
+  // Position-specific stat builder
+  let stats;
+  switch (player.position) {
+    case 'QB':
+      stats = buildQBStats(passing, rushing);
+      break;
+    case 'RB':
+      stats = buildRBStats(rushing, receiving);
+      break;
+    case 'TE':
+      stats = buildTEStats(receiving);
+      break;
+    default:
+      stats = {};
+  }
+
+  // EPA from PPA data
+  if (ppa) {
+    const epaVal = ppa.averagePPA?.all ?? null;
+    if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
+  }
+
+  // Dominator rating + target share
+  let dominatorRating = player.dominatorRating || 0;
+  let targetShare = player.targetShare;
+  let yprr = player.yprr;
+  let yacPerRR = player.yacPerRR;
+
+  if (player.position === 'TE' && receiving) {
+    const recYds = val(receiving, 'YDS', 'REC_YDS');
+    const targets = val(receiving, 'TARGETS', 'TGT');
+    dominatorRating = calcDominatorRating(recYds, teamRecYdsTotal || 1);
+    if (targets > 0) {
+      targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
+    }
+    if (targets > 0) {
+      yprr = +(recYds / targets).toFixed(2);
+    }
+  }
+
+  if (player.position === 'RB') {
+    const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
+    const recYds = val(receiving, 'YDS', 'REC_YDS');
+    const teamTotal = (teamRecYdsTotal || 0) + rushYds;
+    dominatorRating = teamTotal > 0
+      ? +(((rushYds + recYds) / teamTotal) * 100).toFixed(1)
+      : 0;
+    const targets = val(receiving, 'TARGETS', 'TGT');
+    if (targets > 0) {
+      targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
+    }
+  }
+
+  // Prefer hardcoded advanced stats (PFF-sourced) if available
+  const prospect = player._prospect;
+  if (prospect?.advancedStats) {
+    if (prospect.advancedStats.yprr != null) yprr = prospect.advancedStats.yprr;
+    if (prospect.advancedStats.targetShare != null) targetShare = prospect.advancedStats.targetShare;
+  }
+
+  return {
+    ...player,
+    stats,
+    dominatorRating,
+    targetShare,
+    yprr,
+    yacPerRR,
+    _liveData: true,
+    _dataSource: 'static',
+  };
+};
+
+// ── ESPN enrichment fallback ─────────────────────────────────────────────────
+
+/**
+ * Enrich a single player using ESPN API data.
+ * espnStats is the CFBD-compatible shape from espnApi.js.
+ */
+const enrichFromESPN = (player, espnStats) => {
+  if (!espnStats) return null;
+
+  const { passing, rushing, receiving } = espnStats;
+  const matched = !!(passing || rushing || receiving);
+  if (!matched) return null;
+
+  let stats;
+  switch (player.position) {
+    case 'QB':
+      stats = buildQBStats(passing, rushing);
+      break;
+    case 'RB':
+      stats = buildRBStats(rushing, receiving);
+      break;
+    case 'TE':
+      stats = buildTEStats(receiving);
+      break;
+    default:
+      stats = {};
+  }
+
+  // ESPN doesn't provide PPA/EPA, so leave as null
+  let dominatorRating = player.dominatorRating || 0;
+  let targetShare = player.targetShare;
+  let yprr = player.yprr;
+  let yacPerRR = player.yacPerRR;
+
+  // Prefer hardcoded advanced stats
+  const prospect = player._prospect;
+  if (prospect?.advancedStats) {
+    if (prospect.advancedStats.yprr != null) yprr = prospect.advancedStats.yprr;
+    if (prospect.advancedStats.targetShare != null) targetShare = prospect.advancedStats.targetShare;
+  }
+
+  return {
+    ...player,
+    stats,
+    dominatorRating,
+    targetShare,
+    yprr,
+    yacPerRR,
+    _liveData: true,
+    _dataSource: 'espn',
+  };
+};
+
 // ── main enrichment function ────────────────────────────────────────────────
 
 /**
- * Enrich QB/RB/TE players with live college stats from CFBD API.
- * Accepts pre-built player objects (from Sleeper cross-reference).
- * Returns the same players array with stats, EPA, dominator, targetShare populated.
+ * Enrich QB/RB/TE players with college stats.
+ * Priority: static data → ESPN API → CFBD API.
  * WR players in the array are returned unchanged.
  */
 export const enrichNonWRStats = async (players) => {
   // Only enrich players that have a cfbdLookup and are not WR
   const nonWR = players.filter((p) => p.position !== 'WR' && p._cfbdLookup);
   if (nonWR.length === 0) {
-    console.warn('[CFBD] No non-WR players with _cfbdLookup found — skipping enrichment');
+    console.warn('[Enrichment] No non-WR players with _cfbdLookup found — skipping');
     return players;
   }
 
-  // Unique college teams for non-WR players
-  const teams = [...new Set(nonWR.map((p) => p._cfbdLookup.team))];
-  const year = 2025;
+  console.info(`[Enrichment] Enriching ${nonWR.length} non-WR players`);
 
-  console.info(`[CFBD] Enriching ${nonWR.length} non-WR players from ${teams.length} teams:`, teams);
-  console.info('[CFBD] Players to enrich:', nonWR.map((p) => `${p.name} (${p.position}) → team="${p._cfbdLookup.team}"`));
+  // ── Phase 1: Static data (instant, no API calls) ──────────────────────
+  const staticResults = new Map();
+  const needsAPI = [];
 
-  // Fetch all stat categories + PPA + usage in parallel
-  const errors = [];
-  const [allStats, ppaData, usageData] = await Promise.all([
-    fetchAllSeasonStats(year).catch((err) => {
-      console.error('[CFBD] fetchAllSeasonStats failed:', err.message);
-      errors.push(`stats: ${err.message}`);
-      return { passing: [], rushing: [], receiving: [] };
-    }),
-    fetchPPAForTeams(year, teams).catch((err) => {
-      console.error('[CFBD] fetchPPAForTeams failed:', err.message);
-      errors.push(`ppa: ${err.message}`);
-      return [];
-    }),
-    fetchUsageForTeams(year, teams).catch((err) => {
-      console.error('[CFBD] fetchUsageForTeams failed:', err.message);
-      errors.push(`usage: ${err.message}`);
-      return [];
-    }),
-  ]);
-
-  console.info(`[CFBD] API results — passing: ${allStats.passing?.length ?? 0} rows, rushing: ${allStats.rushing?.length ?? 0} rows, receiving: ${allStats.receiving?.length ?? 0} rows, PPA: ${ppaData.length} rows, usage: ${usageData.length} rows`);
-
-  // Group stats by normalised player name
-  const passingByPlayer = groupByPlayer(allStats.passing || []);
-  const rushingByPlayer = groupByPlayer(allStats.rushing || []);
-  const receivingByPlayer = groupByPlayer(allStats.receiving || []);
-
-  console.info(`[CFBD] Grouped stats — passing players: ${Object.keys(passingByPlayer).length}, rushing players: ${Object.keys(rushingByPlayer).length}, receiving players: ${Object.keys(receivingByPlayer).length}`);
-
-  // Log a sample row to see the actual shape coming from the API
-  if (allStats.passing?.length > 0) {
-    console.info('[CFBD] Sample passing row shape:', JSON.stringify(allStats.passing[0]));
-  }
-  if (allStats.rushing?.length > 0) {
-    console.info('[CFBD] Sample rushing row shape:', JSON.stringify(allStats.rushing[0]));
-  }
-
-  // Group PPA by normalised player name
-  const ppaByPlayer = {};
-  for (const row of ppaData) {
-    const key = norm(row.player || row.name || '');
-    if (key) ppaByPlayer[key] = row;
-  }
-
-  // Group usage by normalised player name
-  const usageByPlayer = {};
-  for (const row of usageData) {
-    const key = norm(row.player || row.name || '');
-    if (key) usageByPlayer[key] = row;
-  }
-
-  // Team receiving totals for dominator (yards) and target share
-  const teamRecYdsTotals = {};
-  const teamTargetTotals = {};
-  for (const row of allStats.receiving) {
-    const team = row.team;
-    if (!team) continue;
-    const st = row.statType || row.category || '';
-    if (st === 'YDS' || st === 'REC_YDS') {
-      teamRecYdsTotals[team] =
-        (teamRecYdsTotals[team] || 0) + val(row, 'stat', 'value');
-    }
-    if (st === 'TARGETS' || st === 'TGT') {
-      teamTargetTotals[team] =
-        (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
+  for (const player of nonWR) {
+    const enriched = enrichFromStatic(player);
+    if (enriched) {
+      staticResults.set(player.id, enriched);
+      console.info(`[Static] ✅ ${player.name} (${player.position})`);
+    } else {
+      needsAPI.push(player);
     }
   }
-  // Fallback: use receptions as proxy for targets
-  if (Object.keys(teamTargetTotals).length === 0) {
+
+  console.info(`[Enrichment] Static: ${staticResults.size}/${nonWR.length} matched, ${needsAPI.length} need API`);
+
+  // ── Phase 2: ESPN API for remaining players ───────────────────────────
+  const espnResults = new Map();
+  let espnErrors = [];
+
+  if (needsAPI.length > 0) {
+    try {
+      const playerNames = needsAPI.map((p) => p.name);
+      console.info(`[ESPN] Attempting to fetch ${playerNames.length} players...`);
+      const { results, errors } = await fetchBulkPlayerStatsESPN(playerNames);
+      espnErrors = errors;
+
+      for (const player of needsAPI) {
+        const key = norm(player.name);
+        const espnStats = results.get(key);
+        if (espnStats) {
+          const enriched = enrichFromESPN(player, espnStats);
+          if (enriched) {
+            espnResults.set(player.id, enriched);
+            console.info(`[ESPN] ✅ ${player.name} (${player.position})`);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[ESPN] Bulk fetch failed:', err.message);
+      espnErrors.push(`bulk: ${err.message}`);
+    }
+  }
+
+  const stillNeedsAPI = needsAPI.filter(
+    (p) => !espnResults.has(p.id)
+  );
+
+  console.info(`[Enrichment] ESPN: ${espnResults.size}/${needsAPI.length} matched, ${stillNeedsAPI.length} need CFBD`);
+
+  // ── Phase 3: CFBD API as last resort ──────────────────────────────────
+  const cfbdMatchCount = { matched: 0, missed: 0 };
+  const cfbdErrors = [];
+  let cfbdResults = new Map();
+
+  if (stillNeedsAPI.length > 0) {
+    const teams = [...new Set(stillNeedsAPI.map((p) => p._cfbdLookup.team))];
+    const year = 2025;
+
+    console.info(`[CFBD] Attempting ${stillNeedsAPI.length} players from ${teams.length} teams`);
+
+    const [allStats, ppaData, usageData] = await Promise.all([
+      fetchAllSeasonStats(year).catch((err) => {
+        console.error('[CFBD] fetchAllSeasonStats failed:', err.message);
+        cfbdErrors.push(`stats: ${err.message}`);
+        return { passing: [], rushing: [], receiving: [] };
+      }),
+      fetchPPAForTeams(year, teams).catch((err) => {
+        console.error('[CFBD] fetchPPAForTeams failed:', err.message);
+        cfbdErrors.push(`ppa: ${err.message}`);
+        return [];
+      }),
+      fetchUsageForTeams(year, teams).catch((err) => {
+        console.error('[CFBD] fetchUsageForTeams failed:', err.message);
+        cfbdErrors.push(`usage: ${err.message}`);
+        return [];
+      }),
+    ]);
+
+    const passingByPlayer = groupByPlayer(allStats.passing || []);
+    const rushingByPlayer = groupByPlayer(allStats.rushing || []);
+    const receivingByPlayer = groupByPlayer(allStats.receiving || []);
+
+    const ppaByPlayer = {};
+    for (const row of ppaData) {
+      const key = norm(row.player || row.name || '');
+      if (key) ppaByPlayer[key] = row;
+    }
+
+    const usageByPlayer = {};
+    for (const row of usageData) {
+      const key = norm(row.player || row.name || '');
+      if (key) usageByPlayer[key] = row;
+    }
+
+    // Team totals for dominator / target share
+    const teamRecYdsTotals = {};
+    const teamTargetTotals = {};
     for (const row of allStats.receiving) {
       const team = row.team;
       if (!team) continue;
       const st = row.statType || row.category || '';
-      if (st === 'REC' || st === 'RECEPTIONS') {
-        teamTargetTotals[team] =
-          (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
+      if (st === 'YDS' || st === 'REC_YDS') {
+        teamRecYdsTotals[team] = (teamRecYdsTotals[team] || 0) + val(row, 'stat', 'value');
+      }
+      if (st === 'TARGETS' || st === 'TGT') {
+        teamTargetTotals[team] = (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
       }
     }
-  }
-
-  // Track enrichment results for UI status
-  let matchCount = 0;
-  let missCount = 0;
-
-  // Enrich each player
-  const enriched = players.map((player) => {
-    if (player.position === 'WR' || !player._cfbdLookup) return player;
-
-    const key = norm(player.name);
-    const passing = passingByPlayer[key];
-    const rushing = rushingByPlayer[key];
-    const receiving = receivingByPlayer[key];
-    const ppa = ppaByPlayer[key];
-    const usageRow = usageByPlayer[key];
-    const team = player._cfbdLookup.team;
-
-    const matched = !!(passing || rushing || receiving);
-    if (!matched) {
-      missCount++;
-      console.warn(`[CFBD] ❌ No stat match for "${player.name}" (${player.position}) — normalized key="${key}", team="${team}"`);
-      // No CFBD data found — return player unchanged (keep any existing stats)
-      return player;
+    if (Object.keys(teamTargetTotals).length === 0) {
+      for (const row of allStats.receiving) {
+        const team = row.team;
+        if (!team) continue;
+        const st = row.statType || row.category || '';
+        if (st === 'REC' || st === 'RECEPTIONS') {
+          teamTargetTotals[team] = (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
+        }
+      }
     }
 
-    matchCount++;
-    console.info(`[CFBD] ✅ Matched "${player.name}" (${player.position}) — passing:${!!passing} rushing:${!!rushing} receiving:${!!receiving} ppa:${!!ppa}`);
+    for (const player of stillNeedsAPI) {
+      const key = norm(player.name);
+      const passing = passingByPlayer[key];
+      const rushing = rushingByPlayer[key];
+      const receiving = receivingByPlayer[key];
+      const ppa = ppaByPlayer[key];
+      const usageRow = usageByPlayer[key];
+      const team = player._cfbdLookup.team;
 
-    // Position-specific stat builder
-    let stats;
-    switch (player.position) {
-      case 'QB':
-        stats = buildQBStats(passing, rushing);
-        break;
-      case 'RB':
-        stats = buildRBStats(rushing, receiving);
-        break;
-      case 'TE':
-        stats = buildTEStats(receiving);
-        break;
-      default:
-        stats = {};
-    }
-
-    // Overlay EPA from PPA endpoint
-    if (ppa) {
-      const epaVal =
-        ppa.averagePPA?.all ??
-        ppa.totalPPA?.all ??
-        ppa.countablePPA ??
-        null;
-      if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
-    }
-
-    // Dominator rating + target share for TE
-    let dominatorRating = player.dominatorRating || 0;
-    let targetShare = player.targetShare;
-    let yprr = player.yprr;
-    let yacPerRR = player.yacPerRR;
-
-    if (player.position === 'TE' && receiving) {
-      const recYds = val(receiving, 'YDS', 'REC_YDS');
-      const targets = val(receiving, 'TARGETS', 'TGT');
-
-      dominatorRating = calcDominatorRating(recYds, teamRecYdsTotals[team] || 1);
-
-      if (targets > 0) {
-        targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
-      } else if (usageRow?.usage?.pass != null) {
-        targetShare = +(usageRow.usage.pass * 100).toFixed(1);
+      const matched = !!(passing || rushing || receiving);
+      if (!matched) {
+        cfbdMatchCount.missed++;
+        console.warn(`[CFBD] ❌ No match for "${player.name}" (${player.position})`);
+        continue;
       }
 
-      // Approximate YPRR
-      if (usageRow?.usage?.pass != null && usageRow.usage.pass > 0) {
-        const teamPassAtts = val(passingByPlayer[norm(team)] || {}, 'ATT', 'PASS_ATT');
-        if (teamPassAtts > 0) {
-          const estRoutes = teamPassAtts * usageRow.usage.pass;
-          yprr = +(recYds / estRoutes).toFixed(2);
+      cfbdMatchCount.matched++;
+
+      let stats;
+      switch (player.position) {
+        case 'QB': stats = buildQBStats(passing, rushing); break;
+        case 'RB': stats = buildRBStats(rushing, receiving); break;
+        case 'TE': stats = buildTEStats(receiving); break;
+        default: stats = {};
+      }
+
+      if (ppa) {
+        const epaVal = ppa.averagePPA?.all ?? ppa.totalPPA?.all ?? ppa.countablePPA ?? null;
+        if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
+      }
+
+      let dominatorRating = player.dominatorRating || 0;
+      let targetShare = player.targetShare;
+      let yprr = player.yprr;
+      let yacPerRR = player.yacPerRR;
+
+      if (player.position === 'TE' && receiving) {
+        const recYds = val(receiving, 'YDS', 'REC_YDS');
+        const targets = val(receiving, 'TARGETS', 'TGT');
+        dominatorRating = calcDominatorRating(recYds, teamRecYdsTotals[team] || 1);
+        if (targets > 0) {
+          targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
+        } else if (usageRow?.usage?.pass != null) {
+          targetShare = +(usageRow.usage.pass * 100).toFixed(1);
+        }
+        if (usageRow?.usage?.pass != null && usageRow.usage.pass > 0) {
+          const teamPassAtts = val(passingByPlayer[norm(team)] || {}, 'ATT', 'PASS_ATT');
+          if (teamPassAtts > 0) {
+            const estRoutes = teamPassAtts * usageRow.usage.pass;
+            yprr = +(recYds / estRoutes).toFixed(2);
+          } else if (targets > 0) {
+            yprr = +(recYds / targets).toFixed(2);
+          }
         } else if (targets > 0) {
           yprr = +(recYds / targets).toFixed(2);
         }
-      } else if (targets > 0) {
-        yprr = +(recYds / targets).toFixed(2);
       }
-    }
 
-    if (player.position === 'RB') {
-      const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
-      const recYds = val(receiving, 'YDS', 'REC_YDS');
-      const teamTotal = (teamRecYdsTotals[team] || 0) + rushYds;
-      dominatorRating = teamTotal > 0
-        ? +(((rushYds + recYds) / teamTotal) * 100).toFixed(1)
-        : 0;
-      const targets = val(receiving, 'TARGETS', 'TGT');
-      if (targets > 0) {
-        targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
-      } else if (usageRow?.usage?.pass != null) {
-        targetShare = +(usageRow.usage.pass * 100).toFixed(1);
+      if (player.position === 'RB') {
+        const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
+        const recYds = val(receiving, 'YDS', 'REC_YDS');
+        const teamTotal = (teamRecYdsTotals[team] || 0) + rushYds;
+        dominatorRating = teamTotal > 0 ? +(((rushYds + recYds) / teamTotal) * 100).toFixed(1) : 0;
+        const targets = val(receiving, 'TARGETS', 'TGT');
+        if (targets > 0) {
+          targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
+        } else if (usageRow?.usage?.pass != null) {
+          targetShare = +(usageRow.usage.pass * 100).toFixed(1);
+        }
       }
-    }
 
-    // Prefer hardcoded advanced stats (PFF-sourced) if available
-    const prospect = player._prospect;
-    if (prospect?.advancedStats) {
-      if (prospect.advancedStats.yprr != null) yprr = prospect.advancedStats.yprr;
-      if (prospect.advancedStats.targetShare != null) targetShare = prospect.advancedStats.targetShare;
-    }
+      const prospect = player._prospect;
+      if (prospect?.advancedStats) {
+        if (prospect.advancedStats.yprr != null) yprr = prospect.advancedStats.yprr;
+        if (prospect.advancedStats.targetShare != null) targetShare = prospect.advancedStats.targetShare;
+      }
 
-    return {
-      ...player,
-      stats,
-      dominatorRating,
-      targetShare,
-      yprr,
-      yacPerRR,
-      _liveData: true,
-    };
+      cfbdResults.set(player.id, {
+        ...player,
+        stats,
+        dominatorRating,
+        targetShare,
+        yprr,
+        yacPerRR,
+        _liveData: true,
+        _dataSource: 'cfbd',
+      });
+    }
+  }
+
+  // ── Merge results ─────────────────────────────────────────────────────
+  const enriched = players.map((player) => {
+    if (player.position === 'WR' || !player._cfbdLookup) return player;
+    return staticResults.get(player.id)
+      || espnResults.get(player.id)
+      || cfbdResults.get(player.id)
+      || player;
   });
 
-  console.info(`[CFBD] Enrichment summary: ${matchCount} matched, ${missCount} missed out of ${nonWR.length} non-WR players`);
+  const totalMatched = staticResults.size + espnResults.size + cfbdMatchCount.matched;
+  const totalMissed = nonWR.length - totalMatched;
 
-  // Diagnostic: sample of what CFBD returned vs what we searched for
-  const sampleRow = allStats.rushing?.[0] || allStats.passing?.[0] || allStats.receiving?.[0];
-  const cfbdKeys = sampleRow ? Object.keys(sampleRow) : [];
-  const cfbdSampleNames = Object.keys(rushingByPlayer).slice(0, 5);
-  const searchedNames = nonWR.map((p) => norm(p.name)).slice(0, 5);
+  console.info(`[Enrichment] Final: ${totalMatched}/${nonWR.length} enriched (static: ${staticResults.size}, ESPN: ${espnResults.size}, CFBD: ${cfbdMatchCount.matched}, missed: ${totalMissed})`);
 
   // Expose enrichment status so the UI can display it
   enriched._cfbdStatus = {
     attempted: nonWR.length,
-    matched: matchCount,
-    missed: missCount,
+    matched: totalMatched,
+    missed: totalMissed,
+    sources: {
+      static: staticResults.size,
+      espn: espnResults.size,
+      cfbd: cfbdMatchCount.matched,
+    },
     apiRows: {
-      passing: allStats.passing?.length ?? 0,
-      rushing: allStats.rushing?.length ?? 0,
-      receiving: allStats.receiving?.length ?? 0,
-      ppa: ppaData.length,
-      usage: usageData.length,
+      passing: 0,
+      rushing: 0,
+      receiving: 0,
+      ppa: 0,
+      usage: 0,
     },
     debug: {
-      errors: errors.length > 0 ? errors : null,
-      sampleRowFields: cfbdKeys,
-      sampleRow: sampleRow ? JSON.stringify(sampleRow).slice(0, 300) : null,
-      apiBase: 'apinext.collegefootballdata.com',
-      cfbdNames: cfbdSampleNames,
-      searchedNames,
-      groupedCounts: {
-        passing: Object.keys(passingByPlayer).length,
-        rushing: Object.keys(rushingByPlayer).length,
-        receiving: Object.keys(receivingByPlayer).length,
-      },
+      errors: [...espnErrors, ...cfbdErrors].length > 0 ? [...espnErrors, ...cfbdErrors] : null,
+      sampleRowFields: [],
+      sampleRow: null,
+      apiBase: 'static + espn + cfbd (tiered)',
+      cfbdNames: [],
+      searchedNames: nonWR.map((p) => norm(p.name)).slice(0, 5),
+      groupedCounts: { passing: 0, rushing: 0, receiving: 0 },
     },
   };
 
