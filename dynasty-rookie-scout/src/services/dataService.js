@@ -40,6 +40,9 @@ const mapProspectToPlayer = (p) => ({
   rank: p.rank,
   playerComps: p.playerComps,
   receivingByPerspective: p.position === 'WR' ? (p.receivingByPerspective || null) : null,
+  // Carry through for CFBD enrichment (stripped before exposing to UI)
+  _cfbdLookup: p.cfbdLookup ?? null,
+  _prospect: p,
 });
 
 const getStaticPlayers = () =>
@@ -52,13 +55,18 @@ export const getPlayers = async () => {
 
   try {
     // Step 1: Build rookie list from Sleeper (source of truth)
-    let players = await buildRookiePlayersFromSleeper();
+    let players;
+    try {
+      players = await buildRookiePlayersFromSleeper();
+    } catch (err) {
+      console.warn('[DataService] Sleeper fetch failed, using static data:', err.message);
+      players = [];
+    }
 
     // Pre-draft or empty result: fall back to static prospect data
     if (!players || players.length === 0) {
-      console.info('No Sleeper rookies found (likely pre-draft) — using static prospect data');
-      playersCache = getStaticPlayers();
-      return playersCache;
+      console.info('[DataService] No Sleeper rookies found (likely pre-draft) — using static prospect data');
+      players = getStaticPlayers();
     }
 
     // Step 2: Enrich QB/RB/TE with CFBD API stats (WRs are skipped)
@@ -81,8 +89,8 @@ export const getPlayers = async () => {
     playersCache = players;
     return players;
   } catch (err) {
-    console.error('Sleeper-first data fetch failed, falling back to static data:', err);
-    playersCache = getStaticPlayers();
+    console.error('[DataService] Data fetch failed, falling back to static data:', err);
+    playersCache = getStaticPlayers().map(({ _cfbdLookup, _prospect, ...p }) => p);
     return playersCache;
   }
 };
