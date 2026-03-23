@@ -8,8 +8,6 @@ import { buildRookiePlayersFromSleeper } from './sleeperApi';
 import { enrichNonWRStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
 
-const hasCfbdKey = !!process.env.REACT_APP_CFBD_API_KEY;
-
 // Cache live data so we only fetch once per session
 let playersCache = null;
 
@@ -81,28 +79,24 @@ export const getPlayers = async () => {
       dataSourceStatus.source = 'sleeper';
     }
 
-    // Step 2: Enrich QB/RB/TE with CFBD API stats (WRs are skipped)
-    if (hasCfbdKey) {
-      console.info('[DataService] CFBD key present — attempting QB/RB/TE enrichment...');
-      try {
-        const enriched = await enrichNonWRStats(players);
-        const status = enriched._cfbdStatus;
-        if (status) {
-          dataSourceStatus.cfbd = {
-            ok: status.matched > 0,
-            ...status,
-          };
-          delete enriched._cfbdStatus;
-        }
-        players = enriched;
-        console.info('[DataService] CFBD enrichment complete');
-      } catch (err) {
-        console.error('[DataService] CFBD enrichment failed:', err);
-        dataSourceStatus.cfbd = { ok: false, reason: err.message };
+    // Step 2: Enrich QB/RB/TE with college stats
+    // Priority: static 2025 data → ESPN API → CFBD API (no key required for static/ESPN)
+    console.info('[DataService] Attempting QB/RB/TE enrichment (static → ESPN → CFBD)...');
+    try {
+      const enriched = await enrichNonWRStats(players);
+      const status = enriched._cfbdStatus;
+      if (status) {
+        dataSourceStatus.cfbd = {
+          ok: status.matched > 0,
+          ...status,
+        };
+        delete enriched._cfbdStatus;
       }
-    } else {
-      console.warn('[DataService] No CFBD API key — skipping live stat enrichment for QB/RB/TE');
-      dataSourceStatus.cfbd = { ok: false, reason: 'No API key configured' };
+      players = enriched;
+      console.info('[DataService] Enrichment complete');
+    } catch (err) {
+      console.error('[DataService] Enrichment failed:', err);
+      dataSourceStatus.cfbd = { ok: false, reason: err.message };
     }
 
     // Clean up internal fields before exposing to UI
