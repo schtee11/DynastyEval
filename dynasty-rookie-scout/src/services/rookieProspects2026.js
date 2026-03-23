@@ -27,6 +27,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
+    stats: { rushingYards: 1136, rushingTDs: 16, yardsPerCarry: 6.1, receptions: 28, receivingYards: 262, receivingTDs: 2, epa: 0.25 },
+    dominatorRating: 9.3, // 262 / 2815
   },
   {
     id: 2,
@@ -44,8 +46,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 10, superflex: 2 },
     rank: { oneQB: 10, superflex: 2 },
     injuries: [],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
+    stats: { passingYards: 3425, passingTDs: 26, interceptions: 6, completionPct: 68.3, rushingYards: 192, rushingTDs: 3, epa: 0.34, cpoe: null },
   },
   {
     id: 3,
@@ -120,8 +123,10 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 5, superflex: 6 },
     rank: { oneQB: 5, superflex: 8 },
     injuries: [],
-    advancedStats: { yprr: 1.98, targetShare: 15.0 }, // 2025 pre-injury: 26th among TEs, 155.1 passer rating when targeted
+    advancedStats: { yprr: 1.98, targetShare: 15.0 },
     cfbdLookup: { team: "Oregon", year: 2025 },
+    stats: { receptions: 56, receivingYards: 748, receivingTDs: 6, targets: 78, epa: 0.22 },
+    dominatorRating: 23.0, // 748 / 3250
   },
   {
     id: 7,
@@ -141,6 +146,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Penn State", year: 2025 },
+    stats: { rushingYards: 1028, rushingTDs: 10, yardsPerCarry: 5.8, receptions: 16, receivingYards: 178, receivingTDs: 1, epa: 0.18 },
+    dominatorRating: 6.1, // 178 / 2920
   },
   {
     id: 8,
@@ -179,6 +186,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arkansas", year: 2025 },
+    stats: { rushingYards: 892, rushingTDs: 11, yardsPerCarry: 5.2, receptions: 22, receivingYards: 198, receivingTDs: 1, epa: 0.14 },
+    dominatorRating: 8.4, // 198 / 2350
   },
   {
     id: 10,
@@ -196,7 +205,8 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 15, superflex: 10 },
     rank: { oneQB: 16, superflex: 3 },
     injuries: [],
-    advancedStats: null, // QB
+    advancedStats: null,
+    stats: { passingYards: 2753, passingTDs: 18, interceptions: 7, completionPct: 63.4, rushingYards: 510, rushingTDs: 6, epa: 0.22, cpoe: null },
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
   {
@@ -236,6 +246,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Washington", year: 2025 },
+    stats: { rushingYards: 1040, rushingTDs: 9, yardsPerCarry: 5.3, receptions: 18, receivingYards: 152, receivingTDs: 1, epa: 0.15 },
+    dominatorRating: 5.5, // 152 / 2780
   },
   {
     id: 13,
@@ -274,6 +286,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
+    stats: { rushingYards: 760, rushingTDs: 8, yardsPerCarry: 5.8, receptions: 20, receivingYards: 185, receivingTDs: 1, epa: 0.12 },
+    dominatorRating: 6.6, // 185 / 2815
   },
   {
     id: 15,
@@ -293,6 +307,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Nebraska", year: 2025 },
+    stats: { rushingYards: 982, rushingTDs: 12, yardsPerCarry: 5.2, receptions: 14, receivingYards: 118, receivingTDs: 1, epa: 0.16 },
+    dominatorRating: 4.8, // 118 / 2450
   },
   {
     id: 16,
@@ -310,8 +326,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 18, superflex: 13 },
     rank: { oneQB: 20, superflex: 7 },
     injuries: [{ type: "Shoulder", date: "2025-11", severity: "Minor", gamesOut: 1 }],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
+    stats: { passingYards: 4052, passingTDs: 29, interceptions: 12, completionPct: 66.7, rushingYards: 48, rushingTDs: 2, epa: 0.28, cpoe: null },
   },
   {
     id: 17,
@@ -348,8 +365,10 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 17, superflex: 18 },
     rank: { oneQB: 17, superflex: 20 },
     injuries: [],
-    advancedStats: { yprr: 2.55, targetShare: 22.0 }, // 2025: top 3% FBS, John Mackey winner, 3.08 YPRR vs zone
+    advancedStats: { yprr: 2.55, targetShare: 22.0 },
     cfbdLookup: { team: "Vanderbilt", year: 2025 },
+    stats: { receptions: 62, receivingYards: 820, receivingTDs: 8, targets: 85, epa: 0.28 },
+    dominatorRating: 37.6, // 820 / 2180
   },
   {
     id: 19,
@@ -386,8 +405,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 22, superflex: 20 },
     rank: { oneQB: 25, superflex: 10 },
     injuries: [{ type: "Elbow (UCL)", date: "2025-01", severity: "Severe", gamesOut: 8 }],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "Miami", year: 2025 },
+    stats: { passingYards: 1802, passingTDs: 12, interceptions: 8, completionPct: 64.4, rushingYards: 28, rushingTDs: 0, epa: 0.08, cpoe: null },
   },
   {
     id: 21,
@@ -405,8 +425,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 24, superflex: 21 },
     rank: { oneQB: 28, superflex: 14 },
     injuries: [],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
+    stats: { passingYards: 3192, passingTDs: 24, interceptions: 7, completionPct: 65.3, rushingYards: 118, rushingTDs: 3, epa: 0.26, cpoe: null },
   },
   {
     id: 22,
@@ -424,8 +445,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 26, superflex: 22 },
     rank: { oneQB: 30, superflex: 15 },
     injuries: [],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "Clemson", year: 2025 },
+    stats: { passingYards: 3710, passingTDs: 33, interceptions: 7, completionPct: 67.0, rushingYards: 350, rushingTDs: 5, epa: 0.38, cpoe: null },
   },
   {
     id: 23,
@@ -443,8 +465,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 28, superflex: 23 },
     rank: { oneQB: 32, superflex: 17 },
     injuries: [],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "Arkansas", year: 2025 },
+    stats: { passingYards: 2614, passingTDs: 16, interceptions: 9, completionPct: 60.3, rushingYards: 672, rushingTDs: 8, epa: 0.18, cpoe: null },
   },
   {
     id: 24,
@@ -462,8 +485,10 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 20, superflex: 24 },
     rank: { oneQB: 19, superflex: 22 },
     injuries: [],
-    advancedStats: { yprr: 1.71, targetShare: 12.0 }, // 2025: limited targets in Ohio State's WR-heavy offense
+    advancedStats: { yprr: 1.71, targetShare: 12.0 },
     cfbdLookup: { team: "Ohio State", year: 2025 },
+    stats: { receptions: 38, receivingYards: 485, receivingTDs: 5, targets: 52, epa: 0.16 },
+    dominatorRating: 14.5, // 485 / 3350
   },
   {
     id: 25,
@@ -519,8 +544,9 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 30, superflex: 27 },
     rank: { oneQB: 35, superflex: 20 },
     injuries: [],
-    advancedStats: null, // QB
+    advancedStats: null,
     cfbdLookup: { team: "North Dakota State", year: 2025 },
+    stats: { passingYards: 2680, passingTDs: 22, interceptions: 5, completionPct: 67.4, rushingYards: 480, rushingTDs: 7, epa: 0.30, cpoe: null },
   },
   {
     id: 28,
@@ -538,8 +564,10 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 25, superflex: 28 },
     rank: { oneQB: 23, superflex: 25 },
     injuries: [],
-    advancedStats: { yprr: 1.90, targetShare: 18.0 }, // 2025: 49 rec, 489 yds, 7 TDs; 81.4 PFF recv grade
+    advancedStats: { yprr: 1.90, targetShare: 18.0 },
     cfbdLookup: { team: "NC State", year: 2025 },
+    stats: { receptions: 49, receivingYards: 489, receivingTDs: 7, targets: 65, epa: 0.18 },
+    dominatorRating: 23.1, // 489 / 2120
   },
   {
     id: 29,
@@ -597,6 +625,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Kansas", year: 2025 },
+    stats: { rushingYards: 1148, rushingTDs: 13, yardsPerCarry: 5.4, receptions: 32, receivingYards: 310, receivingTDs: 2, epa: 0.20 },
+    dominatorRating: 12.0, // 310 / 2580
   },
   {
     id: 32,
@@ -654,6 +684,8 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arizona State", year: 2025 },
+    stats: { rushingYards: 1568, rushingTDs: 19, yardsPerCarry: 5.7, receptions: 42, receivingYards: 502, receivingTDs: 4, epa: 0.32 },
+    dominatorRating: 18.7, // 502 / 2680
   },
   {
     id: 35,
