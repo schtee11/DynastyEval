@@ -116,17 +116,21 @@ export const enrichNonWRStats = async (players) => {
   console.info('[CFBD] Players to enrich:', nonWR.map((p) => `${p.name} (${p.position}) → team="${p._cfbdLookup.team}"`));
 
   // Fetch all stat categories + PPA + usage in parallel
+  const errors = [];
   const [allStats, ppaData, usageData] = await Promise.all([
     fetchAllSeasonStats(year).catch((err) => {
       console.error('[CFBD] fetchAllSeasonStats failed:', err.message);
+      errors.push(`stats: ${err.message}`);
       return { passing: [], rushing: [], receiving: [] };
     }),
     fetchPPAForTeams(year, teams).catch((err) => {
       console.error('[CFBD] fetchPPAForTeams failed:', err.message);
+      errors.push(`ppa: ${err.message}`);
       return [];
     }),
     fetchUsageForTeams(year, teams).catch((err) => {
       console.error('[CFBD] fetchUsageForTeams failed:', err.message);
+      errors.push(`usage: ${err.message}`);
       return [];
     }),
   ]);
@@ -330,6 +334,7 @@ export const enrichNonWRStats = async (players) => {
       usage: usageData.length,
     },
     debug: {
+      errors: errors.length > 0 ? errors : null,
       sampleRowFields: cfbdKeys,
       sampleRow: sampleRow ? JSON.stringify(sampleRow).slice(0, 300) : null,
       apiBase: 'apinext.collegefootballdata.com',

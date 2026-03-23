@@ -151,6 +151,12 @@ const ScoutBoard = () => {
             <div>Source: <span style={{ color: '#22c55e' }}>{status.source}</span></div>
             <div>Sleeper: {status.sleeper?.ok ? `✅ ${status.sleeper.count} rookies` : `❌ ${status.sleeper?.reason}`}</div>
             <div>API base: <span style={{ color: '#60a5fa' }}>{debug.apiBase || '?'}</span></div>
+            {debug.errors && (
+              <div style={{ color: '#ef4444', marginTop: 4, marginBottom: 4 }}>
+                ERRORS: {debug.errors.map((e, i) => <div key={i} style={{ marginLeft: 8, wordBreak: 'break-all' }}>{e}</div>)}
+              </div>
+            )}
+            {!debug.errors && <div style={{ color: '#22c55e' }}>No fetch errors (API returned 200 OK with empty data)</div>}
             <div>CFBD matched: <span style={{ color: cfbd.matched > 0 ? '#22c55e' : '#ef4444' }}>{cfbd.matched ?? '?'}/{cfbd.attempted ?? '?'}</span></div>
             <div>API rows → pass: {cfbd.apiRows?.passing ?? '?'}, rush: {cfbd.apiRows?.rushing ?? '?'}, rec: {cfbd.apiRows?.receiving ?? '?'}</div>
             <div>Grouped → pass: {debug.groupedCounts?.passing ?? '?'}, rush: {debug.groupedCounts?.rushing ?? '?'}, rec: {debug.groupedCounts?.receiving ?? '?'}</div>
