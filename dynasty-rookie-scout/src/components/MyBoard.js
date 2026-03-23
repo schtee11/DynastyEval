@@ -12,28 +12,51 @@ const MyBoard = () => {
   const [boardSF, setBoardSF] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
   const [showExport, setShowExport] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadPlayers = async () => {
-      const data = await getPlayers();
+      let data;
+      try {
+        data = await getPlayers();
+      } catch (err) {
+        console.error('[MyBoard] Failed to load players:', err);
+        setError(err.message || 'Failed to load player data');
+        return;
+      }
       setAllPlayers(data);
 
+      const safeRank = (p, key) => p.rank?.[key] ?? 999;
+
       // Load from localStorage or default to rank order
-      const saved1QB = localStorage.getItem(STORAGE_KEY_1QB);
-      const savedSF = localStorage.getItem(STORAGE_KEY_SF);
+      let saved1QB, savedSF;
+      try { saved1QB = localStorage.getItem(STORAGE_KEY_1QB); } catch { /* ignore */ }
+      try { savedSF = localStorage.getItem(STORAGE_KEY_SF); } catch { /* ignore */ }
 
       if (saved1QB) {
-        const ids = JSON.parse(saved1QB);
-        setBoard1QB(ids.map(id => data.find(p => p.id === id)).filter(Boolean));
+        try {
+          const ids = JSON.parse(saved1QB);
+          setBoard1QB(ids.map(id => data.find(p => p.id === id)).filter(Boolean));
+        } catch (err) {
+          console.warn('[MyBoard] Corrupted 1QB board in localStorage, resetting:', err.message);
+          localStorage.removeItem(STORAGE_KEY_1QB);
+          setBoard1QB([...data].sort((a, b) => safeRank(a, 'oneQB') - safeRank(b, 'oneQB')));
+        }
       } else {
-        setBoard1QB([...data].sort((a, b) => a.rank.oneQB - b.rank.oneQB));
+        setBoard1QB([...data].sort((a, b) => safeRank(a, 'oneQB') - safeRank(b, 'oneQB')));
       }
 
       if (savedSF) {
-        const ids = JSON.parse(savedSF);
-        setBoardSF(ids.map(id => data.find(p => p.id === id)).filter(Boolean));
+        try {
+          const ids = JSON.parse(savedSF);
+          setBoardSF(ids.map(id => data.find(p => p.id === id)).filter(Boolean));
+        } catch (err) {
+          console.warn('[MyBoard] Corrupted SF board in localStorage, resetting:', err.message);
+          localStorage.removeItem(STORAGE_KEY_SF);
+          setBoardSF([...data].sort((a, b) => safeRank(a, 'superflex') - safeRank(b, 'superflex')));
+        }
       } else {
-        setBoardSF([...data].sort((a, b) => a.rank.superflex - b.rank.superflex));
+        setBoardSF([...data].sort((a, b) => safeRank(a, 'superflex') - safeRank(b, 'superflex')));
       }
     };
     loadPlayers();
@@ -69,6 +92,34 @@ const MyBoard = () => {
     navigator.clipboard.writeText(exportBoard());
     setShowExport(false);
   };
+
+  if (error) {
+    return (
+      <div style={{ padding: '20px 24px', textAlign: 'center', fontFamily: "'JetBrains Mono', monospace" }}>
+        <div style={{ fontSize: 36, marginBottom: 12, marginTop: 40 }}>⚠️</div>
+        <div style={{ color: '#ef4444', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+          Failed to load board
+        </div>
+        <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 16 }}>{error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 700,
+            fontSize: 13,
+            padding: '8px 20px',
+            border: '1px solid #f59e0b',
+            borderRadius: 4,
+            background: 'rgba(245,158,11,0.15)',
+            color: '#f59e0b',
+            cursor: 'pointer',
+          }}
+        >
+          Reload
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px 24px' }}>
@@ -250,7 +301,7 @@ const MyBoard = () => {
                               {activeFormat === 'oneQB' ? '1QB' : 'SF'} ADP
                             </div>
                             <div style={{ color: '#f1f5f9', fontWeight: 700 }}>
-                              #{player.dynastyADP[activeFormat]}
+                              {player.dynastyADP?.[activeFormat] != null ? `#${player.dynastyADP[activeFormat]}` : '—'}
                             </div>
                           </div>
                           {player.dominatorRating > 0 && (

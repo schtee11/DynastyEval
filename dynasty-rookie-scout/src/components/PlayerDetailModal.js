@@ -56,9 +56,15 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
   const handleGenerateSummary = async () => {
     setLoadingSummary(true);
-    const result = await generateScoutingSummary(player);
-    setSummary(result);
-    setLoadingSummary(false);
+    try {
+      const result = await generateScoutingSummary(player);
+      setSummary(result);
+    } catch (err) {
+      console.error('[PlayerDetailModal] AI summary failed:', err);
+      setSummary('Failed to generate scouting summary. Check the browser console for details.');
+    } finally {
+      setLoadingSummary(false);
+    }
   };
 
   useEffect(() => {
