@@ -31,6 +31,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.19, routesRun: 85, targets: 17, pctCareerRecYds: 5.0, pctCareerRecTDs: 57.1, tgtPerRR: 20.0, firstDownTDPerRR: 0.21, recGrade: 72.8 },
     press: { yprr: 3.3, routesRun: 442, targets: 125, pctCareerRecYds: 72.6, pctCareerRecTDs: 78.6, tgtPerRR: 28.3, firstDownTDPerRR: 0.15, recGrade: 90.9 },
     zone: { yprr: 3.13, routesRun: 410, targets: 111, pctCareerRecYds: 63.9, pctCareerRecTDs: 28.6, tgtPerRR: 27.1, firstDownTDPerRR: 0.14, recGrade: 90.6 },
+    single: { yprr: 3.48, routesRun: 222, targets: 64, pctCareerRecYds: 38.5, pctCareerRecTDs: 64.3, tgtPerRR: 28.8, firstDownTDPerRR: 0.18, recGrade: 89.9 },
   },
   "Eric McAlister": {
     overall: { yprr: 2.86, routesRun: 1072, targets: 291, recYds: 3067, recTDs: 24, tgtPerRR: 27.2, firstDownTDPerRR: 0.14, recGrade: 90.1 },
@@ -38,6 +39,7 @@ export const receivingPerspectiveData = {
     deepBall: { yprr: 14.38, targets: 73, receptions: 30, pctCareerRecYds: 34.2, pctCareerRecTDs: 50.0, adot: 29.7, contestedCatchRate: 58.1, recGrade: 95.0 },
     press: { yprr: 3.16, routesRun: 645, targets: 182, pctCareerRecYds: 66.5, pctCareerRecTDs: 70.8, tgtPerRR: 28.2, firstDownTDPerRR: 0.16, recGrade: 90 },
     zone: { yprr: 2.57, routesRun: 725, targets: 188, pctCareerRecYds: 60.6, pctCareerRecTDs: 41.7, tgtPerRR: 25.9, firstDownTDPerRR: 0.13, recGrade: 85.7 },
+    single: { yprr: 5.41, routesRun: 317, targets: 150, pctCareerRecYds: 55.7, pctCareerRecTDs: 66.7, tgtPerRR: 47.3, firstDownTDPerRR: 0.26, recGrade: 94.5 },
   },
   "Jordyn Tyson": {
     overall: { yprr: 2.71, routesRun: 841, targets: 262, recYds: 2275, recTDs: 22, tgtPerRR: 31.2, firstDownTDPerRR: 0.15, recGrade: 89.3 },
@@ -46,6 +48,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 2.19, routesRun: 90, targets: 45, pctCareerRecYds: 8.7, pctCareerRecTDs: 54.5, tgtPerRR: 50.0, firstDownTDPerRR: 0.32, recGrade: 81.6 },
     press: { yprr: 2.9, routesRun: 520, targets: 183, pctCareerRecYds: 66.3, pctCareerRecTDs: 68.2, tgtPerRR: 35.2, firstDownTDPerRR: 0.17, recGrade: 89.1 },
     zone: { yprr: 2.22, routesRun: 480, targets: 119, pctCareerRecYds: 46.9, pctCareerRecTDs: 22.7, tgtPerRR: 24.8, firstDownTDPerRR: 0.1, recGrade: 75.2 },
+    single: { yprr: 4.2, routesRun: 237, targets: 127, pctCareerRecYds: 43.7, pctCareerRecTDs: 63.6, tgtPerRR: 53.6, firstDownTDPerRR: 0.28, recGrade: 91.7 },
   },
   "Elijah Sarratt": {
     overall: { yprr: 2.70, routesRun: 1102, targets: 270, recYds: 2980, recTDs: 31, tgtPerRR: 24.5, firstDownTDPerRR: 0.16, recGrade: 92.4 },
@@ -54,6 +57,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.28, routesRun: 169, targets: 37, pctCareerRecYds: 7.3, pctCareerRecTDs: 61.3, tgtPerRR: 21.9, firstDownTDPerRR: 0.24, recGrade: 80.2 },
     press: { yprr: 2.57, routesRun: 694, targets: 167, pctCareerRecYds: 59.8, pctCareerRecTDs: 83.9, tgtPerRR: 24.1, firstDownTDPerRR: 0.16, recGrade: 90.2 },
     zone: { yprr: 2.53, routesRun: 674, targets: 146, pctCareerRecYds: 57.2, pctCareerRecTDs: 29, tgtPerRR: 21.7, firstDownTDPerRR: 0.13, recGrade: 85.4 },
+    single: { yprr: 4.23, routesRun: 368, targets: 142, pctCareerRecYds: 52.2, pctCareerRecTDs: 71, tgtPerRR: 38.6, firstDownTDPerRR: 0.27, recGrade: 95.5 },
   },
   "Omar Cooper Jr.": {
     overall: { yprr: 2.47, routesRun: 728, targets: 171, recYds: 1798, recTDs: 22, tgtPerRR: 23.5, firstDownTDPerRR: 0.14, recGrade: 87.6 },
@@ -62,6 +66,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.27, routesRun: 94, targets: 24, pctCareerRecYds: 6.6, pctCareerRecTDs: 45.5, tgtPerRR: 25.5, firstDownTDPerRR: 0.22, recGrade: 72.9 },
     press: { yprr: 2.06, routesRun: 479, targets: 111, pctCareerRecYds: 54.8, pctCareerRecTDs: 63.6, tgtPerRR: 23.2, firstDownTDPerRR: 0.13, recGrade: 76 },
     zone: { yprr: 2.77, routesRun: 414, targets: 97, pctCareerRecYds: 63.8, pctCareerRecTDs: 40.9, tgtPerRR: 23.4, firstDownTDPerRR: 0.14, recGrade: 87.1 },
+    single: { yprr: 3.59, routesRun: 266, targets: 84, pctCareerRecYds: 53.2, pctCareerRecTDs: 63.6, tgtPerRR: 31.6, firstDownTDPerRR: 0.2, recGrade: 89.8 },
   },
   "Eric Rivers": {
     overall: { yprr: 2.40, routesRun: 900, targets: 208, recYds: 2158, recTDs: 16, tgtPerRR: 23.1, firstDownTDPerRR: 0.12, recGrade: 81.2 },
@@ -70,6 +75,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.16, routesRun: 92, targets: 23, pctCareerRecYds: 5.0, pctCareerRecTDs: 43.8, tgtPerRR: 25.0, firstDownTDPerRR: 0.16, recGrade: 61.2 },
     press: { yprr: 2.39, routesRun: 496, targets: 111, pctCareerRecYds: 55, pctCareerRecTDs: 75, tgtPerRR: 22.4, firstDownTDPerRR: 0.12, recGrade: 74.2 },
     zone: { yprr: 2.42, routesRun: 611, targets: 125, pctCareerRecYds: 68.6, pctCareerRecTDs: 43.8, tgtPerRR: 20.5, firstDownTDPerRR: 0.11, recGrade: 81.1 },
+    single: { yprr: 4.59, routesRun: 247, targets: 100, pctCareerRecYds: 52.5, pctCareerRecTDs: 68.8, tgtPerRR: 40.5, firstDownTDPerRR: 0.23, recGrade: 87.7 },
   },
   "Griffin Wilde": {
     overall: { yprr: 2.40, routesRun: 366, targets: 107, recYds: 880, recTDs: 8, tgtPerRR: 29.2, firstDownTDPerRR: 0.15, recGrade: 80.2 },
@@ -77,6 +83,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.33, routesRun: 48, targets: 14, pctCareerRecYds: 7.3, pctCareerRecTDs: 62.5, tgtPerRR: 29.2, firstDownTDPerRR: 0.25, recGrade: 65.1 },
     press: { yprr: 2.42, routesRun: 233, targets: 70, pctCareerRecYds: 64, pctCareerRecTDs: 100, tgtPerRR: 30, firstDownTDPerRR: 0.19, recGrade: 85.2 },
     zone: { yprr: 2.75, routesRun: 185, targets: 53, pctCareerRecYds: 57.8, pctCareerRecTDs: 12.5, tgtPerRR: 28.6, firstDownTDPerRR: 0.14, recGrade: 77.8 },
+    single: { yprr: 3.24, routesRun: 161, targets: 59, pctCareerRecYds: 59.3, pctCareerRecTDs: 87.5, tgtPerRR: 36.6, firstDownTDPerRR: 0.23, recGrade: 87.1 },
   },
   "Jared Brown": {
     overall: { yprr: 2.35, routesRun: 800, targets: 195, recYds: 1877, recTDs: 11, tgtPerRR: 24.4, firstDownTDPerRR: 0.10, recGrade: 75.2 },
@@ -85,6 +92,7 @@ export const receivingPerspectiveData = {
     screen: { yprr: 4.43, routesRun: 121, targets: 62, pctCareerRecYds: 28.6, pctCareerRecTDs: 36.4, tgtPerRR: 51.2, firstDownTDPerRR: 0.04, recGrade: 89.7 },
     press: { yprr: 1.93, routesRun: 380, targets: 98, pctCareerRecYds: 39.2, pctCareerRecTDs: 27.3, tgtPerRR: 25.8, firstDownTDPerRR: 0.08, recGrade: 69.9 },
     zone: { yprr: 2.32, routesRun: 580, targets: 140, pctCareerRecYds: 71.8, pctCareerRecTDs: 72.7, tgtPerRR: 24.1, firstDownTDPerRR: 0.09, recGrade: 70.8 },
+    single: { yprr: 3.28, routesRun: 169, targets: 50, pctCareerRecYds: 29.5, pctCareerRecTDs: 27.3, tgtPerRR: 29.6, firstDownTDPerRR: 0.15, recGrade: 78.3 },
   },
   "Carnell Tate": {
     overall: { yprr: 2.27, routesRun: 826, targets: 161, recYds: 1872, recTDs: 14, tgtPerRR: 19.5, firstDownTDPerRR: 0.12, recGrade: 82.2 },
@@ -92,6 +100,7 @@ export const receivingPerspectiveData = {
     screen: { yprr: 1.24, routesRun: 104, targets: 17, pctCareerRecYds: 6.9, pctCareerRecTDs: 0.0, tgtPerRR: 16.4, firstDownTDPerRR: 0.04, recGrade: 64.4 },
     press: { yprr: 2.19, routesRun: 521, targets: 102, pctCareerRecYds: 61, pctCareerRecTDs: 57.1, tgtPerRR: 19.6, firstDownTDPerRR: 0.11, recGrade: 77.1 },
     zone: { yprr: 2.48, routesRun: 584, targets: 105, pctCareerRecYds: 77.4, pctCareerRecTDs: 57.1, tgtPerRR: 18, firstDownTDPerRR: 0.12, recGrade: 82.7 },
+    single: { yprr: 3.64, routesRun: 216, targets: 71, pctCareerRecYds: 42, pctCareerRecTDs: 64.3, tgtPerRR: 32.9, firstDownTDPerRR: 0.19, recGrade: 87.6 },
   },
   "Chase Roberts": {
     overall: { yprr: 2.26, routesRun: 1138, targets: 273, recYds: 2571, recTDs: 18, tgtPerRR: 24.0, firstDownTDPerRR: 0.13, recGrade: 84.3 },
@@ -99,6 +108,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.28, routesRun: 136, targets: 33, pctCareerRecYds: 6.8, pctCareerRecTDs: 66.7, tgtPerRR: 24.3, firstDownTDPerRR: 0.21, recGrade: 69.7 },
     press: { yprr: 2.09, routesRun: 661, targets: 160, pctCareerRecYds: 53.8, pctCareerRecTDs: 66.7, tgtPerRR: 24.2, firstDownTDPerRR: 0.13, recGrade: 79.7 },
     zone: { yprr: 2.39, routesRun: 773, targets: 177, pctCareerRecYds: 71.9, pctCareerRecTDs: 38.9, tgtPerRR: 22.9, firstDownTDPerRR: 0.12, recGrade: 81.2 },
+    single: { yprr: 3.48, routesRun: 321, targets: 117, pctCareerRecYds: 43.4, pctCareerRecTDs: 38.9, tgtPerRR: 36.4, firstDownTDPerRR: 0.18, recGrade: 86.5 },
   },
   "Kobe Prentice": {
     overall: { yprr: 2.26, routesRun: 514, targets: 119, recYds: 1160, recTDs: 11, tgtPerRR: 23.2, firstDownTDPerRR: 0.11, recGrade: 78.5 },
@@ -115,6 +125,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 0.95, routesRun: 101, targets: 30, pctCareerRecYds: 4.9, pctCareerRecTDs: 60.0, tgtPerRR: 29.7, firstDownTDPerRR: 0.19, recGrade: 77.2 },
     press: { yprr: 2.61, routesRun: 449, targets: 140, pctCareerRecYds: 59.7, pctCareerRecTDs: 86.7, tgtPerRR: 31.2, firstDownTDPerRR: 0.15, recGrade: 85.2 },
     zone: { yprr: 2.47, routesRun: 593, targets: 147, pctCareerRecYds: 74.6, pctCareerRecTDs: 40, tgtPerRR: 24.8, firstDownTDPerRR: 0.12, recGrade: 80.1 },
+    single: { yprr: 3.82, routesRun: 245, targets: 114, pctCareerRecYds: 47.8, pctCareerRecTDs: 80, tgtPerRR: 46.5, firstDownTDPerRR: 0.22, recGrade: 90.6 },
   },
   "Brenen Thompson": {
     overall: { yprr: 2.21, routesRun: 706, targets: 140, recYds: 1557, recTDs: 10, tgtPerRR: 19.8, firstDownTDPerRR: 0.09, recGrade: 74.7 },
@@ -122,6 +133,7 @@ export const receivingPerspectiveData = {
     deepBall: { yprr: 18.00, targets: 43, receptions: 17, pctCareerRecYds: 49.7, pctCareerRecTDs: 80.0, adot: 41.4, contestedCatchRate: 20.0, recGrade: 93.8 },
     press: { yprr: 1.92, routesRun: 386, targets: 65, pctCareerRecYds: 47.6, pctCareerRecTDs: 40, tgtPerRR: 16.8, firstDownTDPerRR: 0.08, recGrade: 70.1 },
     zone: { yprr: 2.32, routesRun: 451, targets: 96, pctCareerRecYds: 67.3, pctCareerRecTDs: 40, tgtPerRR: 21.3, firstDownTDPerRR: 0.1, recGrade: 74 },
+    single: { yprr: 5, routesRun: 165, targets: 63, pctCareerRecYds: 53, pctCareerRecTDs: 70, tgtPerRR: 38.2, firstDownTDPerRR: 0.19, recGrade: 89.4 },
   },
   "Caullin Lacy": {
     overall: { yprr: 2.17, routesRun: 1356, targets: 317, recYds: 2949, recTDs: 16, tgtPerRR: 23.4, firstDownTDPerRR: 0.10, recGrade: 82.6 },
@@ -130,6 +142,7 @@ export const receivingPerspectiveData = {
     screen: { yprr: 3.25, routesRun: 229, targets: 85, pctCareerRecYds: 25.2, pctCareerRecTDs: 18.8, tgtPerRR: 37.1, firstDownTDPerRR: 0.05, recGrade: 88.9 },
     press: { yprr: 2.29, routesRun: 720, targets: 173, pctCareerRecYds: 55.9, pctCareerRecTDs: 62.5, tgtPerRR: 24, firstDownTDPerRR: 0.11, recGrade: 78.4 },
     zone: { yprr: 2.13, routesRun: 992, targets: 226, pctCareerRecYds: 71.6, pctCareerRecTDs: 50, tgtPerRR: 22.8, firstDownTDPerRR: 0.1, recGrade: 83.1 },
+    single: { yprr: 2.85, routesRun: 317, targets: 88, pctCareerRecYds: 30.7, pctCareerRecTDs: 43.8, tgtPerRR: 27.8, firstDownTDPerRR: 0.13, recGrade: 76.8 },
   },
   "Jeff Caldwell": {
     overall: { yprr: 2.16, routesRun: 221, targets: 58, recYds: 478, recTDs: 6, tgtPerRR: 26.2, firstDownTDPerRR: 0.14, recGrade: 71.5 },
@@ -143,6 +156,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.39, routesRun: 154, targets: 36, pctCareerRecYds: 7.4, pctCareerRecTDs: 50.0, tgtPerRR: 23.4, firstDownTDPerRR: 0.18, recGrade: 68.2 },
     press: { yprr: 2.04, routesRun: 801, targets: 211, pctCareerRecYds: 56.8, pctCareerRecTDs: 54.2, tgtPerRR: 26.3, firstDownTDPerRR: 0.1, recGrade: 70.4 },
     zone: { yprr: 2.3, routesRun: 817, targets: 205, pctCareerRecYds: 65.4, pctCareerRecTDs: 50, tgtPerRR: 25.1, firstDownTDPerRR: 0.1, recGrade: 76.7 },
+    single: { yprr: 2.61, routesRun: 420, targets: 139, pctCareerRecYds: 38.1, pctCareerRecTDs: 41.7, tgtPerRR: 33.1, firstDownTDPerRR: 0.13, recGrade: 71 },
   },
   "Amare Thomas": {
     overall: { yprr: 2.15, routesRun: 969, targets: 261, recYds: 2088, recTDs: 23, tgtPerRR: 26.9, firstDownTDPerRR: 0.13, recGrade: 81.1 },
@@ -152,6 +166,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.63, routesRun: 109, targets: 36, pctCareerRecYds: 8.5, pctCareerRecTDs: 65.2, tgtPerRR: 33.0, firstDownTDPerRR: 0.29, recGrade: 80.3 },
     press: { yprr: 2.27, routesRun: 512, targets: 142, pctCareerRecYds: 55.7, pctCareerRecTDs: 69.6, tgtPerRR: 27.7, firstDownTDPerRR: 0.15, recGrade: 79.6 },
     zone: { yprr: 2, routesRun: 636, targets: 163, pctCareerRecYds: 61, pctCareerRecTDs: 26.1, tgtPerRR: 25.6, firstDownTDPerRR: 0.1, recGrade: 72.7 },
+    single: { yprr: 3.29, routesRun: 240, targets: 84, pctCareerRecYds: 37.8, pctCareerRecTDs: 47.8, tgtPerRR: 35, firstDownTDPerRR: 0.2, recGrade: 85.3 },
   },
   "CJ Daniels": {
     overall: { yprr: 2.14, routesRun: 1000, targets: 210, recYds: 2139, recTDs: 18, tgtPerRR: 21.0, firstDownTDPerRR: 0.11, recGrade: 81.3 },
@@ -159,6 +174,7 @@ export const receivingPerspectiveData = {
     deepBall: { yprr: 17.17, targets: 53, receptions: 26, pctCareerRecYds: 42.5, pctCareerRecTDs: 66.7, adot: 31.8, contestedCatchRate: 72.7, recGrade: 93.2 },
     press: { yprr: 2.14, routesRun: 634, targets: 134, pctCareerRecYds: 63.5, pctCareerRecTDs: 66.7, tgtPerRR: 21.1, firstDownTDPerRR: 0.12, recGrade: 77.5 },
     zone: { yprr: 2.29, routesRun: 699, targets: 143, pctCareerRecYds: 75, pctCareerRecTDs: 50, tgtPerRR: 20.5, firstDownTDPerRR: 0.11, recGrade: 79 },
+    single: { yprr: 3.78, routesRun: 244, targets: 81, pctCareerRecYds: 43.1, pctCareerRecTDs: 66.7, tgtPerRR: 33.2, firstDownTDPerRR: 0.23, recGrade: 91.2 },
   },
   "Kevin Coleman Jr.": {
     overall: { yprr: 2.14, routesRun: 951, targets: 223, recYds: 2039, recTDs: 9, tgtPerRR: 23.4, firstDownTDPerRR: 0.11, recGrade: 82.7 },
@@ -189,11 +205,13 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 0.97, routesRun: 130, targets: 32, pctCareerRecYds: 6.1, pctCareerRecTDs: 62.5, tgtPerRR: 24.6, firstDownTDPerRR: 0.17, recGrade: 68.0 },
     press: { yprr: 2.19, routesRun: 447, targets: 100, pctCareerRecYds: 47.4, pctCareerRecTDs: 75, tgtPerRR: 22.4, firstDownTDPerRR: 0.13, recGrade: 76.8 },
     zone: { yprr: 2.12, routesRun: 690, targets: 145, pctCareerRecYds: 71, pctCareerRecTDs: 37.5, tgtPerRR: 21, firstDownTDPerRR: 0.11, recGrade: 76.5 },
+    single: { yprr: 3.71, routesRun: 267, targets: 98, pctCareerRecYds: 48.1, pctCareerRecTDs: 75, tgtPerRR: 36.7, firstDownTDPerRR: 0.2, recGrade: 85.2 },
   },
   "Emmanuel Henderson Jr.": {
     overall: { yprr: 2.08, routesRun: 414, targets: 79, recYds: 862, recTDs: 5, tgtPerRR: 19.1, firstDownTDPerRR: 0.09, recGrade: 70.0 },
     deepBall: { yprr: 14.91, targets: 32, receptions: 13, pctCareerRecYds: 55.3, pctCareerRecTDs: 60.0, adot: 29.9, contestedCatchRate: 57.1, recGrade: 91.1 },
     press: { yprr: 1.91, routesRun: 211, targets: 42, pctCareerRecYds: 46.8, pctCareerRecTDs: 40, tgtPerRR: 19.9, firstDownTDPerRR: 0.08, recGrade: 64.4 },
+    single: { yprr: 4.14, routesRun: 120, targets: 40, pctCareerRecYds: 57.7, pctCareerRecTDs: 80, tgtPerRR: 33.3, firstDownTDPerRR: 0.18, recGrade: 80 },
   },
   "Cyrus Allen": {
     overall: { yprr: 2.07, routesRun: 1072, targets: 227, recYds: 2214, recTDs: 21, tgtPerRR: 21.2, firstDownTDPerRR: 0.10, recGrade: 73.6 },
@@ -201,6 +219,7 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 0.89, routesRun: 115, targets: 29, pctCareerRecYds: 4.6, pctCareerRecTDs: 42.9, tgtPerRR: 25.2, firstDownTDPerRR: 0.17, recGrade: 64.1 },
     press: { yprr: 1.91, routesRun: 654, targets: 142, pctCareerRecYds: 56.3, pctCareerRecTDs: 66.7, tgtPerRR: 21.7, firstDownTDPerRR: 0.11, recGrade: 71.7 },
     zone: { yprr: 2.04, routesRun: 705, targets: 142, pctCareerRecYds: 64.9, pctCareerRecTDs: 28.6, tgtPerRR: 20.1, firstDownTDPerRR: 0.08, recGrade: 68.8 },
+    single: { yprr: 3.23, routesRun: 323, targets: 99, pctCareerRecYds: 47.1, pctCareerRecTDs: 66.7, tgtPerRR: 30.6, firstDownTDPerRR: 0.17, recGrade: 81.6 },
   },
   "Aaron Anderson": {
     overall: { yprr: 2.06, routesRun: 645, targets: 154, recYds: 1331, recTDs: 5, tgtPerRR: 23.9, firstDownTDPerRR: 0.10, recGrade: 72.9 },
@@ -216,6 +235,7 @@ export const receivingPerspectiveData = {
     screen: { yprr: 2.40, routesRun: 142, targets: 59, pctCareerRecYds: 15.3, pctCareerRecTDs: 12.0, tgtPerRR: 41.5, firstDownTDPerRR: 0.05, recGrade: 72.9 },
     redZone: { yprr: 1.67, routesRun: 135, targets: 47, pctCareerRecYds: 10.2, pctCareerRecTDs: 72.0, tgtPerRR: 34.8, firstDownTDPerRR: 0.28, recGrade: 73.2 },
     press: { yprr: 2.07, routesRun: 680, targets: 183, pctCareerRecYds: 63.2, pctCareerRecTDs: 64, tgtPerRR: 26.9, firstDownTDPerRR: 0.12, recGrade: 74.7 },
+    single: { yprr: 3.15, routesRun: 259, targets: 95, pctCareerRecYds: 36.6, pctCareerRecTDs: 56, tgtPerRR: 36.7, firstDownTDPerRR: 0.21, recGrade: 86.1 },
   },
   "Zachariah Branch": {
     overall: { yprr: 2.03, routesRun: 806, targets: 211, recYds: 1634, recTDs: 9, tgtPerRR: 26.2, firstDownTDPerRR: 0.11, recGrade: 79.4 },
@@ -229,17 +249,20 @@ export const receivingPerspectiveData = {
     redZone: { yprr: 1.19, routesRun: 121, targets: 33, pctCareerRecYds: 8.1, pctCareerRecTDs: 70.0, tgtPerRR: 27.3, firstDownTDPerRR: 0.25, recGrade: 76.9 },
     press: { yprr: 1.94, routesRun: 554, targets: 131, pctCareerRecYds: 60.3, pctCareerRecTDs: 85, tgtPerRR: 23.6, firstDownTDPerRR: 0.15, recGrade: 83.7 },
     zone: { yprr: 1.99, routesRun: 586, targets: 122, pctCareerRecYds: 65.6, pctCareerRecTDs: 25, tgtPerRR: 20.8, firstDownTDPerRR: 0.1, recGrade: 76 },
+    single: { yprr: 3.99, routesRun: 194, targets: 97, pctCareerRecYds: 43.5, pctCareerRecTDs: 80, tgtPerRR: 50, firstDownTDPerRR: 0.36, recGrade: 95.1 },
   },
   "Malachi Fields": {
     overall: { yprr: 2.01, routesRun: 1146, targets: 263, recYds: 2307, recTDs: 16, tgtPerRR: 22.9, firstDownTDPerRR: 0.11, recGrade: 81.5 },
     lateDown: { yprr: 1.91, routesRun: 336, targets: 83, pctCareerRecYds: 27.8, pctCareerRecTDs: 37.5, tgtPerRR: 24.7, firstDownTDPerRR: 0.13, recGrade: 74.4 },
     zone: { yprr: 2.19, routesRun: 701, targets: 153, pctCareerRecYds: 66.7, pctCareerRecTDs: 37.5, tgtPerRR: 21.8, firstDownTDPerRR: 0.1, recGrade: 80.7 },
+    single: { yprr: 3.55, routesRun: 317, targets: 138, pctCareerRecYds: 48.8, pctCareerRecTDs: 62.5, tgtPerRR: 43.5, firstDownTDPerRR: 0.2, recGrade: 91.3 },
   },
   "Chris Bell": {
     overall: { yprr: 2.01, routesRun: 1078, targets: 223, recYds: 2166, recTDs: 12, tgtPerRR: 20.7, firstDownTDPerRR: 0.10, recGrade: 77.4 },
     lateDown: { yprr: 1.62, routesRun: 300, targets: 56, pctCareerRecYds: 22.4, pctCareerRecTDs: 33.3, tgtPerRR: 18.7, firstDownTDPerRR: 0.10, recGrade: 70.5 },
     press: { yprr: 2.12, routesRun: 733, targets: 156, pctCareerRecYds: 71.9, pctCareerRecTDs: 91.7, tgtPerRR: 21.3, firstDownTDPerRR: 0.11, recGrade: 78.7 },
     zone: { yprr: 1.94, routesRun: 698, targets: 129, pctCareerRecYds: 62.4, pctCareerRecTDs: 50, tgtPerRR: 18.5, firstDownTDPerRR: 0.09, recGrade: 73.4 },
+    single: { yprr: 3.3, routesRun: 325, targets: 116, pctCareerRecYds: 49.5, pctCareerRecTDs: 50, tgtPerRR: 35.7, firstDownTDPerRR: 0.17, recGrade: 84.3 },
   },
   "Antonio Williams": {
     overall: { yprr: 1.97, routesRun: 1181, targets: 275, recYds: 2331, recTDs: 21, tgtPerRR: 23.3, firstDownTDPerRR: 0.11, recGrade: 80.4 },
@@ -260,11 +283,13 @@ export const receivingPerspectiveData = {
     deepBall: { yprr: 15.85, targets: 27, receptions: 12, pctCareerRecYds: 31.3, pctCareerRecTDs: 33.3, adot: 27.9, contestedCatchRate: 40.0, recGrade: 80.9 },
     redZone: { yprr: 1.77, routesRun: 105, targets: 30, pctCareerRecYds: 13.6, pctCareerRecTDs: 66.7, tgtPerRR: 28.6, firstDownTDPerRR: 0.29, recGrade: 89.1 },
     press: { yprr: 2.18, routesRun: 485, targets: 114, pctCareerRecYds: 77.2, pctCareerRecTDs: 88.9, tgtPerRR: 23.5, firstDownTDPerRR: 0.15, recGrade: 84.4 },
+    single: { yprr: 3.37, routesRun: 229, targets: 74, pctCareerRecYds: 56.4, pctCareerRecTDs: 72.2, tgtPerRR: 32.3, firstDownTDPerRR: 0.23, recGrade: 90.5 },
   },
   "Jordan Hudson": {
     overall: { yprr: 1.93, routesRun: 934, targets: 221, recYds: 1804, recTDs: 21, tgtPerRR: 23.7, firstDownTDPerRR: 0.11, recGrade: 76.0 },
     screen: { yprr: 1.44, routesRun: 189, targets: 51, pctCareerRecYds: 15.1, pctCareerRecTDs: 9.5, tgtPerRR: 27.0, firstDownTDPerRR: 0.05, recGrade: 64.9 },
     redZone: { yprr: 1.35, routesRun: 104, targets: 30, pctCareerRecYds: 7.8, pctCareerRecTDs: 52.4, tgtPerRR: 28.8, firstDownTDPerRR: 0.22, recGrade: 72.0 },
+    single: { yprr: 2.88, routesRun: 265, targets: 101, pctCareerRecYds: 42.4, pctCareerRecTDs: 57.1, tgtPerRR: 38.1, firstDownTDPerRR: 0.2, recGrade: 82.4 },
   },
   "Devin Voisin": {
     overall: { yprr: 1.92, routesRun: 1107, targets: 243, recYds: 2130, recTDs: 10, tgtPerRR: 21.9, firstDownTDPerRR: 0.10, recGrade: 76.4 },
@@ -282,6 +307,7 @@ export const receivingPerspectiveData = {
     deepBall: { yprr: 16.56, targets: 34, receptions: 14, pctCareerRecYds: 34.6, pctCareerRecTDs: 46.2, adot: 32.1, contestedCatchRate: 53.3, recGrade: 89.1 },
     redZone: { yprr: 1.22, routesRun: 89, targets: 25, pctCareerRecYds: 6.7, pctCareerRecTDs: 38.5, tgtPerRR: 28.1, firstDownTDPerRR: 0.16, recGrade: 62.0 },
     press: { yprr: 2.18, routesRun: 505, targets: 108, pctCareerRecYds: 67.8, pctCareerRecTDs: 84.6, tgtPerRR: 21.4, firstDownTDPerRR: 0.11, recGrade: 73.7 },
+    single: { yprr: 4.33, routesRun: 219, targets: 92, pctCareerRecYds: 58.3, pctCareerRecTDs: 92.3, tgtPerRR: 42, firstDownTDPerRR: 0.23, recGrade: 90.7 },
   },
   "Barion Brown": {
     overall: { yprr: 1.91, routesRun: 1078, targets: 296, recYds: 2063, recTDs: 12, tgtPerRR: 27.5, firstDownTDPerRR: 0.09, recGrade: 70.1 },
