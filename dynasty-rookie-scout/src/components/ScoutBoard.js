@@ -16,6 +16,7 @@ const ScoutBoard = () => {
     breakoutMax: null,
   });
   const [sortBy, setSortBy] = useState('rank');
+  const [perspective, setPerspective] = useState('overall');
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -28,7 +29,7 @@ const ScoutBoard = () => {
   }, []);
 
   const filtered = filterPlayers(players, filters);
-  const sorted = sortPlayers(filtered, sortBy);
+  const sorted = sortPlayers(filtered, sortBy, 'oneQB', perspective);
 
   return (
     <div style={{ padding: '20px 24px' }}>
@@ -37,6 +38,8 @@ const ScoutBoard = () => {
         setFilters={setFilters}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        perspective={perspective}
+        setPerspective={setPerspective}
       />
 
       <div style={{
@@ -91,6 +94,7 @@ const ScoutBoard = () => {
           <PlayerCard
             key={player.id}
             player={player}
+            perspective={perspective}
             onClick={setSelectedPlayer}
           />
         ))}
@@ -111,6 +115,7 @@ const ScoutBoard = () => {
       {selectedPlayer && (
         <PlayerDetailModal
           player={selectedPlayer}
+          perspective={perspective}
           onClose={() => setSelectedPlayer(null)}
         />
       )}

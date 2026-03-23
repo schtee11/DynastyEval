@@ -32,6 +32,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 2, superflex: 1 },
     rank: { oneQB: 3, superflex: 1 },
+    receivingByPerspective: null,
     playerComps: ["Patrick Mahomes", "Jayden Daniels"]
   },
   {
@@ -64,6 +65,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 5, superflex: 2 },
     rank: { oneQB: 6, superflex: 2 },
+    receivingByPerspective: null,
     playerComps: ["Jalen Hurts", "Russell Wilson"]
   },
   {
@@ -95,6 +97,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 1, superflex: 3 },
     rank: { oneQB: 1, superflex: 3 },
+    receivingByPerspective: null,
     playerComps: ["Ja'Marr Chase", "DeAndre Hopkins"]
   },
   {
@@ -126,6 +129,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 3, superflex: 5 },
     rank: { oneQB: 2, superflex: 4 },
+    receivingByPerspective: null,
     playerComps: ["Mike Evans", "Tee Higgins"]
   },
   {
@@ -157,6 +161,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 4, superflex: 8 },
     rank: { oneQB: 4, superflex: 7 },
+    receivingByPerspective: null,
     playerComps: ["Saquon Barkley", "Barry Sanders"]
   },
   {
@@ -188,6 +193,7 @@ const mockPlayers = [
     injuries: [{ type: "Knee (MCL)", date: "2024-10", severity: "moderate", gamesOut: 3 }],
     dynastyADP: { oneQB: 6, superflex: 10 },
     rank: { oneQB: 5, superflex: 9 },
+    receivingByPerspective: null,
     playerComps: ["Deebo Samuel", "Tyreek Hill"]
   },
   {
@@ -219,6 +225,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 8, superflex: 14 },
     rank: { oneQB: 7, superflex: 12 },
+    receivingByPerspective: null,
     playerComps: ["Chris Olave", "Amari Cooper"]
   },
   {
@@ -250,6 +257,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 10, superflex: 16 },
     rank: { oneQB: 9, superflex: 15 },
+    receivingByPerspective: null,
     playerComps: ["Jaylen Waddle", "Marquise Brown"]
   },
   {
@@ -281,6 +289,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 7, superflex: 11 },
     rank: { oneQB: 8, superflex: 13 },
+    receivingByPerspective: null,
     playerComps: ["Derrick Henry", "Josh Jacobs"]
   },
   {
@@ -313,6 +322,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 12, superflex: 4 },
     rank: { oneQB: 14, superflex: 5 },
+    receivingByPerspective: null,
     playerComps: ["Lamar Jackson", "Jalen Hurts"]
   },
   {
@@ -343,6 +353,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 200, superflex: 200 },
     rank: { oneQB: 200, superflex: 200 },
+    receivingByPerspective: null,
     playerComps: []
   },
   {
@@ -374,6 +385,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 9, superflex: 13 },
     rank: { oneQB: 10, superflex: 14 },
+    receivingByPerspective: null,
     playerComps: ["George Kittle", "Mark Andrews"]
   },
   {
@@ -405,6 +417,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 14, superflex: 20 },
     rank: { oneQB: 13, superflex: 18 },
+    receivingByPerspective: null,
     playerComps: ["Kyle Pitts", "Dallas Goedert"]
   },
   {
@@ -436,6 +449,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 11, superflex: 17 },
     rank: { oneQB: 11, superflex: 16 },
+    receivingByPerspective: null,
     playerComps: ["Nick Chubb", "Jonathan Taylor"]
   },
   {
@@ -470,6 +484,7 @@ const mockPlayers = [
     ],
     dynastyADP: { oneQB: 13, superflex: 19 },
     rank: { oneQB: 12, superflex: 17 },
+    receivingByPerspective: null,
     playerComps: ["Allen Robinson", "Mike Williams"]
   },
   {
@@ -504,6 +519,7 @@ const mockPlayers = [
     ],
     dynastyADP: { oneQB: 18, superflex: 7 },
     rank: { oneQB: 20, superflex: 8 },
+    receivingByPerspective: null,
     playerComps: ["Kirk Cousins", "Matt Ryan"]
   },
   {
@@ -536,6 +552,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 25, superflex: 9 },
     rank: { oneQB: 28, superflex: 10 },
+    receivingByPerspective: null,
     playerComps: ["Trey Lance", "Josh Allen"]
   },
   {
@@ -567,6 +584,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 15, superflex: 22 },
     rank: { oneQB: 15, superflex: 20 },
+    receivingByPerspective: null,
     playerComps: ["Joe Mixon", "Aaron Jones"]
   },
   {
@@ -598,6 +616,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 16, superflex: 23 },
     rank: { oneQB: 16, superflex: 21 },
+    receivingByPerspective: null,
     playerComps: ["Brandon Aiyuk", "DK Metcalf"]
   },
   {
@@ -629,6 +648,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 17, superflex: 24 },
     rank: { oneQB: 17, superflex: 22 },
+    receivingByPerspective: null,
     playerComps: ["Terry McLaurin", "Stefon Diggs"]
   },
   {
@@ -660,6 +680,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 19, superflex: 26 },
     rank: { oneQB: 18, superflex: 24 },
+    receivingByPerspective: null,
     playerComps: ["Tyler Lockett", "Brandin Cooks"]
   },
   {
@@ -691,6 +712,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 20, superflex: 28 },
     rank: { oneQB: 19, superflex: 25 },
+    receivingByPerspective: null,
     playerComps: ["Javonte Williams", "D'Andre Swift"]
   },
   {
@@ -722,6 +744,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 21, superflex: 29 },
     rank: { oneQB: 21, superflex: 26 },
+    receivingByPerspective: null,
     playerComps: ["Christian McCaffrey", "Alvin Kamara"]
   },
   {
@@ -753,6 +776,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 200, superflex: 200 },
     rank: { oneQB: 200, superflex: 200 },
+    receivingByPerspective: null,
     playerComps: []
   },
   {
@@ -784,6 +808,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 22, superflex: 30 },
     rank: { oneQB: 22, superflex: 27 },
+    receivingByPerspective: null,
     playerComps: ["Allen Lazard", "Courtland Sutton"]
   },
   {
@@ -819,6 +844,7 @@ const mockPlayers = [
     ],
     dynastyADP: { oneQB: 30, superflex: 15 },
     rank: { oneQB: 32, superflex: 19 },
+    receivingByPerspective: null,
     playerComps: ["Sam Darnold", "Baker Mayfield"]
   },
   {
@@ -849,6 +875,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 200, superflex: 200 },
     rank: { oneQB: 200, superflex: 200 },
+    receivingByPerspective: null,
     playerComps: []
   },
   {
@@ -880,6 +907,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 24, superflex: 32 },
     rank: { oneQB: 23, superflex: 29 },
+    receivingByPerspective: null,
     playerComps: ["Evan Engram", "T.J. Hockenson"]
   },
   {
@@ -911,6 +939,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 200, superflex: 200 },
     rank: { oneQB: 200, superflex: 200 },
+    receivingByPerspective: null,
     playerComps: []
   },
   {
@@ -942,6 +971,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 26, superflex: 34 },
     rank: { oneQB: 24, superflex: 30 },
+    receivingByPerspective: null,
     playerComps: ["Garrett Wilson", "DJ Moore"]
   },
   {
@@ -973,6 +1003,7 @@ const mockPlayers = [
     injuries: [{ type: "Foot (Lisfranc)", date: "2024-11", severity: "severe", gamesOut: 5 }],
     dynastyADP: { oneQB: 23, superflex: 31 },
     rank: { oneQB: 25, superflex: 31 },
+    receivingByPerspective: null,
     playerComps: ["Najee Harris", "Dameon Pierce"]
   },
   {
@@ -1004,6 +1035,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 28, superflex: 36 },
     rank: { oneQB: 26, superflex: 32 },
+    receivingByPerspective: null,
     playerComps: ["Dalton Kincaid", "Cole Kmet"]
   },
   {
@@ -1036,6 +1068,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 32, superflex: 18 },
     rank: { oneQB: 30, superflex: 23 },
+    receivingByPerspective: null,
     playerComps: ["Derek Carr", "Matthew Stafford"]
   },
   {
@@ -1067,6 +1100,7 @@ const mockPlayers = [
     injuries: [{ type: "ACL", date: "2023-11", severity: "severe", gamesOut: 10 }],
     dynastyADP: { oneQB: 29, superflex: 37 },
     rank: { oneQB: 27, superflex: 33 },
+    receivingByPerspective: null,
     playerComps: ["Treylon Burks", "N'Keal Harry"]
   },
   {
@@ -1098,6 +1132,7 @@ const mockPlayers = [
     injuries: [],
     dynastyADP: { oneQB: 27, superflex: 35 },
     rank: { oneQB: 29, superflex: 34 },
+    receivingByPerspective: null,
     playerComps: ["Raheem Mostert", "Damien Harris"]
   }
 ];

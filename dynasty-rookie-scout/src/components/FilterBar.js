@@ -28,8 +28,18 @@ const selectStyle = {
   outline: 'none',
 };
 
-const FilterBar = ({ filters, setFilters, sortBy, setSortBy }) => {
+const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPerspective }) => {
   const positions = ['ALL', 'QB', 'RB', 'WR', 'TE'];
+  const perspectives = [
+    { value: 'overall', label: 'Overall' },
+    { value: 'lateDown', label: 'Late Down' },
+    { value: 'deepBall', label: 'Deep Ball' },
+    { value: 'screen', label: 'Screen' },
+    { value: 'redZone', label: 'Red-Zone' },
+    { value: 'press', label: 'vs. Press' },
+    { value: 'zone', label: 'vs. Zone' },
+    { value: 'single', label: 'vs. Single' },
+  ];
   const draftDays = [
     { value: '', label: 'All Rounds' },
     { value: '1', label: 'Day 1' },
@@ -86,6 +96,26 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy }) => {
         >
           {draftDays.map(d => (
             <option key={d.value} value={d.value}>{d.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Receiving perspective filter */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <span style={{
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontSize: 11,
+          color: '#6b7280',
+          letterSpacing: 1,
+          textTransform: 'uppercase',
+        }}>VIEW</span>
+        <select
+          value={perspective}
+          onChange={e => setPerspective(e.target.value)}
+          style={selectStyle}
+        >
+          {perspectives.map(p => (
+            <option key={p.value} value={p.value}>{p.label}</option>
           ))}
         </select>
       </div>

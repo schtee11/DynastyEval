@@ -22,55 +22,73 @@ export const getDraftCapitalInfo = (pick) => {
 
 export const hasInjuryRisk = (player) => player.injuries && player.injuries.length > 0;
 
-export const getTopStats = (player) => {
+export const getTopStats = (player, perspective = 'overall') => {
   const { position, stats } = player;
+  const pData = player.receivingByPerspective?.[perspective];
   switch (position) {
     case 'QB':
       return [
-        { label: 'EPA', value: stats.epa?.toFixed(2) },
-        { label: 'CPOE', value: stats.cpoe ? `${stats.cpoe > 0 ? '+' : ''}${stats.cpoe}` : 'N/A' },
-        { label: 'Pass YDs', value: stats.passingYards?.toLocaleString() },
+        { label: 'EPA', value: stats?.epa?.toFixed(2) },
+        { label: 'CPOE', value: stats?.cpoe ? `${stats.cpoe > 0 ? '+' : ''}${stats.cpoe}` : 'N/A' },
+        { label: 'Pass YDs', value: stats?.passingYards?.toLocaleString() },
       ];
     case 'RB':
       return [
-        { label: 'EPA', value: stats.epa?.toFixed(2) },
-        { label: 'Rush YDs', value: stats.rushingYards?.toLocaleString() },
-        { label: 'YPC', value: stats.yardsPerCarry?.toFixed(1) },
+        { label: 'EPA', value: stats?.epa?.toFixed(2) },
+        { label: 'Rush YDs', value: stats?.rushingYards?.toLocaleString() },
+        { label: 'YPC', value: stats?.yardsPerCarry?.toFixed(1) },
       ];
     case 'WR':
+      if (pData) {
+        return [
+          { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
+          { label: 'REC GRADE', value: pData.recGrade?.toFixed(1) || 'N/A' },
+          { label: 'TGT/RR', value: pData.tgtPerRR != null ? `${pData.tgtPerRR}%` : 'N/A' },
+        ];
+      }
       return [
         { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
         { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
         { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
       ];
     case 'TE':
+      if (pData) {
+        return [
+          { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
+          { label: 'REC GRADE', value: pData.recGrade?.toFixed(1) || 'N/A' },
+          { label: 'TGT/RR', value: pData.tgtPerRR != null ? `${pData.tgtPerRR}%` : 'N/A' },
+        ];
+      }
       return [
         { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
         { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
-        { label: 'Rec YDs', value: stats.receivingYards?.toLocaleString() || 'N/A' },
+        { label: 'Rec YDs', value: stats?.receivingYards?.toLocaleString() || 'N/A' },
       ];
     default:
-      return [{ label: 'EPA', value: stats.epa?.toFixed(2) }];
+      return [{ label: 'EPA', value: stats?.epa?.toFixed(2) }];
   }
 };
 
-export const sortPlayers = (players, sortBy, leagueType = 'oneQB') => {
+export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective = 'overall') => {
   const sorted = [...players];
+  const getRank = (p) => p.rank?.[leagueType] ?? 999;
+  const getAdp = (p) => p.dynastyADP?.[leagueType] ?? 999;
+  const getYprr = (p) => p.receivingByPerspective?.[perspective]?.yprr ?? p.yprr ?? 0;
   switch (sortBy) {
     case 'rank':
-      return sorted.sort((a, b) => a.rank[leagueType] - b.rank[leagueType]);
+      return sorted.sort((a, b) => getRank(a) - getRank(b));
     case 'adp':
-      return sorted.sort((a, b) => a.dynastyADP[leagueType] - b.dynastyADP[leagueType]);
+      return sorted.sort((a, b) => getAdp(a) - getAdp(b));
     case 'draftCapital':
-      return sorted.sort((a, b) => a.draftPick - b.draftPick);
+      return sorted.sort((a, b) => (a.draftPick || 999) - (b.draftPick || 999));
     case 'breakoutAge':
       return sorted.sort((a, b) => (a.breakoutAge || 99) - (b.breakoutAge || 99));
     case 'yprr':
-      return sorted.sort((a, b) => (b.yprr || 0) - (a.yprr || 0));
+      return sorted.sort((a, b) => getYprr(b) - getYprr(a));
     case 'dominator':
-      return sorted.sort((a, b) => b.dominatorRating - a.dominatorRating);
+      return sorted.sort((a, b) => (b.dominatorRating || 0) - (a.dominatorRating || 0));
     default:
-      return sorted.sort((a, b) => a.rank[leagueType] - b.rank[leagueType]);
+      return sorted.sort((a, b) => getRank(a) - getRank(b));
   }
 };
 

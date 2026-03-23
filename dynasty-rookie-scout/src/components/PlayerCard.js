@@ -1,12 +1,12 @@
 import React from 'react';
 import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk, getTopStats } from '../utils/helpers';
 
-const PlayerCard = ({ player, onClick }) => {
+const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
-  const topStats = getTopStats(player);
+  const topStats = getTopStats(player, perspective);
 
   return (
     <div

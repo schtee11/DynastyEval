@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/anthropicApi';
+import { perspectiveLabels } from '../services/receivingData';
 
 const StatRow = ({ label, value, benchmark, unit = '' }) => {
   const displayValue = value == null || value === '' ? 'N/A' : value;
@@ -43,9 +44,10 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
   );
 };
 
-const PlayerDetailModal = ({ player, onClose }) => {
+const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall', onClose }) => {
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
+  const [modalPerspective, setModalPerspective] = useState(initialPerspective);
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
@@ -88,13 +90,24 @@ const PlayerDetailModal = ({ player, onClose }) => {
       ];
     }
     // WR / TE
+    const pData = player.receivingByPerspective?.[modalPerspective];
+    if (pData) {
+      return [
+        { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
+        { stat: 'Rec Grade', value: Math.min(100, (pData.recGrade || 0)), fullMark: 100 },
+        { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
+        { stat: 'Rec TDs', value: Math.min(100, ((pData.recTDs || 0) / 30) * 100), fullMark: 100 },
+        { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.2) * 100), fullMark: 100 },
+        { stat: 'Draft Cap', value: Math.min(100, ((33 - (player.draftPick || 33)) / 32) * 100), fullMark: 100 },
+      ];
+    }
     return [
       { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-      { stat: 'Dominator', value: Math.min(100, (player.dominatorRating / 50) * 100), fullMark: 100 },
+      { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
       { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
       { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
-      { stat: 'Rec TDs', value: Math.min(100, (s.receivingTDs / 15) * 100), fullMark: 100 },
-      { stat: 'Draft Cap', value: Math.min(100, ((33 - player.draftPick) / 32) * 100), fullMark: 100 },
+      { stat: 'Rec TDs', value: Math.min(100, ((s?.receivingTDs || 0) / 15) * 100), fullMark: 100 },
+      { stat: 'Draft Cap', value: Math.min(100, ((33 - (player.draftPick || 33)) / 32) * 100), fullMark: 100 },
     ];
   };
 
@@ -268,19 +281,63 @@ const PlayerDetailModal = ({ player, onClose }) => {
                 </>
               )}
 
-              {(player.position === 'WR' || player.position === 'TE') && (
-                <>
-                  <StatRow label="EPA" value={player.stats.epa} benchmark={0.15} />
-                  <StatRow label="YPRR" value={player.yprr} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
-                  <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
-                  <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
-                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                  <StatRow label="Receptions" value={player.stats.receptions} />
-                  <StatRow label="Receiving Yards" value={player.stats.receivingYards?.toLocaleString()} />
-                  <StatRow label="Receiving TDs" value={player.stats.receivingTDs} />
-                  <StatRow label="Targets" value={player.stats.targets} />
-                </>
-              )}
+              {(player.position === 'WR' || player.position === 'TE') && (() => {
+                const pData = player.receivingByPerspective?.[modalPerspective];
+                const val = (key) => pData?.[key] ?? null;
+                return (
+                  <>
+                    {player.receivingByPerspective && (
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
+                        {Object.keys(player.receivingByPerspective).map(key => (
+                          <button
+                            key={key}
+                            onClick={() => setModalPerspective(key)}
+                            style={{
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: 11,
+                              fontWeight: modalPerspective === key ? 700 : 400,
+                              padding: '4px 10px',
+                              border: '1px solid',
+                              borderColor: modalPerspective === key ? '#f59e0b' : '#2a2d3e',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              background: modalPerspective === key ? 'rgba(245,158,11,0.15)' : 'transparent',
+                              color: modalPerspective === key ? '#f59e0b' : '#9ca3af',
+                              transition: 'all 0.15s',
+                            }}
+                          >
+                            {perspectiveLabels[key] || key}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {pData ? (
+                      <>
+                        <StatRow label="YPRR" value={val('yprr')} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
+                        <StatRow label="Routes Run" value={val('routesRun')} />
+                        <StatRow label="Targets" value={val('targets')} />
+                        <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
+                        <StatRow label="Receiving TDs" value={val('recTDs')} />
+                        <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
+                        <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
+                        <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
+                      </>
+                    ) : (
+                      <>
+                        <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
+                        <StatRow label="YPRR" value={player.yprr} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
+                        <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
+                        <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
+                        <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                        <StatRow label="Receptions" value={player.stats?.receptions} />
+                        <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
+                        <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
+                        <StatRow label="Targets" value={player.stats?.targets} />
+                      </>
+                    )}
+                  </>
+                );
+              })()}
 
               <div style={{ marginTop: 16 }}>
                 <StatRow label="Breakout Age" value={player.breakoutAge || 'N/A'} />
