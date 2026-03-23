@@ -316,8 +316,17 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                         <StatRow label="YPRR" value={val('yprr')} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
                         <StatRow label="Routes Run" value={val('routesRun')} />
                         <StatRow label="Targets" value={val('targets')} />
-                        <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
-                        <StatRow label="Receiving TDs" value={val('recTDs')} />
+                        {modalPerspective === 'overall' ? (
+                          <>
+                            <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
+                            <StatRow label="Receiving TDs" value={val('recTDs')} />
+                          </>
+                        ) : (
+                          <>
+                            <StatRow label="% Career Rec Yards" value={val('pctCareerRecYds')} unit="%" />
+                            <StatRow label="% Career Rec TDs" value={val('pctCareerRecTDs')} unit="%" />
+                          </>
+                        )}
                         <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
                         <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
                         <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
