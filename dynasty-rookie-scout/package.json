@@ -23,7 +23,28 @@
     "extends": "react-app"
   },
   "overrides": {
-    "ws": "8.18.3"
+    "ws": "8.18.3",
+    "webpack": {
+      "schema-utils": "3.3.0"
+    },
+    "webpack-dev-server": {
+      "schema-utils": "3.3.0"
+    },
+    "terser-webpack-plugin": {
+      "schema-utils": "3.3.0"
+    },
+    "css-minimizer-webpack-plugin": {
+      "schema-utils": "3.3.0"
+    },
+    "mini-css-extract-plugin": {
+      "schema-utils": "3.3.0"
+    },
+    "eslint-webpack-plugin": {
+      "schema-utils": "3.3.0"
+    },
+    "@pmmmwh/react-refresh-webpack-plugin": {
+      "schema-utils": "3.3.0"
+    }
   },
   "browserslist": {
     "production": [
