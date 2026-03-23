@@ -8,7 +8,7 @@
 
 const ESPN_SEARCH_URL = 'https://site.api.espn.com/apis/search/v2';
 const ESPN_STATS_BASE = 'https://site.api.espn.com/apis/common/v3/sports/football/college-football/athletes';
-const ESPN_SITE_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football';
+// const ESPN_SITE_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football';
 
 // ── In-memory + localStorage cache (same pattern as cfbdApi.js) ──────────
 
