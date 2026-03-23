@@ -54,6 +54,13 @@ export const getPlayers = async () => {
     // Step 1: Build rookie list from Sleeper (source of truth)
     let players = await buildRookiePlayersFromSleeper();
 
+    // Pre-draft or empty result: fall back to static prospect data
+    if (!players || players.length === 0) {
+      console.info('No Sleeper rookies found (likely pre-draft) — using static prospect data');
+      playersCache = getStaticPlayers();
+      return playersCache;
+    }
+
     // Step 2: Enrich QB/RB/TE with CFBD API stats (WRs are skipped)
     if (hasCfbdKey) {
       try {
@@ -71,7 +78,8 @@ export const getPlayers = async () => {
     return players;
   } catch (err) {
     console.error('Sleeper-first data fetch failed, falling back to static data:', err);
-    return getStaticPlayers();
+    playersCache = getStaticPlayers();
+    return playersCache;
   }
 };
 
