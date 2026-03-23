@@ -111,15 +111,15 @@ export const enrichNonWRStats = async (players) => {
 
   // Fetch all stat categories + PPA + usage in parallel
   const [allStats, ppaData, usageData] = await Promise.all([
-    fetchAllSeasonStats(year),
+    fetchAllSeasonStats(year).catch(() => ({ passing: [], rushing: [], receiving: [] })),
     fetchPPAForTeams(year, teams).catch(() => []),
     fetchUsageForTeams(year, teams).catch(() => []),
   ]);
 
   // Group stats by normalised player name
-  const passingByPlayer = groupByPlayer(allStats.passing);
-  const rushingByPlayer = groupByPlayer(allStats.rushing);
-  const receivingByPlayer = groupByPlayer(allStats.receiving);
+  const passingByPlayer = groupByPlayer(allStats.passing || []);
+  const rushingByPlayer = groupByPlayer(allStats.rushing || []);
+  const receivingByPlayer = groupByPlayer(allStats.receiving || []);
 
   // Group PPA by normalised player name
   const ppaByPlayer = {};
