@@ -13,6 +13,11 @@ const hasCfbdKey = !!process.env.REACT_APP_CFBD_API_KEY;
 // Cache live data so we only fetch once per session
 let playersCache = null;
 
+// Exposed to UI for data source status banner
+let dataSourceStatus = { sleeper: null, cfbd: null, source: 'loading' };
+
+export const getDataSourceStatus = () => dataSourceStatus;
+
 /**
  * Map a raw prospect (from rookieProspects2026.js) into the UI player shape.
  * Used as static fallback when Sleeper/CFBD are unavailable.
@@ -58,8 +63,12 @@ export const getPlayers = async () => {
     let players;
     try {
       players = await buildRookiePlayersFromSleeper();
+      dataSourceStatus.sleeper = players?.length > 0
+        ? { ok: true, count: players.length }
+        : { ok: false, reason: 'No rookies returned (pre-draft?)' };
     } catch (err) {
       console.warn('[DataService] Sleeper fetch failed, using static data:', err.message);
+      dataSourceStatus.sleeper = { ok: false, reason: err.message };
       players = [];
     }
 
@@ -67,20 +76,33 @@ export const getPlayers = async () => {
     if (!players || players.length === 0) {
       console.info('[DataService] No Sleeper rookies found (likely pre-draft) — using static prospect data');
       players = getStaticPlayers();
+      dataSourceStatus.source = 'static';
+    } else {
+      dataSourceStatus.source = 'sleeper';
     }
 
     // Step 2: Enrich QB/RB/TE with CFBD API stats (WRs are skipped)
     if (hasCfbdKey) {
       console.info('[DataService] CFBD key present — attempting QB/RB/TE enrichment...');
       try {
-        players = await enrichNonWRStats(players);
+        const enriched = await enrichNonWRStats(players);
+        const status = enriched._cfbdStatus;
+        if (status) {
+          dataSourceStatus.cfbd = {
+            ok: status.matched > 0,
+            ...status,
+          };
+          delete enriched._cfbdStatus;
+        }
+        players = enriched;
         console.info('[DataService] CFBD enrichment complete');
       } catch (err) {
         console.error('[DataService] CFBD enrichment failed:', err);
-        // QB/RB/TE keep whatever stats came from the prospect cross-reference
+        dataSourceStatus.cfbd = { ok: false, reason: err.message };
       }
     } else {
       console.warn('[DataService] No CFBD API key — skipping live stat enrichment for QB/RB/TE');
+      dataSourceStatus.cfbd = { ok: false, reason: 'No API key configured' };
     }
 
     // Clean up internal fields before exposing to UI
@@ -90,6 +112,7 @@ export const getPlayers = async () => {
     return players;
   } catch (err) {
     console.error('[DataService] Data fetch failed, falling back to static data:', err);
+    dataSourceStatus = { sleeper: { ok: false, reason: err.message }, cfbd: { ok: false, reason: 'skipped' }, source: 'static' };
     playersCache = getStaticPlayers().map(({ _cfbdLookup, _prospect, ...p }) => p);
     return playersCache;
   }
