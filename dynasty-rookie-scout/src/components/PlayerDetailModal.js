@@ -89,10 +89,10 @@ const PlayerDetailModal = ({ player, onClose }) => {
     }
     // WR / TE
     return [
-      { stat: 'YPR', value: Math.min(100, ((player.yprr || 0) / 20) * 100), fullMark: 100 },
+      { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
       { stat: 'Dominator', value: Math.min(100, (player.dominatorRating / 50) * 100), fullMark: 100 },
-      { stat: 'Rec Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-      { stat: 'YAC/Rec', value: Math.min(100, ((player.yacPerRR || 0) / 8) * 100), fullMark: 100 },
+      { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
+      { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
       { stat: 'Rec TDs', value: Math.min(100, (s.receivingTDs / 15) * 100), fullMark: 100 },
       { stat: 'Draft Cap', value: Math.min(100, ((33 - player.draftPick) / 32) * 100), fullMark: 100 },
     ];
@@ -271,10 +271,10 @@ const PlayerDetailModal = ({ player, onClose }) => {
               {(player.position === 'WR' || player.position === 'TE') && (
                 <>
                   <StatRow label="EPA" value={player.stats.epa} benchmark={0.15} />
-                  <StatRow label="YPR" value={player.yprr} benchmark={player.position === 'WR' ? 12.0 : 10.0} />
-                  <StatRow label="YAC/Rec" value={player.yacPerRR} benchmark={4.0} />
+                  <StatRow label="YPRR" value={player.yprr} benchmark={player.position === 'WR' ? 2.5 : 1.8} />
+                  <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
                   <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
-                  <StatRow label="Rec Share" value={player.targetShare} benchmark={15} unit="%" />
+                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                   <StatRow label="Receptions" value={player.stats.receptions} />
                   <StatRow label="Receiving Yards" value={player.stats.receivingYards?.toLocaleString()} />
                   <StatRow label="Receiving TDs" value={player.stats.receivingTDs} />

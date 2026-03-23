@@ -5,6 +5,7 @@ import { getProspects } from './rookieProspects2026';
 import {
   fetchAllSeasonStats,
   fetchPPAForTeams,
+  fetchUsageForTeams,
   fetchDraftPicksIfAvailable,
 } from './cfbdApi';
 
@@ -113,10 +114,11 @@ export const buildPlayersFromAPI = async () => {
   // Use the most common year (2025) but some prospects may have 2024 data
   const year = 2025;
 
-  // Fetch all stat categories + PPA in parallel
-  const [allStats, ppaData, draftPicks] = await Promise.all([
+  // Fetch all stat categories + PPA + usage in parallel
+  const [allStats, ppaData, usageData, draftPicks] = await Promise.all([
     fetchAllSeasonStats(year),
     fetchPPAForTeams(year, teams).catch(() => []),
+    fetchUsageForTeams(year, teams).catch(() => []),
     fetchDraftPicksIfAvailable(2026),
   ]);
 
@@ -132,9 +134,17 @@ export const buildPlayersFromAPI = async () => {
     if (key) ppaByPlayer[key] = row;
   }
 
-  // Team receiving totals for dominator (yards) + reception share
+  // Group usage by normalised player name
+  // Usage endpoint returns { player, team, position, usage: { overall, pass, rush, ... } }
+  const usageByPlayer = {};
+  for (const row of usageData) {
+    const key = norm(row.player || row.name || '');
+    if (key) usageByPlayer[key] = row;
+  }
+
+  // Team receiving totals for dominator (yards) and target share
   const teamRecYdsTotals = {};  // sum of receiving yards per team
-  const teamRecTotals = {};     // sum of receptions per team
+  const teamTargetTotals = {};  // sum of targets per team (fallback to receptions)
   for (const row of allStats.receiving) {
     const team = row.team;
     if (!team) continue;
@@ -143,9 +153,23 @@ export const buildPlayersFromAPI = async () => {
       teamRecYdsTotals[team] =
         (teamRecYdsTotals[team] || 0) + val(row, 'stat', 'value');
     }
-    if (st === 'REC' || st === 'RECEPTIONS') {
-      teamRecTotals[team] =
-        (teamRecTotals[team] || 0) + val(row, 'stat', 'value');
+    // Prefer targets for target share; if unavailable the API won't return these rows
+    if (st === 'TARGETS' || st === 'TGT') {
+      teamTargetTotals[team] =
+        (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
+    }
+  }
+  // If no target data was found, estimate from team pass attempts via usage
+  // or fall back to receptions as a rough proxy
+  if (Object.keys(teamTargetTotals).length === 0) {
+    for (const row of allStats.receiving) {
+      const team = row.team;
+      if (!team) continue;
+      const st = row.statType || row.category || '';
+      if (st === 'REC' || st === 'RECEPTIONS') {
+        teamTargetTotals[team] =
+          (teamTargetTotals[team] || 0) + val(row, 'stat', 'value');
+      }
     }
   }
 
@@ -202,22 +226,46 @@ export const buildPlayersFromAPI = async () => {
     let yprr = null;
     let yacPerRR = null;
 
+    // Usage endpoint provides pass/overall usage rates
+    const usageRow = usageByPlayer[key];
+
     if (['WR', 'TE'].includes(prospect.position) && receiving) {
       const recYds = val(receiving, 'YDS', 'REC_YDS');
-      const receptions = val(receiving, 'REC', 'RECEPTIONS');
       const targets = val(receiving, 'TARGETS', 'TGT');
-      // Use targets when available, fall back to receptions
-      const usage = targets > 0 ? targets : receptions;
+
       dominatorRating = calcDominatorRating(
         recYds,
         teamRecYdsTotals[team] || 1
       );
-      targetShare = calcTargetShare(usage, teamRecTotals[team] || 1);
-      // YPRR: use targets if available, otherwise approximate with receptions
-      if (usage > 0) {
-        yprr = +(recYds / usage).toFixed(2);
-        const yac = val(receiving, 'YAC', 'YARDS_AFTER_CATCH');
-        if (yac > 0) yacPerRR = +(yac / usage).toFixed(2);
+
+      // Target share: use actual targets if API provides them,
+      // otherwise derive from usage endpoint's pass usage rate
+      if (targets > 0) {
+        targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
+      } else if (usageRow?.usage?.pass != null) {
+        // Pass usage rate is already a proportion of team passing involvement
+        targetShare = +(usageRow.usage.pass * 100).toFixed(1);
+      }
+
+      // YPRR: yards / routes run. Without route data, approximate from
+      // usage rate: routes ≈ team pass plays × pass usage rate
+      if (usageRow?.usage?.pass != null && usageRow.usage.pass > 0) {
+        // Estimate routes run from team pass attempts and player's pass usage
+        const teamPassAtts = val(passingByPlayer[norm(team)] || {}, 'ATT', 'PASS_ATT');
+        if (teamPassAtts > 0) {
+          const estRoutes = teamPassAtts * usageRow.usage.pass;
+          yprr = +(recYds / estRoutes).toFixed(2);
+        } else if (targets > 0) {
+          yprr = +(recYds / targets).toFixed(2);
+        }
+      } else if (targets > 0) {
+        yprr = +(recYds / targets).toFixed(2);
+      }
+
+      const yac = val(receiving, 'YAC', 'YARDS_AFTER_CATCH');
+      if (yac > 0 && yprr != null) {
+        // Scale YAC by same route estimate
+        yacPerRR = +(yac * (yprr / recYds)).toFixed(2);
       }
     }
 
@@ -228,10 +276,12 @@ export const buildPlayersFromAPI = async () => {
       dominatorRating = teamTotal > 0
         ? +((( rushYds + recYds) / teamTotal) * 100).toFixed(1)
         : 0;
-      const receptions = val(receiving, 'REC', 'RECEPTIONS');
       const targets = val(receiving, 'TARGETS', 'TGT');
-      const usage = targets > 0 ? targets : receptions;
-      targetShare = calcTargetShare(usage, teamRecTotals[team] || 1);
+      if (targets > 0) {
+        targetShare = calcTargetShare(targets, teamTargetTotals[team] || 1);
+      } else if (usageRow?.usage?.pass != null) {
+        targetShare = +(usageRow.usage.pass * 100).toFixed(1);
+      }
     }
 
     // If the draft has happened, use real data; otherwise mark as projected
