@@ -473,10 +473,40 @@ export const enrichNonWRStats = async (players) => {
   // ── Merge results ─────────────────────────────────────────────────────
   const enriched = players.map((player) => {
     if (player.position === 'WR' || !player._cfbdLookup) return player;
-    return staticResults.get(player.id)
+    const result = staticResults.get(player.id)
       || espnResults.get(player.id)
       || cfbdResults.get(player.id)
       || player;
+
+    // Calculate dominator/targetShare for players that had inline stats (skipped enrichment)
+    if (result === player && player.stats && player.dominatorRating == null) {
+      const staticData = getStaticCollegeStats(player.name);
+      if (staticData) {
+        const { rushing, receiving, teamRecYdsTotal, teamTargetsTotal } = staticData;
+        if (player.position === 'RB') {
+          const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
+          const recYds = val(receiving, 'YDS', 'REC_YDS');
+          const teamTotal = (teamRecYdsTotal || 0) + rushYds;
+          if (teamTotal > 0) {
+            player.dominatorRating = +(((rushYds + recYds) / teamTotal) * 100).toFixed(1);
+          }
+          const targets = val(receiving, 'TARGETS', 'TGT');
+          if (targets > 0 && player.targetShare == null) {
+            player.targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
+          }
+        }
+        if (player.position === 'TE' && receiving) {
+          const recYds = val(receiving, 'YDS', 'REC_YDS');
+          const targets = val(receiving, 'TARGETS', 'TGT');
+          player.dominatorRating = calcDominatorRating(recYds, teamRecYdsTotal || 1);
+          if (targets > 0 && player.targetShare == null) {
+            player.targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
+          }
+        }
+      }
+    }
+
+    return result;
   });
 
   const totalMatched = staticResults.size + espnResults.size + cfbdMatchCount.matched;
