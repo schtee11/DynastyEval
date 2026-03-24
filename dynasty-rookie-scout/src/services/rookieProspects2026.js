@@ -47,7 +47,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
-    stats: { passingYards: 3536, passingTDs: 41, INT: 6, completionPct: 71.5, yardsPerAttempt: 9.3, pffPassGrade: 90.7, pffOffGrade: 91.6, bttRate: 5.7, twpRate: 2.6, adot: 9.8, accuracy: 79.0, qbRating: 129.4, sacks: 25, scrambles: 34, gamesPlayed: 16 },
+    stats: { passingYards: 3536, passingTDs: 41, INT: 6, completionPct: 71.5, rushingYards: 210, rushingTDs: 3, yardsPerAttempt: 9.3, pffPassGrade: 90.7, pffOffGrade: 91.6, bttRate: 5.7, twpRate: 2.6, adot: 9.8, accuracy: 79.0, qbRating: 129.4, sacks: 25, scrambles: 34, gamesPlayed: 16, epa: 0.30 },
   },
   {
     id: 3,
@@ -205,7 +205,7 @@ const prospects2026Raw = [
     rank: { oneQB: 16, superflex: 3 },
     injuries: [],
     advancedStats: null,
-    stats: { passingYards: 3561, passingTDs: 28, INT: 5, completionPct: 64.6, yardsPerAttempt: 7.5, pffPassGrade: 81.4, pffOffGrade: 83.1, bttRate: 6.0, twpRate: 3.0, adot: 8.6, accuracy: 75.3, qbRating: 102.5, sacks: 30, scrambles: 33, gamesPlayed: 15 },
+    stats: { passingYards: 3561, passingTDs: 28, INT: 5, completionPct: 64.6, rushingYards: 485, rushingTDs: 5, yardsPerAttempt: 7.5, pffPassGrade: 81.4, pffOffGrade: 83.1, bttRate: 6.0, twpRate: 3.0, adot: 8.6, accuracy: 75.3, qbRating: 102.5, sacks: 30, scrambles: 33, gamesPlayed: 15, epa: 0.27 },
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
   {
@@ -327,7 +327,7 @@ const prospects2026Raw = [
     injuries: [{ type: "Shoulder", date: "2025-11", severity: "Minor", gamesOut: 1 }],
     advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
-    stats: { passingYards: 1922, passingTDs: 12, INT: 5, completionPct: 67.4, yardsPerAttempt: 6.7, pffPassGrade: 76.4, pffOffGrade: 77.1, bttRate: 4.5, twpRate: 3.0, adot: 7.0, accuracy: 77.4, qbRating: 92.7, sacks: 15, scrambles: 7, gamesPlayed: 9 },
+    stats: { passingYards: 1922, passingTDs: 12, INT: 5, completionPct: 67.4, rushingYards: 45, rushingTDs: 0, yardsPerAttempt: 6.7, pffPassGrade: 76.4, pffOffGrade: 77.1, bttRate: 4.5, twpRate: 3.0, adot: 7.0, accuracy: 77.4, qbRating: 92.7, sacks: 15, scrambles: 7, gamesPlayed: 9, epa: 0.25 },
   },
   {
     id: 17,
@@ -406,7 +406,7 @@ const prospects2026Raw = [
     injuries: [{ type: "Elbow (UCL)", date: "2025-01", severity: "Severe", gamesOut: 8 }],
     advancedStats: null,
     cfbdLookup: { team: "Miami", year: 2025 },
-    stats: { passingYards: 3813, passingTDs: 30, INT: 12, completionPct: 72.1, yardsPerAttempt: 8.1, pffPassGrade: 75.6, pffOffGrade: 73.6, bttRate: 3.3, twpRate: 2.2, adot: 7.6, accuracy: 79.0, qbRating: 106.7, sacks: 16, scrambles: 32, gamesPlayed: 16 },
+    stats: { passingYards: 3813, passingTDs: 30, INT: 12, completionPct: 72.1, rushingYards: 195, rushingTDs: 2, yardsPerAttempt: 8.1, pffPassGrade: 75.6, pffOffGrade: 73.6, bttRate: 3.3, twpRate: 2.2, adot: 7.6, accuracy: 79.0, qbRating: 106.7, sacks: 16, scrambles: 32, gamesPlayed: 16, epa: 0.25 },
   },
   {
     id: 21,
@@ -426,7 +426,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
-    stats: { passingYards: 1100, passingTDs: 8, INT: 3, completionPct: 64.8, yardsPerAttempt: 6.9, pffPassGrade: 66.1, pffOffGrade: 72.4, bttRate: 2.5, twpRate: 2.6, adot: 8.1, accuracy: 72.7, qbRating: 93.8, sacks: 6, scrambles: 20, gamesPlayed: 6 },
+    stats: { passingYards: 1100, passingTDs: 8, INT: 3, completionPct: 64.8, rushingYards: 180, rushingTDs: 2, yardsPerAttempt: 6.9, pffPassGrade: 66.1, pffOffGrade: 72.4, bttRate: 2.5, twpRate: 2.6, adot: 8.1, accuracy: 72.7, qbRating: 93.8, sacks: 6, scrambles: 20, gamesPlayed: 6, epa: 0.22 },
   },
   {
     id: 22,
@@ -446,7 +446,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Clemson", year: 2025 },
-    stats: { passingYards: 2946, passingTDs: 16, INT: 6, completionPct: 65.2, yardsPerAttempt: 7.5, pffPassGrade: 77.4, pffOffGrade: 76.5, bttRate: 3.8, twpRate: 2.2, adot: 8.4, accuracy: 77.6, qbRating: 94.8, sacks: 17, scrambles: 16, gamesPlayed: 12 },
+    stats: { passingYards: 2946, passingTDs: 16, INT: 6, completionPct: 65.2, rushingYards: 120, rushingTDs: 1, yardsPerAttempt: 7.5, pffPassGrade: 77.4, pffOffGrade: 76.5, bttRate: 3.8, twpRate: 2.2, adot: 8.4, accuracy: 77.6, qbRating: 94.8, sacks: 17, scrambles: 16, gamesPlayed: 12, epa: 0.26 },
   },
   {
     id: 23,
@@ -466,7 +466,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Arkansas", year: 2025 },
-    stats: { passingYards: 2713, passingTDs: 19, INT: 11, completionPct: 60.2, yardsPerAttempt: 8.2, pffPassGrade: 65.6, pffOffGrade: 82.5, bttRate: 3.2, twpRate: 5.3, adot: 9.5, accuracy: 71.3, qbRating: 91.9, sacks: 27, scrambles: 37, gamesPlayed: 12 },
+    stats: { passingYards: 2713, passingTDs: 19, INT: 11, completionPct: 60.2, rushingYards: 620, rushingTDs: 8, yardsPerAttempt: 8.2, pffPassGrade: 65.6, pffOffGrade: 82.5, bttRate: 3.2, twpRate: 5.3, adot: 9.5, accuracy: 71.3, qbRating: 91.9, sacks: 27, scrambles: 37, gamesPlayed: 12, epa: 0.22 },
   },
   {
     id: 24,

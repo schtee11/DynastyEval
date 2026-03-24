@@ -32,13 +32,13 @@ export const getTopStats = (player, perspective = 'overall') => {
       if (perspective === 'deepBall') {
         return [
           { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
-          { label: 'REC GRADE', value: pData.recGrade?.toFixed(1) || 'N/A' },
+          { label: '1D+TD/RR', value: pData.firstDownTDPerRR?.toFixed(2) || 'N/A' },
           { label: 'CONT %', value: pData.contestedCatchRate != null ? `${pData.contestedCatchRate}%` : 'N/A' },
         ];
       }
       return [
         { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
-        { label: 'REC GRADE', value: pData.recGrade?.toFixed(1) || 'N/A' },
+        { label: '1D+TD/RR', value: pData.firstDownTDPerRR?.toFixed(2) || 'N/A' },
         { label: 'TGT/RR', value: pData.tgtPerRR != null ? `${pData.tgtPerRR}%` : 'N/A' },
       ];
     }
@@ -53,9 +53,9 @@ export const getTopStats = (player, perspective = 'overall') => {
   // QB — CFBD / static stats
   if (position === 'QB') {
     return [
-      { label: 'EPA', value: stats?.epa?.toFixed(2) },
-      { label: 'CPOE', value: stats?.cpoe ? `${stats.cpoe > 0 ? '+' : ''}${stats.cpoe}` : 'N/A' },
+      { label: stats?.epa != null ? 'EPA' : 'COMP %', value: stats?.epa != null ? stats.epa.toFixed(2) : stats?.completionPct != null ? `${stats.completionPct}%` : 'N/A' },
       { label: 'Pass YDs', value: stats?.passingYards?.toLocaleString() },
+      { label: 'Pass TDs', value: stats?.passingTDs },
     ];
   }
 

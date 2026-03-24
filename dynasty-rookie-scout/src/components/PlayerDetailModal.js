@@ -75,17 +75,14 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
   const getRadarData = () => {
     const s = player.stats || {};
-    const pick = player.draftPick || 33;
-    const draftCapVal = Math.min(100, ((33 - pick) / 32) * 100);
 
     if (player.position === 'QB') {
       return [
         { stat: 'EPA', value: Math.min(100, ((s.epa || 0) / 0.4) * 100), fullMark: 100 },
-        { stat: 'CPOE', value: Math.min(100, (((s.cpoe || 0) + 5) / 10) * 100), fullMark: 100 },
-        { stat: 'Pass TDs', value: Math.min(100, ((s.passingTDs || 0) / 45) * 100), fullMark: 100 },
         { stat: 'Comp %', value: Math.min(100, ((s.completionPct || 0) / 80) * 100), fullMark: 100 },
+        { stat: 'Pass TDs', value: Math.min(100, ((s.passingTDs || 0) / 45) * 100), fullMark: 100 },
+        { stat: 'Pass YDs', value: Math.min(100, ((s.passingYards || 0) / 5000) * 100), fullMark: 100 },
         { stat: 'Rush', value: Math.min(100, ((s.rushingYards || 0) / 800) * 100), fullMark: 100 },
-        { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
       ];
     }
 
@@ -96,7 +93,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
         { stat: 'YPC', value: Math.min(100, ((s.yardsPerCarry || 0) / 8) * 100), fullMark: 100 },
         { stat: 'Receiving', value: Math.min(100, ((s.receivingYards || 0) / 500) * 100), fullMark: 100 },
         { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
-        { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
       ];
     }
 
@@ -111,7 +107,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
           { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
           { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
           { stat: 'Breakout', value: boVal, fullMark: 100 },
-          { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
         ];
       }
       // WR fallback (no perspective data)
@@ -121,7 +116,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
         { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
         { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
         { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
-        { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
       ];
     }
 
@@ -132,7 +126,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
       { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
       { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
-      { stat: 'Draft Cap', value: draftCapVal, fullMark: 100 },
     ];
   };
 
@@ -285,7 +278,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               {player.position === 'QB' && (
                 <>
                   <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
-                  <StatRow label="CPOE" value={player.stats?.cpoe} benchmark={2.0} />
                   <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" />
                   <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} />
                   <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} />
@@ -433,12 +425,40 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 textTransform: 'uppercase',
                 marginBottom: 12,
               }}>Player Profile</h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={280}>
                 <RadarChart data={getRadarData()}>
                   <PolarGrid stroke="#2a2d3e" />
                   <PolarAngleAxis
                     dataKey="stat"
-                    tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}
+                    tick={({ x, y, payload, index }) => {
+                      const radarData = getRadarData();
+                      const pct = Math.round(radarData[index]?.value || 0);
+                      return (
+                        <g>
+                          <text
+                            x={x}
+                            y={y}
+                            textAnchor="middle"
+                            fill="#9ca3af"
+                            fontSize={11}
+                            fontFamily="'JetBrains Mono', monospace"
+                          >
+                            {payload.value}
+                          </text>
+                          <text
+                            x={x}
+                            y={y + 13}
+                            textAnchor="middle"
+                            fill={pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#6b7280'}
+                            fontSize={10}
+                            fontWeight={700}
+                            fontFamily="'JetBrains Mono', monospace"
+                          >
+                            {pct}th %ile
+                          </text>
+                        </g>
+                      );
+                    }}
                   />
                   <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
                   <Radar
