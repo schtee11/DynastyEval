@@ -41,8 +41,8 @@ const ScoutBoard = () => {
   const filtered = filterPlayers(players, filters);
   const sorted = sortPlayers(filtered, sortBy, 'oneQB', perspective);
 
-  // Show tier dividers only when sorted by rank or draft capital
-  const showTiers = sortBy === 'rank' || sortBy === 'draftCapital';
+  // Show tier dividers only when sorted by draft capital
+  const showTiers = sortBy === 'draftCapital';
 
   return (
     <div style={{ padding: '20px 24px' }}>
