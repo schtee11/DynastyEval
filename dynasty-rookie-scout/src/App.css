@@ -161,3 +161,14 @@ select:focus-visible {
     display: none !important;
   }
 }
+
+/* Footer — mobile */
+@media (max-width: 768px) {
+  .footer-root .footer-inner {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+  .footer-root .footer-right {
+    text-align: center !important;
+  }
+}

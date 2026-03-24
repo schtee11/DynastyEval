@@ -1,5 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
@@ -32,6 +33,7 @@ function App() {
           </Suspense>
         </ErrorBoundary>
       </main>
+      <Footer />
     </div>
   );
 }
