@@ -186,10 +186,23 @@ export const applyFantasyCalcRankings = async (players) => {
   }
   if (matched < total) {
     const matchedIndices = new Set(matchedEntries.map((e) => e.index));
-    const unmatched = players
-      .filter((_, i) => !matchedIndices.has(i))
+    const unmatchedPlayers = players.filter((_, i) => !matchedIndices.has(i));
+    const unmatched = unmatchedPlayers
       .map((p) => `${p.name} (${p.position}, sleeperId: ${p.sleeperId || 'none'}, normalized: "${normalizeName(p.name)}")`);
     console.warn(`[FantasyCalc] Unmatched players (${unmatched.length}):`, unmatched.join('; '));
+    // Check if unmatched players exist in sheet under different IDs/names
+    const allSheetNames = Object.keys(lookup.byName);
+    const allSheetIds = Object.keys(lookup.bySleeperId);
+    for (const p of unmatchedPlayers) {
+      const norm = normalizeName(p.name);
+      const fuzzy = allSheetNames.filter((n) => n.includes(norm.split(' ').pop()) && n.includes(norm.split(' ')[0]));
+      if (fuzzy.length > 0) {
+        console.warn(`[FantasyCalc] Possible sheet match for "${p.name}": ${fuzzy.join(', ')}`);
+      }
+      if (p.sleeperId && allSheetIds.includes(String(p.sleeperId))) {
+        console.warn(`[FantasyCalc] sleeperId ${p.sleeperId} IS in sheet but didn't match (bug)`);
+      }
+    }
   }
 
   return result;
