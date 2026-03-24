@@ -178,11 +178,11 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 11,
           }}>
-            <span style={{ color: '#60a5fa' }}>
-              1QB: #{player.rank.oneQB}
+            <span style={{ color: player.rank.oneQB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
+              1QB: {player.rank.oneQB === 'UNR' ? 'UNR' : `#${player.rank.oneQB}`}
             </span>
-            <span style={{ color: '#a78bfa' }}>
-              SF: #{player.rank.superflex}
+            <span style={{ color: player.rank.superflex === 'UNR' ? '#6b7280' : '#a78bfa' }}>
+              SF: {player.rank.superflex === 'UNR' ? 'UNR' : `#${player.rank.superflex}`}
             </span>
           </div>
         )}

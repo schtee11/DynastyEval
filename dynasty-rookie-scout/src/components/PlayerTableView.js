@@ -61,14 +61,15 @@ const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
       <td style={{
         padding: '10px 12px',
         fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: 800,
-        fontSize: 22,
-        color: '#f1f5f9',
+        fontWeight: rank1QB === 'UNR' ? 600 : 800,
+        fontSize: rank1QB === 'UNR' ? 13 : 22,
+        color: rank1QB === 'UNR' ? '#6b7280' : '#f1f5f9',
         textAlign: 'center',
         width: 56,
         verticalAlign: 'middle',
+        letterSpacing: rank1QB === 'UNR' ? 1 : 0,
       }}>
-        {rank1QB ?? '—'}
+        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '—'}
       </td>
 
       {/* Name + Position badge */}
@@ -191,10 +192,14 @@ const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
         whiteSpace: 'nowrap',
       }}>
         {rank1QB != null && (
-          <span style={{ color: '#60a5fa' }}>1QB #{rank1QB}</span>
+          <span style={{ color: rank1QB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
+            {rank1QB === 'UNR' ? '1QB UNR' : `1QB #${rank1QB}`}
+          </span>
         )}
         {rankSF != null && (
-          <span style={{ color: '#a78bfa', marginLeft: 8 }}>SF #{rankSF}</span>
+          <span style={{ color: rankSF === 'UNR' ? '#6b7280' : '#a78bfa', marginLeft: 8 }}>
+            {rankSF === 'UNR' ? 'SF UNR' : `SF #${rankSF}`}
+          </span>
         )}
       </td>
     </tr>
@@ -215,7 +220,7 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers }) => 
           <tr style={{
             borderBottom: '2px solid #2a2d3e',
           }}>
-            {['#', 'Player', 'School', 'Draft', 'Key Stats', 'Ranks'].map((h) => (
+            {['#', 'Player', 'School', 'Draft', 'Key Stats', 'Ranks (FantasyCalc)'].map((h) => (
               <th key={h} style={{
                 padding: '8px 12px',
                 fontFamily: "'Barlow Condensed', sans-serif",
