@@ -178,6 +178,19 @@ function main() {
     return csvCache[filename];
   }
 
+  // ── Compute team target totals from receiving CSV ─────────────────────────
+  // Sum all targets per team so we can calculate target share for WR/TE/RB.
+  const recRows = getCSV('receiving_summary.csv');
+  const teamTargetTotals = {};
+  for (const row of recRows) {
+    const team = (row.team_name || '').trim();
+    const targets = parseFloat(row.targets);
+    if (team && !isNaN(targets)) {
+      teamTargetTotals[team] = (teamTargetTotals[team] || 0) + targets;
+    }
+  }
+  console.log(`Computed team target totals for ${Object.keys(teamTargetTotals).length} teams\n`);
+
   const stats = { matched: 0, override: 0, missed: 0 };
   const byPosition = { QB: [], RB: [], WR: [], TE: [] };
 
@@ -212,14 +225,27 @@ function main() {
       entry = extractFields(primaryRow, posConfig.fields);
       stats.matched++;
 
+      // Auto-populate teamTargetsTotal from CSV team totals
+      const team = (primaryRow.team_name || '').trim();
+      if (team && teamTargetTotals[team] && ['WR', 'TE', 'RB'].includes(prospect.position)) {
+        entry.teamTargetsTotal = teamTargetTotals[team];
+      }
+
       // Secondary CSV for RB receiving
       if (posConfig.receivingCsvFile && posConfig.receivingFields) {
-        const recRows = getCSV(posConfig.receivingCsvFile);
-        const recIndex = indexCSV(recRows, posConfig.receivingPositionFilter);
-        const recRow = recIndex[normKey];
+        const rbRecRows = getCSV(posConfig.receivingCsvFile);
+        const rbRecIndex = indexCSV(rbRecRows, posConfig.receivingPositionFilter);
+        const recRow = rbRecIndex[normKey];
         if (recRow) {
           const recFields = extractFields(recRow, posConfig.receivingFields);
           entry = deepMerge(entry, recFields);
+          // For RBs, get team from receiving CSV if not already set
+          if (!entry.teamTargetsTotal) {
+            const recTeam = (recRow.team_name || '').trim();
+            if (recTeam && teamTargetTotals[recTeam]) {
+              entry.teamTargetsTotal = teamTargetTotals[recTeam];
+            }
+          }
         }
       }
 

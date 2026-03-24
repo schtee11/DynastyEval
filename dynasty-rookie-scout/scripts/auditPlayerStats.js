@@ -1,17 +1,14 @@
 #!/usr/bin/env node
 /**
- * Audit script: finds all players that will show N/A for any stat displayed in the UI.
- * Checks against data available in collegeStats2025.js, receivingData.js, and rookieProspects2026.js.
+ * Audit script: finds all players that will show N/A for any stat displayed
+ * in the PlayerDetailModal UI.
  *
- * Usage: node scripts/auditPlayerStats.js
+ * Usage:
+ *   node scripts/auditPlayerStats.js            # full report
+ *   node scripts/auditPlayerStats.js --summary  # totals only (for CI)
+ *   node scripts/auditPlayerStats.js --ci       # exit 1 if critical N/As found
  *
- * Checks:
- *   - EPA: available via PPA in collegeStats2025 → stats.epa (QB/RB/TE/WR overall)
- *   - Target Share: advancedStats or computed from team targets (WR/TE/RB)
- *   - YPRR: advancedStats or pffYprr from CSV (WR/TE)
- *   - Receiving metrics: YAC, alignment, contested (WR/TE)
- *   - Rushing metrics: yardsAfterContact, avoidedTackles, ycoPerAttempt, explosiveRuns (RB)
- *   - receivingByPerspective: whether WR has perspective data from receivingData.js
+ * Checks the exact same stats rendered via StatRow in PlayerDetailModal.js.
  */
 
 const path = require('path');
@@ -51,13 +48,17 @@ if (!collegeStats2025 || !prospects) {
   process.exit(1);
 }
 
-// Case-insensitive lookup for receiving perspective data
 const getReceivingData = (name) => {
   const entry = Object.entries(receivingPerspectiveData).find(
     ([key]) => key.toLowerCase() === name.toLowerCase()
   );
   return entry ? entry[1] : null;
 };
+
+// ── Parse CLI flags ─────────────────────────────────────────────────────────
+const args = process.argv.slice(2);
+const summaryOnly = args.includes('--summary');
+const ciMode = args.includes('--ci');
 
 // ── Audit ───────────────────────────────────────────────────────────────────
 const positions = ['QB', 'RB', 'WR', 'TE'];
@@ -67,158 +68,182 @@ console.log(`\n=== PLAYER STATS AUDIT ===`);
 console.log(`Total prospects: ${filteredProspects.length}`);
 console.log(`Positions: ${positions.join(', ')}\n`);
 
-const naFields = []; // { name, position, college, field, reason }
+const naFields = []; // { name, position, college, field, severity, reason }
+
+// Severity levels:
+//   'critical' = core stat row showing N/A (basic receiving/rushing/passing stats)
+//   'important' = advanced metric showing N/A (YPRR, target share, YAC, etc.)
+//   'info' = nice-to-have data missing (perspective data, alignment rates)
 
 for (const p of filteredProspects) {
   const sd = collegeStats2025[norm(p.name)];
   const hasPerspective = !!getReceivingData(p.name);
+  const noStatic = !sd;
+  const reason = (field) => noStatic
+    ? 'no static college stats entry (not in CSV)'
+    : `${field} is null/missing in static entry`;
 
-  // ── EPA ──
-  // Displayed for all positions (WR overall perspective now includes it)
-  const epaAvailable = sd?.ppa?.averagePPA?.all != null;
-  if (!epaAvailable) {
+  const na = (field, severity, staticKey) => {
     naFields.push({
       name: p.name, position: p.position, college: p.college,
-      field: 'EPA',
-      reason: sd ? 'no PPA data in static entry' : 'no static college stats entry',
+      field, severity,
+      reason: reason(staticKey || field),
     });
+  };
+
+  // ── QB stats ──
+  if (p.position === 'QB') {
+    if (noStatic) {
+      na('Completion %', 'critical', 'passing');
+      na('Passing Yards', 'critical', 'passing');
+      na('Passing TDs', 'critical', 'passing');
+    }
   }
 
-  // ── Target Share ──
-  // Displayed for WR (overall perspective + fallback), TE, RB
-  if (['WR', 'TE', 'RB'].includes(p.position)) {
+  // ── RB stats ──
+  if (p.position === 'RB') {
+    if (noStatic) {
+      na('Rushing Yards', 'critical', 'rushing');
+      na('Rushing TDs', 'critical', 'rushing');
+      na('YPC', 'critical', 'rushing');
+    }
+    if (sd?.yardsAfterContact == null) na('Yards After Contact', 'important', 'yardsAfterContact');
+    if (sd?.ycoPerAttempt == null) na('YAC/Attempt', 'important', 'ycoPerAttempt');
+    if (sd?.avoidedTackles == null) na('Missed Tackles Forced', 'important', 'avoidedTackles');
+    if (sd?.explosiveRuns == null) na('10+ Yard Runs', 'important', 'explosiveRuns');
+
+    // RB target share (shown in radar chart)
+    const advTS = p.advancedStats?.targetShare;
+    const recTargets = sd?.receiving?.TARGETS;
+    const canCompute = recTargets > 0 && sd?.teamTargetsTotal > 0;
+    if (advTS == null && !canCompute) {
+      na('Target Share (RB)', 'info', 'teamTargetsTotal');
+    }
+  }
+
+  // ── TE stats ──
+  if (p.position === 'TE') {
+    if (sd?.pffYprr == null && p.advancedStats?.yprr == null) na('YPRR', 'important', 'pffYprr');
+    if (sd?.recGrade == null) na('Rec Grade', 'important', 'recGrade');
+
     const advTS = p.advancedStats?.targetShare;
     const canCompute = sd?.receiving?.TARGETS > 0 && sd?.teamTargetsTotal > 0;
-    if (advTS == null && !canCompute) {
-      naFields.push({
-        name: p.name, position: p.position, college: p.college,
-        field: 'Target Share',
-        reason: 'no advancedStats.targetShare and cannot compute from static data',
-      });
-    }
+    if (advTS == null && !canCompute) na('Target Share', 'important', 'teamTargetsTotal');
+
+    if (sd?.yardsAfterCatch == null) na('YAC', 'info', 'yardsAfterCatch');
+    if (sd?.yardsAfterCatchPerRec == null) na('YAC/Rec', 'info', 'yardsAfterCatchPerRec');
+    if (sd?.slotRate == null) na('Slot Rate', 'info', 'slotRate');
+    if (sd?.wideRate == null) na('Wide Rate', 'info', 'wideRate');
+    if (sd?.inlineRate == null) na('Inline Rate', 'info', 'inlineRate');
+    if (sd?.contestedCatchRate == null) na('Contested Catch Rate', 'info', 'contestedCatchRate');
+    if (sd?.contestedReceptions == null) na('Contested Receptions', 'info', 'contestedReceptions');
   }
 
-  // ── YPRR ──
-  if (['WR', 'TE'].includes(p.position)) {
-    const advYprr = p.advancedStats?.yprr;
-    const staticYprr = sd?.pffYprr;
-    if (advYprr == null && staticYprr == null) {
-      naFields.push({
-        name: p.name, position: p.position, college: p.college,
-        field: 'YPRR',
-        reason: 'no advancedStats.yprr and no pffYprr in static data',
-      });
-    }
-  }
-
-  // ── WR receiving metrics (shown in overall perspective + fallback) ──
+  // ── WR stats ──
   if (p.position === 'WR') {
-    const wrFields = [
-      ['YAC', 'yardsAfterCatch'],
-      ['YAC/Rec', 'yardsAfterCatchPerRec'],
-      ['Slot Rate', 'slotRate'],
-      ['Wide Rate', 'wideRate'],
-      ['Contested Catch Rate', 'contestedCatchRate'],
-      ['Contested Receptions', 'contestedReceptions'],
-      ['Rec Grade', 'recGrade'],
-    ];
-    for (const [label, key] of wrFields) {
-      if (sd?.[key] == null) {
-        naFields.push({
-          name: p.name, position: p.position, college: p.college,
-          field: label,
-          reason: sd ? `${key} is null in static entry` : 'no static college stats entry',
-        });
-      }
-    }
-  }
+    if (hasPerspective) {
+      // WR with perspective data: overall view shows target share + static metrics
+      const advTS = p.advancedStats?.targetShare;
+      const canCompute = sd?.receiving?.TARGETS > 0 && sd?.teamTargetsTotal > 0;
+      if (advTS == null && !canCompute) na('Target Share', 'important', 'teamTargetsTotal');
 
-  // ── TE receiving metrics ──
-  if (p.position === 'TE') {
-    const teFields = [
-      ['YAC', 'yardsAfterCatch'],
-      ['YAC/Rec', 'yardsAfterCatchPerRec'],
-      ['Slot Rate', 'slotRate'],
-      ['Wide Rate', 'wideRate'],
-      ['Inline Rate', 'inlineRate'],
-      ['Contested Catch Rate', 'contestedCatchRate'],
-      ['Contested Receptions', 'contestedReceptions'],
-      ['Rec Grade', 'recGrade'],
-    ];
-    for (const [label, key] of teFields) {
-      if (sd?.[key] == null) {
-        naFields.push({
-          name: p.name, position: p.position, college: p.college,
-          field: label,
-          reason: sd ? `${key} is null in static entry` : 'no static college stats entry',
-        });
-      }
-    }
-  }
+      if (sd?.yardsAfterCatch == null) na('YAC', 'info', 'yardsAfterCatch');
+      if (sd?.yardsAfterCatchPerRec == null) na('YAC/Rec', 'info', 'yardsAfterCatchPerRec');
+      if (sd?.slotRate == null) na('Slot Rate', 'info', 'slotRate');
+      if (sd?.wideRate == null) na('Wide Rate', 'info', 'wideRate');
+      if (sd?.inlineRate == null) na('Inline Rate', 'info', 'inlineRate');
+      if (sd?.contestedCatchRate == null) na('Contested Catch Rate', 'info', 'contestedCatchRate');
+      if (sd?.contestedReceptions == null) na('Contested Receptions', 'info', 'contestedReceptions');
+    } else {
+      // WR fallback view
+      if (sd?.pffYprr == null && p.advancedStats?.yprr == null) na('YPRR', 'important', 'pffYprr');
+      if (sd?.recGrade == null) na('Rec Grade', 'important', 'recGrade');
 
-  // ── RB rushing metrics ──
-  if (p.position === 'RB') {
-    const rbFields = [
-      ['Yards After Contact', 'yardsAfterContact'],
-      ['Missed Tackles Forced', 'avoidedTackles'],
-      ['YAC/Attempt', 'ycoPerAttempt'],
-      ['10+ Yard Runs', 'explosiveRuns'],
-    ];
-    for (const [label, key] of rbFields) {
-      if (sd?.[key] == null) {
-        naFields.push({
-          name: p.name, position: p.position, college: p.college,
-          field: label,
-          reason: sd ? `${key} is null in static entry` : 'no static college stats entry',
-        });
-      }
-    }
-  }
+      const advTS = p.advancedStats?.targetShare;
+      const canCompute = sd?.receiving?.TARGETS > 0 && sd?.teamTargetsTotal > 0;
+      if (advTS == null && !canCompute) na('Target Share', 'important', 'teamTargetsTotal');
 
-  // ── WR without perspective data ──
-  if (p.position === 'WR' && !hasPerspective) {
-    naFields.push({
-      name: p.name, position: p.position, college: p.college,
-      field: 'Receiving Perspectives',
-      reason: 'no entry in receivingData.js (uses fallback WR view)',
-    });
+      if (noStatic) {
+        na('Receptions', 'critical', 'receiving');
+        na('Receiving Yards', 'critical', 'receiving');
+        na('Receiving TDs', 'critical', 'receiving');
+      }
+
+      if (sd?.yardsAfterCatch == null) na('YAC', 'info', 'yardsAfterCatch');
+      if (sd?.yardsAfterCatchPerRec == null) na('YAC/Rec', 'info', 'yardsAfterCatchPerRec');
+      if (sd?.slotRate == null) na('Slot Rate', 'info', 'slotRate');
+      if (sd?.wideRate == null) na('Wide Rate', 'info', 'wideRate');
+      if (sd?.inlineRate == null) na('Inline Rate', 'info', 'inlineRate');
+      if (sd?.contestedCatchRate == null) na('Contested Catch Rate', 'info', 'contestedCatchRate');
+      if (sd?.contestedReceptions == null) na('Contested Receptions', 'info', 'contestedReceptions');
+
+      na('Receiving Perspectives', 'info', 'receivingByPerspective');
+    }
   }
 }
+
+// ── Summary by severity ─────────────────────────────────────────────────────
+const critical = naFields.filter(f => f.severity === 'critical');
+const important = naFields.filter(f => f.severity === 'important');
+const info = naFields.filter(f => f.severity === 'info');
+
+console.log(`--- N/A SUMMARY BY SEVERITY ---\n`);
+console.log(`  CRITICAL (core stats missing):    ${critical.length}`);
+console.log(`  IMPORTANT (advanced metrics):     ${important.length}`);
+console.log(`  INFO (nice-to-have):              ${info.length}`);
+console.log(`  TOTAL:                            ${naFields.length}`);
+console.log('');
 
 // ── Summary by field ────────────────────────────────────────────────────────
-const byField = {};
-for (const item of naFields) {
-  if (!byField[item.field]) byField[item.field] = [];
-  byField[item.field].push(item);
-}
-
-console.log(`--- N/A FIELDS SUMMARY ---\n`);
-const sortedFields = Object.entries(byField).sort((a, b) => b[1].length - a[1].length);
-for (const [field, items] of sortedFields) {
-  console.log(`${field}: ${items.length} players showing N/A`);
-  for (const item of items) {
-    console.log(`  - ${item.name} (${item.position}, ${item.college}): ${item.reason}`);
+if (!summaryOnly) {
+  const byField = {};
+  for (const item of naFields) {
+    if (!byField[item.field]) byField[item.field] = [];
+    byField[item.field].push(item);
   }
-  console.log('');
+
+  const sortedFields = Object.entries(byField).sort((a, b) => b[1].length - a[1].length);
+  for (const [field, items] of sortedFields) {
+    const sev = items[0].severity;
+    const icon = sev === 'critical' ? '!!' : sev === 'important' ? ' !' : '  ';
+    console.log(`${icon} ${field}: ${items.length} players`);
+    for (const item of items) {
+      console.log(`     - ${item.name} (${item.position}, ${item.college})`);
+    }
+    console.log('');
+  }
+
+  // ── Players with most N/A fields ──────────────────────────────────────────
+  const byPlayer = {};
+  for (const item of naFields) {
+    const key = item.name;
+    if (!byPlayer[key]) byPlayer[key] = { ...item, fields: [], criticalCount: 0 };
+    byPlayer[key].fields.push(`${item.field} [${item.severity}]`);
+    if (item.severity === 'critical') byPlayer[key].criticalCount++;
+  }
+
+  const worstPlayers = Object.values(byPlayer).sort((a, b) => b.fields.length - a.fields.length);
+  console.log(`--- TOP PLAYERS WITH MOST N/A FIELDS ---\n`);
+  for (const p of worstPlayers.slice(0, 15)) {
+    console.log(`  ${p.name} (${p.position}, ${p.college}): ${p.fields.length} N/A fields (${p.criticalCount} critical)`);
+    console.log(`    ${p.fields.join(', ')}`);
+  }
 }
 
-// ── Players with most N/A fields ────────────────────────────────────────────
-const byPlayer = {};
-for (const item of naFields) {
-  const key = item.name;
-  if (!byPlayer[key]) byPlayer[key] = { ...item, fields: [] };
-  byPlayer[key].fields.push(item.field);
-}
-
-const worstPlayers = Object.values(byPlayer).sort((a, b) => b.fields.length - a.fields.length);
-console.log(`--- TOP PLAYERS WITH MOST N/A FIELDS ---\n`);
-for (const p of worstPlayers.slice(0, 15)) {
-  console.log(`  ${p.name} (${p.position}, ${p.college}): ${p.fields.length} N/A fields`);
-  console.log(`    Fields: ${p.fields.join(', ')}`);
-}
-
+// ── Totals ──────────────────────────────────────────────────────────────────
+const uniquePlayers = new Set(naFields.map(f => f.name)).size;
 console.log(`\n--- TOTALS ---`);
 console.log(`Total N/A field instances: ${naFields.length}`);
-console.log(`Unique players affected: ${Object.keys(byPlayer).length}`);
-console.log(`Total players audited: ${filteredProspects.length}`);
+console.log(`Unique players affected:   ${uniquePlayers}`);
+console.log(`Total players audited:     ${filteredProspects.length}`);
+console.log(`Players fully populated:   ${filteredProspects.length - uniquePlayers}`);
+
+// ── CI mode: fail if critical N/As exist ────────────────────────────────────
+if (ciMode && critical.length > 0) {
+  console.error(`\n✗ AUDIT FAILED: ${critical.length} critical N/A fields found`);
+  process.exit(1);
+} else if (ciMode) {
+  console.log(`\n✓ AUDIT PASSED: no critical N/A fields`);
+}
+
 console.log(`\nDone.`);
