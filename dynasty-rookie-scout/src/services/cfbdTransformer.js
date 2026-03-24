@@ -39,7 +39,6 @@ const buildQBStats = (passing, rushing) => ({
       : 0,
   rushingYards: val(rushing, 'YDS', 'RUSH_YDS'),
   rushingTDs: val(rushing, 'TD', 'RUSH_TD'),
-  epa: null,
   cpoe: null,
 });
 
@@ -53,7 +52,6 @@ const buildRBStats = (rushing, receiving) => ({
   receptions: val(receiving, 'REC', 'RECEPTIONS'),
   receivingYards: val(receiving, 'YDS', 'REC_YDS'),
   receivingTDs: val(receiving, 'TD', 'REC_TD'),
-  epa: null,
 });
 
 const buildTEStats = (receiving) => ({
@@ -61,7 +59,6 @@ const buildTEStats = (receiving) => ({
   receivingYards: val(receiving, 'YDS', 'REC_YDS'),
   receivingTDs: val(receiving, 'TD', 'REC_TD'),
   targets: val(receiving, 'TARGETS', 'TGT'),
-  epa: null,
 });
 
 const buildWRStats = (receiving) => ({
@@ -69,7 +66,6 @@ const buildWRStats = (receiving) => ({
   receivingYards: val(receiving, 'YDS', 'REC_YDS'),
   receivingTDs: val(receiving, 'TD', 'REC_TD'),
   targets: val(receiving, 'TARGETS', 'TGT'),
-  epa: null,
 });
 
 // ── target-share calculator ──────────────────────────────────────────────────
@@ -108,12 +104,6 @@ const enrichFromStatic = (player) => {
       break;
     default:
       stats = {};
-  }
-
-  // EPA from PPA data
-  if (ppa) {
-    const epaVal = ppa.averagePPA?.all ?? null;
-    if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
   }
 
   // Target share for TE / WR / RB
@@ -215,7 +205,6 @@ const enrichFromESPN = (player, espnStats) => {
       stats = {};
   }
 
-  // ESPN doesn't provide PPA/EPA, so leave as null
   let targetShare = player.targetShare;
   let yprr = player.yprr;
   let yacPerRR = player.yacPerRR;
@@ -252,12 +241,6 @@ const fillFromStaticData = (players) => {
     if (player.avoidedTackles == null && staticData.avoidedTackles != null) player.avoidedTackles = staticData.avoidedTackles;
     if (player.ycoPerAttempt == null && staticData.ycoPerAttempt != null) player.ycoPerAttempt = staticData.ycoPerAttempt;
     if (player.explosiveRuns == null && staticData.explosiveRuns != null) player.explosiveRuns = staticData.explosiveRuns;
-
-    // Fill EPA from PPA data
-    if (player.stats && player.stats.epa == null && staticData.ppa) {
-      const epaVal = staticData.ppa.averagePPA?.all ?? null;
-      if (epaVal != null) player.stats.epa = +Number(epaVal).toFixed(2);
-    }
 
     // Fill receiving metrics from static PFF data (WR / TE)
     if (player.yardsAfterCatch == null && staticData.yardsAfterCatch != null) player.yardsAfterCatch = staticData.yardsAfterCatch;
