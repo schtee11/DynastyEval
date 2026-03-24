@@ -229,6 +229,7 @@ export const buildRookiePlayersFromSleeper = async () => {
     // Base fields from Sleeper
     const player = {
       id,
+      sleeperId: sleeperPlayer.sleeperId,
       name: sleeperPlayer.name,
       position: sleeperPlayer.position,
       college: sleeperPlayer.college || prospect?.college || null,
