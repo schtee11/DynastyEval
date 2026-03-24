@@ -2,6 +2,8 @@
 // Uses claude-sonnet-4-20250514 model
 // API key must be provided via REACT_APP_ANTHROPIC_API_KEY env var
 
+import { getDraftRangeLabel } from '../utils/helpers';
+
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
 const buildScoutingPrompt = (player) => {
@@ -12,7 +14,7 @@ const buildScoutingPrompt = (player) => {
 Player: ${player.name}
 Position: ${player.position}
 College: ${player.college || 'Unknown'}
-Draft Pick: ${player.draftRound ? `Round ${player.draftRound}, Pick #${player.draftPick} (${player.draftTeam || 'TBD'})` : 'Pre-draft prospect'}
+Draft Projection: ${player.draftRound ? `Projected ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}` : 'Pre-draft prospect'}
 Age: ${player.age || 'Unknown'}
 
 ${positionStats}
