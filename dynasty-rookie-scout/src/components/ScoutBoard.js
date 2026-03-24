@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import PlayerCard from './PlayerCard';
 import PlayerTableView from './PlayerTableView';
-import PlayerDetailModal from './PlayerDetailModal';
 import FilterBar from './FilterBar';
 import { getPlayers, isUsingLiveData } from '../services/dataService';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
+
+const PlayerDetailModal = lazy(() => import('./PlayerDetailModal'));
 
 const ScoutBoard = () => {
   const [players, setPlayers] = useState([]);
@@ -38,8 +39,8 @@ const ScoutBoard = () => {
     loadPlayers();
   }, []);
 
-  const filtered = filterPlayers(players, filters);
-  const sorted = sortPlayers(filtered, sortBy, 'oneQB', perspective);
+  const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
+  const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
 
   // Show tier dividers only when sorted by draft capital
   const showTiers = sortBy === 'draftCapital';
@@ -232,11 +233,13 @@ const ScoutBoard = () => {
       )}
 
       {selectedPlayer && (
-        <PlayerDetailModal
-          player={selectedPlayer}
-          perspective={perspective}
-          onClose={() => setSelectedPlayer(null)}
-        />
+        <Suspense fallback={null}>
+          <PlayerDetailModal
+            player={selectedPlayer}
+            perspective={perspective}
+            onClose={() => setSelectedPlayer(null)}
+          />
+        </Suspense>
       )}
     </div>
   );

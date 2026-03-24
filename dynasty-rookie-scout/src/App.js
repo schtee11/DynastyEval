@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import Header from './components/Header';
-import ScoutBoard from './components/ScoutBoard';
-import MyBoard from './components/MyBoard';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
+
+const ScoutBoard = lazy(() => import('./components/ScoutBoard'));
+const MyBoard = lazy(() => import('./components/MyBoard'));
+
+const LoadingFallback = () => (
+  <div style={{
+    textAlign: 'center',
+    padding: 60,
+    fontFamily: "'Barlow Condensed', sans-serif",
+    fontSize: 18,
+    color: '#6b7280',
+  }}>
+    Loading...
+  </div>
+);
 
 function App() {
   const [activeTab, setActiveTab] = useState('scout');
@@ -13,8 +26,10 @@ function App() {
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       <main>
         <ErrorBoundary>
-          {activeTab === 'scout' && <ScoutBoard />}
-          {activeTab === 'myboard' && <MyBoard />}
+          <Suspense fallback={<LoadingFallback />}>
+            {activeTab === 'scout' && <ScoutBoard />}
+            {activeTab === 'myboard' && <MyBoard />}
+          </Suspense>
         </ErrorBoundary>
       </main>
     </div>

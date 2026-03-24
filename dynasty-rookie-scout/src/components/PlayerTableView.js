@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { positionColors, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
 
 const TIER_ORDER = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
@@ -38,7 +38,7 @@ const TierDivider = ({ tier, count, compact }) => (
   </tr>
 );
 
-const PlayerRow = ({ player, perspective, onClick, isOdd, compact }) => {
+const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const topStats = getTopStats(player, perspective);
@@ -209,7 +209,7 @@ const PlayerRow = ({ player, perspective, onClick, isOdd, compact }) => {
       )}
     </tr>
   );
-};
+});
 
 const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compact }) => {
   const tierGroups = showTiers ? groupByTier(players) : null;
