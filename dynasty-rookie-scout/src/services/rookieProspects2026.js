@@ -27,8 +27,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
-    stats: { rushingYards: 1136, rushingTDs: 16, yardsPerCarry: 6.1, receptions: 28, receivingYards: 262, receivingTDs: 2, epa: 0.25 },
-    dominatorRating: 9.3, // 262 / 2815
+    stats: { rushingYards: 1372, rushingTDs: 18, yardsPerCarry: 6.9, receptions: 27, receivingYards: 280, receivingTDs: 0, epa: 0.25, pffGrade: 93.1, pffRunGrade: 93.7, elusiveRating: 127.5 },
   },
   {
     id: 2,
@@ -146,7 +145,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Penn State", year: 2025 },
-    stats: { rushingYards: 1028, rushingTDs: 10, yardsPerCarry: 5.8, receptions: 16, receivingYards: 178, receivingTDs: 1, epa: 0.18 },
+    stats: { rushingYards: 547, rushingTDs: 13, yardsPerCarry: 4.4, receptions: 24, receivingYards: 219, receivingTDs: 0, epa: 0.18, pffGrade: 77.6, pffRunGrade: 76.9, elusiveRating: 47.3 },
     dominatorRating: 6.1, // 178 / 2920
   },
   {
@@ -186,7 +185,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arkansas", year: 2025 },
-    stats: { rushingYards: 892, rushingTDs: 11, yardsPerCarry: 5.2, receptions: 22, receivingYards: 198, receivingTDs: 1, epa: 0.14 },
+    stats: { rushingYards: 1066, rushingTDs: 8, yardsPerCarry: 6.4, receptions: 28, receivingYards: 226, receivingTDs: 0, epa: 0.14, pffGrade: 78.3, pffRunGrade: 84.3, elusiveRating: 73.2 },
     dominatorRating: 8.4, // 198 / 2350
   },
   {
@@ -246,7 +245,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Washington", year: 2025 },
-    stats: { rushingYards: 1040, rushingTDs: 9, yardsPerCarry: 5.3, receptions: 18, receivingYards: 152, receivingTDs: 1, epa: 0.15 },
+    stats: { rushingYards: 758, rushingTDs: 15, yardsPerCarry: 4.8, receptions: 31, receivingYards: 346, receivingTDs: 0, epa: 0.15, pffGrade: 82.1, pffRunGrade: 83.8, elusiveRating: 85.7 },
     dominatorRating: 5.5, // 152 / 2780
   },
   {
@@ -286,7 +285,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
-    stats: { rushingYards: 760, rushingTDs: 8, yardsPerCarry: 5.8, receptions: 20, receivingYards: 185, receivingTDs: 1, epa: 0.12 },
+    stats: { rushingYards: 674, rushingTDs: 11, yardsPerCarry: 6.0, receptions: 6, receivingYards: 87, receivingTDs: 0, epa: 0.12, pffGrade: 78.6, pffRunGrade: 79.9, elusiveRating: 118.6 },
     dominatorRating: 6.6, // 185 / 2815
   },
   {
@@ -307,7 +306,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Nebraska", year: 2025 },
-    stats: { rushingYards: 982, rushingTDs: 12, yardsPerCarry: 5.2, receptions: 14, receivingYards: 118, receivingTDs: 1, epa: 0.16 },
+    stats: { rushingYards: 1450, rushingTDs: 12, yardsPerCarry: 5.8, receptions: 46, receivingYards: 370, receivingTDs: 0, epa: 0.16, pffGrade: 85.6, pffRunGrade: 88.1, elusiveRating: 88.3 },
     dominatorRating: 4.8, // 118 / 2450
   },
   {
@@ -608,27 +607,6 @@ const prospects2026Raw = [
     cfbdLookup: { team: "Stanford", year: 2025 },
   },
   {
-    id: 31,
-    name: "Devin Neal",
-    position: "RB",
-    college: "Kansas",
-    age: 22,
-    height: "5-11",
-    weight: 215,
-    projectedRound: 3,
-    projectedPick: 82,
-    projectedTeam: "SEA",
-    breakoutAge: 19,
-    playerComps: ["Kareem Hunt", "James Conner"],
-    dynastyADP: { oneQB: 31, superflex: 31 },
-    rank: { oneQB: 27, superflex: 28 },
-    injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
-    cfbdLookup: { team: "Kansas", year: 2025 },
-    stats: { rushingYards: 1148, rushingTDs: 13, yardsPerCarry: 5.4, receptions: 32, receivingYards: 310, receivingTDs: 2, epa: 0.20 },
-    dominatorRating: 12.0, // 310 / 2580
-  },
-  {
     id: 32,
     name: "Jeremiah Smith",
     position: "WR",
@@ -665,27 +643,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 2.87, targetShare: 30.0 }, // College final season at Arizona; 1,300+ yd seasons
     cfbdLookup: { team: "Arizona", year: 2025 },
-  },
-  {
-    id: 34,
-    name: "Cam Skattebo",
-    position: "RB",
-    college: "Arizona State",
-    age: 24,
-    height: "5-11",
-    weight: 218,
-    projectedRound: 2,
-    projectedPick: 60,
-    projectedTeam: "IND",
-    breakoutAge: 22,
-    playerComps: ["Raheem Mostert", "Dameon Pierce"],
-    dynastyADP: { oneQB: 34, superflex: 34 },
-    rank: { oneQB: 31, superflex: 31 },
-    injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
-    cfbdLookup: { team: "Arizona State", year: 2025 },
-    stats: { rushingYards: 1568, rushingTDs: 19, yardsPerCarry: 5.7, receptions: 42, receivingYards: 502, receivingTDs: 4, epa: 0.32 },
-    dominatorRating: 18.7, // 502 / 2680
   },
   {
     id: 35,
