@@ -50,7 +50,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
   const isWR = filters.position === 'WR';
 
   return (
-    <div style={{
+    <div className="filter-bar-root" style={{
       background: '#151825',
       borderRadius: 8,
       padding: '12px 16px',
@@ -63,7 +63,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
     }}>
       {/* Position filter */}
       <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-        <span style={{
+        <span className="filter-label" style={{
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: 11,
           color: '#6b7280',
@@ -74,6 +74,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         {positions.map(pos => (
           <button
             key={pos}
+            className="pos-btn"
             onClick={() => setFilters(f => ({ ...f, position: pos }))}
             style={buttonStyle(filters.position === pos)}
           >
@@ -84,7 +85,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
 
       {/* Draft day filter */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{
+        <span className="filter-label" style={{
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: 11,
           color: '#6b7280',
@@ -105,7 +106,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
       {/* Receiving perspective filter — WR only */}
       {isWR && (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{
+          <span className="filter-label" style={{
             fontFamily: "'Barlow Condensed', sans-serif",
             fontSize: 11,
             color: '#6b7280',
@@ -125,7 +126,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
       )}
 
       {/* Injury toggle */}
-      <label style={{
+      <label className="injury-toggle" style={{
         display: 'flex',
         alignItems: 'center',
         gap: 6,
@@ -145,7 +146,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
 
       {/* Sort */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{
+        <span className="filter-label" style={{
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: 11,
           color: '#6b7280',

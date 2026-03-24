@@ -7,7 +7,7 @@ const Header = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <header style={{
+    <header className="header-root" style={{
       background: 'linear-gradient(180deg, #1a1d2e 0%, #0f1117 100%)',
       borderBottom: '2px solid #f59e0b',
       padding: '0 24px',
@@ -20,7 +20,7 @@ const Header = ({ activeTab, setActiveTab }) => {
       zIndex: 100,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <h1 style={{
+        <h1 className="header-logo" style={{
           fontFamily: "'Barlow Condensed', sans-serif",
           fontWeight: 800,
           fontSize: 24,
@@ -31,7 +31,7 @@ const Header = ({ activeTab, setActiveTab }) => {
         }}>
           Dynasty Rookie Scout
         </h1>
-        <span style={{
+        <span className="header-class-badge" style={{
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 11,
           color: '#6b7280',
@@ -48,6 +48,7 @@ const Header = ({ activeTab, setActiveTab }) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
+            className="header-nav-btn"
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,

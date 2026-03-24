@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk, getTopStats } from '../utils/helpers';
 
-const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
+const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
@@ -189,6 +189,6 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
       </div>
     </div>
   );
-};
+});
 
 export default PlayerCard;

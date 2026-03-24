@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { positionColors, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
 
 const TIER_ORDER = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
@@ -38,7 +38,7 @@ const TierDivider = ({ tier, count, compact }) => (
   </tr>
 );
 
-const PlayerRow = ({ player, perspective, onClick, isOdd, compact }) => {
+const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const topStats = getTopStats(player, perspective);
@@ -209,70 +209,206 @@ const PlayerRow = ({ player, perspective, onClick, isOdd, compact }) => {
       )}
     </tr>
   );
-};
+});
+
+/** Mobile list row — single-column compact row for phones */
+const MobilePlayerRow = memo(({ player, perspective, onClick, isOdd }) => {
+  const posColor = positionColors[player.position] || positionColors.WR;
+  const topStats = getTopStats(player, perspective);
+  const rank1QB = player.rank?.oneQB;
+
+  return (
+    <div
+      onClick={() => onClick(player)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '10px 12px',
+        background: isOdd ? '#1a1d2e' : '#151724',
+        cursor: 'pointer',
+        borderBottom: '1px solid #1e2133',
+      }}
+    >
+      {/* Rank */}
+      <div style={{
+        fontFamily: "'Barlow Condensed', sans-serif",
+        fontWeight: rank1QB === 'UNR' ? 600 : 800,
+        fontSize: rank1QB === 'UNR' ? 11 : 18,
+        color: rank1QB === 'UNR' ? '#6b7280' : '#f1f5f9',
+        width: 32,
+        textAlign: 'center',
+        flexShrink: 0,
+        letterSpacing: rank1QB === 'UNR' ? 1 : 0,
+      }}>
+        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '—'}
+      </div>
+
+      {/* Position badge */}
+      <span style={{
+        fontFamily: "'Barlow Condensed', sans-serif",
+        fontWeight: 700,
+        fontSize: 10,
+        color: posColor.text,
+        background: posColor.bg,
+        padding: '2px 6px',
+        borderRadius: 3,
+        letterSpacing: 1,
+        flexShrink: 0,
+      }}>
+        {player.position}
+      </span>
+
+      {/* Name */}
+      <span style={{
+        fontFamily: "'Barlow Condensed', sans-serif",
+        fontWeight: 700,
+        fontSize: 14,
+        color: '#f1f5f9',
+        flex: 1,
+        minWidth: 0,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      }}>
+        {player.name}
+      </span>
+
+      {/* Draft projection */}
+      {player.draftRound && (
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          fontWeight: 700,
+          color: player.draftRound <= 1 ? '#f59e0b' : player.draftRound <= 2 ? '#22c55e' : '#60a5fa',
+          flexShrink: 0,
+        }}>
+          Rd{player.draftRound}
+        </span>
+      )}
+
+      {/* 1 key stat */}
+      {topStats[0] && (
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          color: '#9ca3af',
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ color: '#6b7280', fontSize: 8, textTransform: 'uppercase' }}>
+            {topStats[0].label}
+          </span>{' '}
+          <span style={{ color: '#f1f5f9', fontWeight: 600 }}>
+            {topStats[0].value ?? '—'}
+          </span>
+        </span>
+      )}
+    </div>
+  );
+});
 
 const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compact }) => {
   const tierGroups = showTiers ? groupByTier(players) : null;
 
+  const renderRows = (playerList) =>
+    playerList.map((player, i) => (
+      <MobilePlayerRow
+        key={player.id}
+        player={player}
+        perspective={perspective}
+        onClick={onPlayerClick}
+        isOdd={i % 2 === 1}
+      />
+    ));
+
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontFamily: "'JetBrains Mono', monospace",
-      }}>
-        <thead>
-          <tr style={{
-            borderBottom: '2px solid #2a2d3e',
-          }}>
-            {(['#', 'Player', 'School', 'Draft', 'Key Stats'].concat(compact ? [] : ['Ranks (FantasyCalc)'])).map((h) => (
-              <th key={h} style={{
-                padding: '8px 12px',
+    <div className="player-table-root">
+      {/* Desktop/tablet table */}
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontFamily: "'JetBrains Mono', monospace",
+        }}>
+          <thead>
+            <tr style={{
+              borderBottom: '2px solid #2a2d3e',
+            }}>
+              {(['#', 'Player', 'School', 'Draft', 'Key Stats'].concat(compact ? [] : ['Ranks (FantasyCalc)'])).map((h) => (
+                <th key={h} style={{
+                  padding: '8px 12px',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 11,
+                  color: '#6b7280',
+                  textAlign: 'left',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {showTiers ? (
+              tierGroups.map(({ tier, players: group }) => (
+                <React.Fragment key={tier}>
+                  <TierDivider tier={tier} count={group.length} compact={compact} />
+                  {group.map((player, i) => (
+                    <PlayerRow
+                      key={player.id}
+                      player={player}
+                      perspective={perspective}
+                      onClick={onPlayerClick}
+                      isOdd={i % 2 === 1}
+                      compact={compact}
+                    />
+                  ))}
+                </React.Fragment>
+              ))
+            ) : (
+              players.map((player, i) => (
+                <PlayerRow
+                  key={player.id}
+                  player={player}
+                  perspective={perspective}
+                  onClick={onPlayerClick}
+                  isOdd={i % 2 === 1}
+                  compact={compact}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile single-column list (shown at <=480px via CSS) */}
+      <div className="player-mobile-list">
+        {showTiers ? (
+          tierGroups.map(({ tier, players: group }) => (
+            <React.Fragment key={tier}>
+              <div style={{
+                padding: '10px 12px 4px',
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 11,
-                color: '#6b7280',
-                textAlign: 'left',
+                fontSize: 12,
+                color: tier === 'Elite' ? '#f59e0b' : tier === 'Day 1' ? '#22c55e' : tier === 'Day 2' ? '#60a5fa' : '#6b7280',
+                letterSpacing: 1.5,
                 textTransform: 'uppercase',
-                letterSpacing: 1,
-                whiteSpace: 'nowrap',
+                borderBottom: '1px solid #2a2d3e',
               }}>
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {showTiers ? (
-            tierGroups.map(({ tier, players: group }) => (
-              <React.Fragment key={tier}>
-                <TierDivider tier={tier} count={group.length} compact={compact} />
-                {group.map((player, i) => (
-                  <PlayerRow
-                    key={player.id}
-                    player={player}
-                    perspective={perspective}
-                    onClick={onPlayerClick}
-                    isOdd={i % 2 === 1}
-                    compact={compact}
-                  />
-                ))}
-              </React.Fragment>
-            ))
-          ) : (
-            players.map((player, i) => (
-              <PlayerRow
-                key={player.id}
-                player={player}
-                perspective={perspective}
-                onClick={onPlayerClick}
-                isOdd={i % 2 === 1}
-                compact={compact}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
+                {tier} <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 400 }}>({group.length})</span>
+              </div>
+              {renderRows(group)}
+            </React.Fragment>
+          ))
+        ) : (
+          renderRows(players)
+        )}
+      </div>
     </div>
   );
 };

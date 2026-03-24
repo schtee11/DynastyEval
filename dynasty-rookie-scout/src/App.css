@@ -59,3 +59,116 @@ select:focus-visible {
   outline: 2px solid #f59e0b;
   outline-offset: 2px;
 }
+
+/* ======= MOBILE RESPONSIVE STYLES ======= */
+
+/* Header — mobile */
+@media (max-width: 768px) {
+  .header-root {
+    padding: 0 12px !important;
+    height: 52px !important;
+  }
+  .header-logo {
+    font-size: 18px !important;
+    letter-spacing: 1px !important;
+  }
+  .header-class-badge {
+    display: none !important;
+  }
+  .header-nav-btn {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    letter-spacing: 1px !important;
+  }
+}
+
+/* FilterBar — tablet: compact row */
+@media (max-width: 768px) {
+  .filter-bar-root {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    position: sticky;
+    top: 52px;
+    z-index: 90;
+  }
+  .filter-bar-root .filter-label {
+    display: none !important;
+  }
+  .filter-bar-root .pos-btn {
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+  }
+  .filter-bar-root select {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+  }
+  .filter-bar-root .injury-toggle {
+    font-size: 11px !important;
+  }
+}
+
+/* ScoutBoard padding — mobile */
+@media (max-width: 768px) {
+  .scout-board-root {
+    padding: 12px 8px !important;
+  }
+}
+
+/* Table view — mobile list rows at 480px */
+@media (max-width: 480px) {
+  .player-table-root table {
+    display: none !important;
+  }
+  .player-mobile-list {
+    display: block !important;
+  }
+}
+@media (min-width: 481px) {
+  .player-mobile-list {
+    display: none !important;
+  }
+}
+
+/* PlayerDetailModal — full-screen on mobile */
+@media (max-width: 768px) {
+  .detail-modal-panel {
+    width: 100% !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+  }
+  .detail-modal-body-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* MyBoard — mobile */
+@media (max-width: 768px) {
+  .myboard-root {
+    padding: 12px 8px !important;
+  }
+  .myboard-tab-bar {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .myboard-tab-bar .myboard-tabs {
+    width: 100%;
+    display: flex;
+  }
+  .myboard-tab-bar .myboard-tabs button {
+    flex: 1;
+  }
+  .myboard-row-stats {
+    display: none !important;
+  }
+}
+
+/* Footer — mobile */
+@media (max-width: 768px) {
+  .footer-root .footer-inner {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+  .footer-root .footer-right {
+    text-align: center !important;
+  }
+}
