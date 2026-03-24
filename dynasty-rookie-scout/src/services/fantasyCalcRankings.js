@@ -15,7 +15,8 @@ const normalizeName = (name) =>
   (name || '')
     .toLowerCase()
     .replace(/\s+(jr\.?|sr\.?|ii|iii|iv|v)$/i, '')
-    .replace(/[.']/g, '')
+    .replace(/[^a-z ]/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
 
 /**
@@ -182,6 +183,13 @@ export const applyFantasyCalcRankings = async (players) => {
   if (matched > 0) {
     const top3 = oneQBRanked.slice(0, 3).map((e) => `${enriched[e.index].name} (${e.value})`);
     console.info('[FantasyCalc] Top 3 rookies by value:', top3.join(', '));
+  }
+  if (matched < total) {
+    const matchedIndices = new Set(matchedEntries.map((e) => e.index));
+    const unmatched = players
+      .filter((_, i) => !matchedIndices.has(i))
+      .map((p) => `${p.name} (${p.position}, sleeperId: ${p.sleeperId || 'none'}, normalized: "${normalizeName(p.name)}")`);
+    console.warn(`[FantasyCalc] Unmatched players (${unmatched.length}):`, unmatched.join('; '));
   }
 
   return result;
