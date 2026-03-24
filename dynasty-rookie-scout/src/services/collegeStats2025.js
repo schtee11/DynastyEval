@@ -133,6 +133,22 @@ const collegeStats2025 = {
     scrambles: 37,
     gamesPlayed: 12,
   },
+
+  // ── RBs ──────────────────────────────────────────────────────────────────
+  "jeremiyah love": {
+    position: "RB",
+    team: "Notre Dame",
+    rushing: { YDS: 1372, TD: 18, CAR: 199 },
+    receiving: { REC: 27, YDS: 280, TD: 0, TARGETS: 34 },
+    ppa: { averagePPA: { all: 0.25 } },
+    teamRecYdsTotal: 2815,
+    teamTargetsTotal: 340,
+    pffGrade: 93.1,
+    pffRunGrade: 93.7,
+    elusiveRating: 127.5,
+    longest: 56,
+    gamesPlayed: 12,
+  },
   "nicholas singleton": {
     position: "RB",
     team: "Penn State",
