@@ -7,22 +7,47 @@ const RANKINGS_URL =
 
 let cache = null;
 
+/**
+ * Normalize a player name for matching.
+ * Strips suffixes (Jr., III, etc.), lowercases, trims whitespace.
+ */
+const normalizeName = (name) =>
+  (name || '')
+    .toLowerCase()
+    .replace(/\s+(jr\.?|sr\.?|ii|iii|iv|v)$/i, '')
+    .replace(/[.']/g, '')
+    .trim();
+
 export const fetchFantasyCalcRankings = async () => {
   if (cache) return cache;
 
   try {
-    const res = await fetch(RANKINGS_URL);
+    // Google Apps Script returns a 302 redirect — fetch follows it by default
+    const res = await fetch(RANKINGS_URL, { redirect: 'follow' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
 
-    // Build lookup maps keyed by sleeperId for fast matching
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error('[FantasyCalc] Response is not JSON:', text.substring(0, 200));
+      return null;
+    }
+
+    if (!data.oneQB && !data.superflex) {
+      console.warn('[FantasyCalc] Unexpected data shape:', Object.keys(data));
+      return null;
+    }
+
+    // Build lookup maps keyed by sleeperId and normalized name for matching
     const buildLookup = (rows) => {
       const bySleeperId = {};
       const byName = {};
       rows.forEach((row, i) => {
         const entry = { ...row, rookieRank: i + 1 };
         if (row.sleeperId) bySleeperId[String(row.sleeperId)] = entry;
-        if (row.name) byName[row.name.toLowerCase().trim()] = entry;
+        if (row.name) byName[normalizeName(row.name)] = entry;
       });
       return { bySleeperId, byName };
     };
@@ -55,8 +80,8 @@ const findPlayer = (lookup, player) => {
     const match = lookup.bySleeperId[String(player.sleeperId)];
     if (match) return match;
   }
-  // Fallback: name match
-  const nameKey = (player.name || '').toLowerCase().trim();
+  // Fallback: normalized name match
+  const nameKey = normalizeName(player.name);
   return lookup.byName[nameKey] || null;
 };
 
@@ -68,12 +93,19 @@ export const applyFantasyCalcRankings = async (players) => {
   const rankings = await fetchFantasyCalcRankings();
   if (!rankings) return players; // Graceful fallback — keep existing ranks
 
-  return players.map((player) => {
+  let matched = 0;
+  let unmatched = 0;
+
+  const result = players.map((player) => {
     const oneQBMatch = findPlayer(rankings.oneQB, player);
     const sfMatch = findPlayer(rankings.superflex, player);
 
-    if (!oneQBMatch && !sfMatch) return player;
+    if (!oneQBMatch && !sfMatch) {
+      unmatched++;
+      return player;
+    }
 
+    matched++;
     return {
       ...player,
       rank: {
@@ -86,4 +118,7 @@ export const applyFantasyCalcRankings = async (players) => {
       },
     };
   });
+
+  console.info(`[FantasyCalc] Matched ${matched}/${matched + unmatched} players`);
+  return result;
 };
