@@ -98,25 +98,28 @@ export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective =
   const getYprr = (p) => p.receivingByPerspective?.[perspective]?.yprr ?? p.yprr ?? 0;
   const getRecGrade = (p) => p.receivingByPerspective?.[perspective]?.recGrade ?? 0;
   const getTgtPerRR = (p) => p.receivingByPerspective?.[perspective]?.tgtPerRR ?? 0;
+  // Stable tiebreaker: when primary sort values are equal, fall back to rank then id
+  const tiebreak = (a, b) => (getRank(a) - getRank(b)) || (a.id - b.id);
+  const stableSort = (compareFn) => sorted.sort((a, b) => compareFn(a, b) || tiebreak(a, b));
   switch (sortBy) {
     case 'rank':
-      return sorted.sort((a, b) => getRank(a) - getRank(b));
+      return stableSort((a, b) => getRank(a) - getRank(b));
     case 'adp':
-      return sorted.sort((a, b) => getAdp(a) - getAdp(b));
+      return stableSort((a, b) => getAdp(a) - getAdp(b));
     case 'draftCapital':
-      return sorted.sort((a, b) => (a.draftPick || 999) - (b.draftPick || 999));
+      return stableSort((a, b) => (a.draftPick || 999) - (b.draftPick || 999));
     case 'breakoutAge':
-      return sorted.sort((a, b) => (a.breakoutAge || 99) - (b.breakoutAge || 99));
+      return stableSort((a, b) => (a.breakoutAge || 99) - (b.breakoutAge || 99));
     case 'yprr':
-      return sorted.sort((a, b) => getYprr(b) - getYprr(a));
+      return stableSort((a, b) => getYprr(b) - getYprr(a));
     case 'dominator':
-      return sorted.sort((a, b) => (b.dominatorRating || 0) - (a.dominatorRating || 0));
+      return stableSort((a, b) => (b.dominatorRating || 0) - (a.dominatorRating || 0));
     case 'recGrade':
-      return sorted.sort((a, b) => getRecGrade(b) - getRecGrade(a));
+      return stableSort((a, b) => getRecGrade(b) - getRecGrade(a));
     case 'tgtPerRR':
-      return sorted.sort((a, b) => getTgtPerRR(b) - getTgtPerRR(a));
+      return stableSort((a, b) => getTgtPerRR(b) - getTgtPerRR(a));
     default:
-      return sorted.sort((a, b) => getRank(a) - getRank(b));
+      return stableSort((a, b) => getRank(a) - getRank(b));
   }
 };
 
