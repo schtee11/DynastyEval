@@ -20,7 +20,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "audit-stats": "node scripts/auditPlayerStats.js",
+    "audit-stats:ci": "node scripts/auditPlayerStats.js --ci"
   },
   "eslintConfig": {
     "extends": "react-app"
