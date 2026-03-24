@@ -398,6 +398,8 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                           </>
                         ) : modalPerspective === 'overall' ? (
                           <>
+                            <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
+                            <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                             <StatRow label="Routes Run" value={val('routesRun')} />
                             <StatRow label="Targets" value={val('targets')} />
                             <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />

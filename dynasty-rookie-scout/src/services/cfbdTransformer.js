@@ -253,6 +253,12 @@ const fillFromStaticData = (players) => {
     if (player.ycoPerAttempt == null && staticData.ycoPerAttempt != null) player.ycoPerAttempt = staticData.ycoPerAttempt;
     if (player.explosiveRuns == null && staticData.explosiveRuns != null) player.explosiveRuns = staticData.explosiveRuns;
 
+    // Fill EPA from PPA data
+    if (player.stats && player.stats.epa == null && staticData.ppa) {
+      const epaVal = staticData.ppa.averagePPA?.all ?? null;
+      if (epaVal != null) player.stats.epa = +Number(epaVal).toFixed(2);
+    }
+
     // Fill receiving metrics from static PFF data (WR / TE)
     if (player.yardsAfterCatch == null && staticData.yardsAfterCatch != null) player.yardsAfterCatch = staticData.yardsAfterCatch;
     if (player.yardsAfterCatchPerRec == null && staticData.yardsAfterCatchPerRec != null) player.yardsAfterCatchPerRec = staticData.yardsAfterCatchPerRec;
