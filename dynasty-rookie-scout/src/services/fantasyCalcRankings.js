@@ -1,5 +1,6 @@
-// Fetches live dynasty rookie rankings from FantasyCalc via Google Sheets proxy
-// Rankings are sorted by value (highest first), so array index + 1 = rookie rank
+// Fetches live dynasty values from FantasyCalc via Google Sheets proxy.
+// The sheet may contain ALL dynasty players — we match against our prospect
+// database and derive rookie ranks by sorting matched players by value.
 
 const RANKINGS_URL =
   'https://script.google.com/macros/s/AKfycbw74MLi2U_OIz0KHsWftXW0EXhz_a3UZHBZKaxwF1x1M52ewvbY5uQPUsHxH_qseUIN/exec';
@@ -19,37 +20,24 @@ const normalizeName = (name) =>
 
 /**
  * Normalize a single row from the Google Sheet into a consistent shape.
- * The sheet may use "Name", "name", "Position", "pos", "Sleeper ID", "sleeperId", etc.
  */
 const normalizeRow = (row) => ({
   name: row.name || row.Name || row.player || row.Player || '',
   pos: row.pos || row.position || row.Position || row.Pos || '',
-  value: row.value || row.Value || row.val || 0,
-  sleeperId: row.sleeperId || row['Sleeper ID'] || row.sleeper_id || row.SleeperID || row.sleeperID || '',
-  rank: row.rank || row.Rank || null,
+  value: Number(row.value || row.Value || row.val || 0),
+  sleeperId: String(row.sleeperId || row['Sleeper ID'] || row.sleeper_id || row.SleeperID || row.sleeperID || ''),
 });
 
 /**
- * Build lookup maps from an array of rows (keyed by sleeperId and normalized name).
- * Rows are assumed sorted by value descending — index + 1 = rookie rank.
+ * Fetch raw rows from the Google Sheet and build lookup maps.
+ * Lookups store the FantasyCalc value (NOT rank) — rookie ranks are
+ * computed later after matching against the prospect database.
  */
-const buildLookup = (rows) => {
-  const bySleeperId = {};
-  const byName = {};
-  rows.forEach((raw, i) => {
-    const row = normalizeRow(raw);
-    const entry = { ...row, rookieRank: i + 1 };
-    if (row.sleeperId) bySleeperId[String(row.sleeperId)] = entry;
-    if (row.name) byName[normalizeName(row.name)] = entry;
-  });
-  return { bySleeperId, byName };
-};
-
-export const fetchFantasyCalcRankings = async () => {
+const fetchRawValues = async () => {
   if (cache) return cache;
 
   try {
-    const res = await fetch(RANKINGS_URL, { redirect: 'follow' });
+    const res = await fetch(RANKINGS_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const text = await res.text();
@@ -61,112 +49,140 @@ export const fetchFantasyCalcRankings = async () => {
       return null;
     }
 
-    // Log the raw shape so we can diagnose format issues
-    const isArray = Array.isArray(data);
-    console.info('[FantasyCalc] Raw response shape:', isArray ? `array[${data.length}]` : Object.keys(data));
-    if (!isArray && typeof data === 'object') {
-      const firstKey = Object.keys(data)[0];
-      if (firstKey && Array.isArray(data[firstKey])) {
-        console.info('[FantasyCalc] First key sample:', JSON.stringify(data[firstKey][0]).substring(0, 200));
-      }
-    } else if (isArray && data.length > 0) {
-      console.info('[FantasyCalc] First row sample:', JSON.stringify(data[0]).substring(0, 200));
-    }
-
-    let oneQBRows, sfRows;
-
-    if (isArray) {
-      // Flat array — use same rankings for both formats
-      oneQBRows = data;
-      sfRows = data;
+    // Extract the rows array from whatever shape the response has
+    let rows;
+    if (Array.isArray(data)) {
+      rows = data;
+    } else if (data.rows && Array.isArray(data.rows)) {
+      rows = data.rows;
     } else if (data.oneQB || data.superflex) {
-      // Expected { oneQB: [...], superflex: [...] }
-      oneQBRows = data.oneQB || data.superflex || [];
-      sfRows = data.superflex || data.oneQB || [];
+      // If the sheet ever returns separate formats, handle it
+      return {
+        hasFormats: true,
+        oneQB: buildValueLookup(data.oneQB || data.superflex || []),
+        superflex: buildValueLookup(data.superflex || data.oneQB || []),
+      };
     } else {
-      // Try to find array values in whatever keys exist
       const keys = Object.keys(data);
-      const arrays = keys.filter((k) => Array.isArray(data[k]));
-      if (arrays.length >= 2) {
-        oneQBRows = data[arrays[0]];
-        sfRows = data[arrays[1]];
-      } else if (arrays.length === 1) {
-        oneQBRows = data[arrays[0]];
-        sfRows = data[arrays[0]];
+      const arrayKey = keys.find((k) => Array.isArray(data[k]));
+      if (arrayKey) {
+        rows = data[arrayKey];
       } else {
-        console.error('[FantasyCalc] Cannot find ranking arrays in response:', keys);
+        console.error('[FantasyCalc] Cannot find data rows in response:', keys);
         return null;
       }
     }
 
-    cache = {
-      oneQB: buildLookup(oneQBRows),
-      superflex: buildLookup(sfRows),
-    };
+    console.info(`[FantasyCalc] Fetched ${rows.length} players from sheet`);
+    if (rows.length > 0) {
+      console.info('[FantasyCalc] Sample row:', JSON.stringify(rows[0]).substring(0, 200));
+    }
 
-    console.info('[FantasyCalc] Loaded rankings:', {
-      oneQB: oneQBRows.length,
-      superflex: sfRows.length,
-    });
-
+    cache = { hasFormats: false, values: buildValueLookup(rows) };
     return cache;
   } catch (err) {
-    console.warn('[FantasyCalc] Failed to fetch rankings:', err.message);
+    console.warn('[FantasyCalc] Failed to fetch:', err.message);
     return null;
   }
 };
 
 /**
- * Match a player to their FantasyCalc ranking entry.
- * Tries sleeperId first, then falls back to normalized name match.
+ * Build lookup maps keyed by sleeperId and normalized name.
+ * Stores the FantasyCalc dynasty value for each player.
  */
-const findPlayer = (lookup, player) => {
+const buildValueLookup = (rows) => {
+  const bySleeperId = {};
+  const byName = {};
+  for (const raw of rows) {
+    const row = normalizeRow(raw);
+    if (!row.name) continue;
+    const entry = { name: row.name, pos: row.pos, value: row.value, sleeperId: row.sleeperId };
+    if (row.sleeperId) bySleeperId[row.sleeperId] = entry;
+    byName[normalizeName(row.name)] = entry;
+  }
+  return { bySleeperId, byName };
+};
+
+/**
+ * Find a player's FantasyCalc entry by sleeperId or name.
+ */
+const findInLookup = (lookup, player) => {
   if (!lookup) return null;
   if (player.sleeperId) {
     const match = lookup.bySleeperId[String(player.sleeperId)];
     if (match) return match;
   }
-  const nameKey = normalizeName(player.name);
-  return lookup.byName[nameKey] || null;
+  return lookup.byName[normalizeName(player.name)] || null;
 };
 
 /**
- * Apply FantasyCalc rankings to an array of players.
- * Updates player.rank.oneQB and player.rank.superflex with live rookie ranks.
+ * Apply FantasyCalc dynasty values and compute rookie ranks.
+ *
+ * 1. Match each player to a FantasyCalc entry (by sleeperId, then name)
+ * 2. Attach the dynasty value
+ * 3. Sort matched players by value descending → derive rookie rank
+ * 4. Write rank back to each player
  */
 export const applyFantasyCalcRankings = async (players) => {
-  const rankings = await fetchFantasyCalcRankings();
-  if (!rankings) return players;
+  const data = await fetchRawValues();
+  if (!data) return players;
 
-  let matched = 0;
-  const unmatched = [];
+  // Step 1: Match players to FantasyCalc values
+  const lookup = data.hasFormats ? data.oneQB : data.values;
+  const sfLookup = data.hasFormats ? data.superflex : data.values;
 
-  const result = players.map((player) => {
-    const oneQBMatch = findPlayer(rankings.oneQB, player);
-    const sfMatch = findPlayer(rankings.superflex, player);
+  const matchedEntries = []; // { index, value, sfValue }
 
-    if (!oneQBMatch && !sfMatch) {
-      unmatched.push(player.name);
-      return player;
-    }
+  const enriched = players.map((player, i) => {
+    const match = findInLookup(lookup, player);
+    const sfMatch = data.hasFormats ? findInLookup(sfLookup, player) : match;
 
-    matched++;
+    if (!match && !sfMatch) return player;
+
+    matchedEntries.push({
+      index: i,
+      value: match?.value ?? 0,
+      sfValue: sfMatch?.value ?? 0,
+    });
+
     return {
       ...player,
-      rank: {
-        oneQB: oneQBMatch?.rookieRank ?? player.rank?.oneQB ?? null,
-        superflex: sfMatch?.rookieRank ?? player.rank?.superflex ?? null,
-      },
       fantasyCalcValue: {
-        oneQB: oneQBMatch?.value ?? null,
+        oneQB: match?.value ?? null,
         superflex: sfMatch?.value ?? null,
       },
     };
   });
 
-  console.info(`[FantasyCalc] Matched ${matched}/${matched + unmatched.length} players`);
-  if (unmatched.length > 0) {
-    console.warn('[FantasyCalc] Unmatched players:', unmatched);
+  // Step 2: Derive rookie ranks by sorting matched players by value
+  const oneQBRanked = [...matchedEntries].sort((a, b) => b.value - a.value);
+  const sfRanked = [...matchedEntries].sort((a, b) => b.sfValue - a.sfValue);
+
+  // Build index → rookie rank maps
+  const oneQBRankMap = {};
+  const sfRankMap = {};
+  oneQBRanked.forEach((e, rank) => { oneQBRankMap[e.index] = rank + 1; });
+  sfRanked.forEach((e, rank) => { sfRankMap[e.index] = rank + 1; });
+
+  // Step 3: Write ranks back
+  const result = enriched.map((player, i) => {
+    if (!(i in oneQBRankMap) && !(i in sfRankMap)) return player;
+    return {
+      ...player,
+      rank: {
+        oneQB: oneQBRankMap[i] ?? player.rank?.oneQB ?? null,
+        superflex: sfRankMap[i] ?? player.rank?.superflex ?? null,
+      },
+    };
+  });
+
+  const matched = matchedEntries.length;
+  const total = players.length;
+  console.info(`[FantasyCalc] Matched ${matched}/${total} players, rookie ranks assigned`);
+  if (matched > 0) {
+    const top3 = oneQBRanked.slice(0, 3).map((e) => `${enriched[e.index].name} (${e.value})`);
+    console.info('[FantasyCalc] Top 3 rookies by value:', top3.join(', '));
   }
+
   return result;
 };
