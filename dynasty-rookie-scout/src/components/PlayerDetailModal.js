@@ -92,21 +92,21 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
     if (player.position === 'QB') {
       return [
-        { stat: 'EPA', value: Math.min(100, ((s.epa || 0) / 0.4) * 100), fullMark: 100 },
         { stat: 'Comp %', value: Math.min(100, ((s.completionPct || 0) / 80) * 100), fullMark: 100 },
         { stat: 'Pass TDs', value: Math.min(100, ((s.passingTDs || 0) / 45) * 100), fullMark: 100 },
         { stat: 'Pass YDs', value: Math.min(100, ((s.passingYards || 0) / 5000) * 100), fullMark: 100 },
-        { stat: 'Rush', value: Math.min(100, ((s.rushingYards || 0) / 800) * 100), fullMark: 100 },
+        { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 800) * 100), fullMark: 100 },
+        { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 15) * 100), fullMark: 100 },
       ];
     }
 
     if (player.position === 'RB') {
       return [
-        { stat: 'EPA', value: Math.min(100, ((s.epa || 0) / 0.4) * 100), fullMark: 100 },
         { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 2000) * 100), fullMark: 100 },
         { stat: 'YPC', value: Math.min(100, ((s.yardsPerCarry || 0) / 8) * 100), fullMark: 100 },
         { stat: 'Receiving', value: Math.min(100, ((s.receivingYards || 0) / 500) * 100), fullMark: 100 },
         { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 20) * 100), fullMark: 100 },
+        { stat: 'MTF', value: Math.min(100, ((player.avoidedTackles || 0) / 60) * 100), fullMark: 100 },
       ];
     }
 
@@ -302,7 +302,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               {/* QB stats — from CFBD API */}
               {player.position === 'QB' && (
                 <>
-                  <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                   <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" />
                   <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} />
                   <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} />
@@ -315,7 +314,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               {/* RB stats — from CFBD API */}
               {player.position === 'RB' && (
                 <>
-                  <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                   <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} />
                   <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} />
                   <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} />
@@ -332,7 +330,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               {/* TE stats */}
               {player.position === 'TE' && (
                 <>
-                  <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                   <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
                   <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} />
                   <StatRow label="Routes Run" value={player.routesRun} />
@@ -398,6 +395,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                           </>
                         ) : modalPerspective === 'overall' ? (
                           <>
+                            <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                             <StatRow label="Routes Run" value={val('routesRun')} />
                             <StatRow label="Targets" value={val('targets')} />
                             <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
@@ -427,7 +425,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                     ) : (
                       <>
                         {/* WR fallback — CFBD stats */}
-                        <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                         <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
                         <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
                         <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
