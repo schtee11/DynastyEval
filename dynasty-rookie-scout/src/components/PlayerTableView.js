@@ -1,5 +1,5 @@
 import React from 'react';
-import { positionColors, getDraftCapitalInfo, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
+import { positionColors, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
 
 const TIER_ORDER = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
 
@@ -40,7 +40,6 @@ const TierDivider = ({ tier, count }) => (
 
 const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
-  const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
   const topStats = getTopStats(player, perspective);
   const rank1QB = player.rank?.oneQB;
