@@ -44,8 +44,15 @@ const ScoutBoard = () => {
   // Show tier dividers only when sorted by draft capital
   const showTiers = sortBy === 'draftCapital';
 
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
+  const panelOpen = !!selectedPlayer && isDesktop;
+
   return (
-    <div style={{ padding: '20px 24px 20px 12px' }}>
+    <div style={{
+      padding: '20px 24px 20px 12px',
+      marginRight: panelOpen ? 570 : 0,
+      transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+    }}>
       <FilterBar
         filters={filters}
         setFilters={setFilters}
@@ -190,6 +197,7 @@ const ScoutBoard = () => {
           perspective={perspective}
           onPlayerClick={setSelectedPlayer}
           showTiers={showTiers}
+          compact={panelOpen}
         />
       )}
 
