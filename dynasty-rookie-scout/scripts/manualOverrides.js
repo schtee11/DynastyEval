@@ -259,4 +259,190 @@ module.exports = {
     teamRecYdsTotal: 2120,
     teamTargetsTotal: 270
   },
+  "sam roush": {
+    team: "Stanford",
+    ppa: { averagePPA: { all: 0.16 } },
+    teamRecYdsTotal: 2450,
+    teamTargetsTotal: 310
+  },
+  "oscar delp": {
+    team: "Georgia",
+    ppa: { averagePPA: { all: 0.15 } },
+    teamRecYdsTotal: 3100,
+    teamTargetsTotal: 370
+  },
+  "michael trigg": {
+    team: "Baylor",
+    ppa: { averagePPA: { all: 0.14 } },
+    teamRecYdsTotal: 2300,
+    teamTargetsTotal: 290
+  },
+  "jack endries": {
+    team: "Texas",
+    ppa: { averagePPA: { all: 0.15 } },
+    teamRecYdsTotal: 3200,
+    teamTargetsTotal: 380
+  },
+  "joe royer": {
+    team: "Cincinnati",
+    ppa: { averagePPA: { all: 0.14 } },
+    teamRecYdsTotal: 2400,
+    teamTargetsTotal: 300
+  },
+  "eli raridon": {
+    team: "Notre Dame",
+    ppa: { averagePPA: { all: 0.14 } },
+    teamRecYdsTotal: 2815,
+    teamTargetsTotal: 340
+  },
+  "nate boerkircher": {
+    team: "Texas A&M",
+    ppa: { averagePPA: { all: 0.13 } },
+    teamRecYdsTotal: 2700,
+    teamTargetsTotal: 330
+  },
+  "tanner koziol": {
+    team: "Houston",
+    ppa: { averagePPA: { all: 0.13 } },
+    teamRecYdsTotal: 2350,
+    teamTargetsTotal: 295
+  },
+  "will kacmarek": {
+    team: "Ohio State",
+    ppa: { averagePPA: { all: 0.13 } },
+    teamRecYdsTotal: 3350,
+    teamTargetsTotal: 395
+  },
+  "dae'quan wright": {
+    team: "Mississippi",
+    ppa: { averagePPA: { all: 0.13 } },
+    teamRecYdsTotal: 2600,
+    teamTargetsTotal: 320
+  },
+  "dallen bentley": {
+    team: "Utah",
+    ppa: { averagePPA: { all: 0.12 } },
+    teamRecYdsTotal: 2500,
+    teamTargetsTotal: 310
+  },
+  "marlin klein": {
+    team: "Michigan",
+    ppa: { averagePPA: { all: 0.12 } },
+    teamRecYdsTotal: 2200,
+    teamTargetsTotal: 280
+  },
+  "john michael gyllenborg": {
+    team: "Wyoming",
+    ppa: { averagePPA: { all: 0.12 } },
+    teamRecYdsTotal: 1950,
+    teamTargetsTotal: 250
+  },
+  "riley nowakowski": {
+    team: "Indiana",
+    ppa: { averagePPA: { all: 0.12 } },
+    teamRecYdsTotal: 3000,
+    teamTargetsTotal: 360
+  },
+  "josh cuevas": {
+    team: "Alabama",
+    ppa: { averagePPA: { all: 0.12 } },
+    teamRecYdsTotal: 2900,
+    teamTargetsTotal: 350
+  },
+  "dj rogers": {
+    team: "TCU",
+    ppa: { averagePPA: { all: 0.11 } },
+    teamRecYdsTotal: 2550,
+    teamTargetsTotal: 315
+  },
+  "matthew hibner": {
+    team: "SMU",
+    ppa: { averagePPA: { all: 0.11 } },
+    teamRecYdsTotal: 2800,
+    teamTargetsTotal: 340
+  },
+  "lake mcree": {
+    team: "USC",
+    ppa: { averagePPA: { all: 0.11 } },
+    teamRecYdsTotal: 2900,
+    teamTargetsTotal: 345
+  },
+  "bauer sharp": {
+    team: "LSU",
+    ppa: { averagePPA: { all: 0.11 } },
+    teamRecYdsTotal: 3100,
+    teamTargetsTotal: 370
+  },
+  "dan villari": {
+    team: "Syracuse",
+    ppa: { averagePPA: { all: 0.10 } },
+    teamRecYdsTotal: 2200,
+    teamTargetsTotal: 280
+  },
+  "miles kitselman": {
+    team: "Tennessee",
+    ppa: { averagePPA: { all: 0.10 } },
+    teamRecYdsTotal: 2650,
+    teamTargetsTotal: 325
+  },
+  "r.j. maryland": {
+    team: "SMU",
+    ppa: { averagePPA: { all: 0.10 } },
+    teamRecYdsTotal: 2800,
+    teamTargetsTotal: 340
+  },
+  "lance mason": {
+    team: "Wisconsin",
+    ppa: { averagePPA: { all: 0.10 } },
+    teamRecYdsTotal: 2100,
+    teamTargetsTotal: 270
+  },
+  "khalil dinkins": {
+    team: "Penn State",
+    ppa: { averagePPA: { all: 0.10 } },
+    teamRecYdsTotal: 2750,
+    teamTargetsTotal: 335
+  },
+  "seydou traore": {
+    team: "Mississippi State",
+    ppa: { averagePPA: { all: 0.09 } },
+    teamRecYdsTotal: 2100,
+    teamTargetsTotal: 270
+  },
+  "jaren kanak": {
+    team: "Oklahoma",
+    ppa: { averagePPA: { all: 0.09 } },
+    teamRecYdsTotal: 2600,
+    teamTargetsTotal: 320
+  },
+  "tanner arkin": {
+    team: "Illinois",
+    ppa: { averagePPA: { all: 0.09 } },
+    teamRecYdsTotal: 2300,
+    teamTargetsTotal: 290
+  },
+  "jameson geers": {
+    team: "Minnesota",
+    ppa: { averagePPA: { all: 0.09 } },
+    teamRecYdsTotal: 2200,
+    teamTargetsTotal: 280
+  },
+  "davin stoffel": {
+    team: "Illinois",
+    ppa: { averagePPA: { all: 0.08 } },
+    teamRecYdsTotal: 2300,
+    teamTargetsTotal: 290
+  },
+  "amari niblack": {
+    team: "Texas A&M",
+    ppa: { averagePPA: { all: 0.08 } },
+    teamRecYdsTotal: 2700,
+    teamTargetsTotal: 330
+  },
+  "holden staes": {
+    team: "Indiana",
+    ppa: { averagePPA: { all: 0.08 } },
+    teamRecYdsTotal: 3000,
+    teamTargetsTotal: 360
+  },
 };
