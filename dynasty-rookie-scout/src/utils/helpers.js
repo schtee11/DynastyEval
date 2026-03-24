@@ -22,6 +22,16 @@ export const getDraftCapitalInfo = (pick) => {
 
 export const hasInjuryRisk = (player) => player.injuries && player.injuries.length > 0;
 
+/** Tier label for section dividers — based on draft capital */
+export const getTierForPlayer = (player) => {
+  const pick = player.draftPick;
+  if (!pick) return 'Undrafted / TBD';
+  if (pick <= 10) return 'Elite';
+  if (pick <= 32) return 'Day 1';
+  if (pick <= 100) return 'Day 2';
+  return 'Day 3';
+};
+
 export const getTopStats = (player, perspective = 'overall') => {
   const { position, stats } = player;
 

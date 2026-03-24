@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PlayerCard from './PlayerCard';
+import PlayerTableView from './PlayerTableView';
 import PlayerDetailModal from './PlayerDetailModal';
 import FilterBar from './FilterBar';
 import { getPlayers, isUsingLiveData } from '../services/dataService';
@@ -10,6 +11,7 @@ const ScoutBoard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [viewMode, setViewMode] = useState('table');
   const [filters, setFilters] = useState({
     position: 'ALL',
     draftDay: '',
@@ -38,6 +40,9 @@ const ScoutBoard = () => {
 
   const filtered = filterPlayers(players, filters);
   const sorted = sortPlayers(filtered, sortBy, 'oneQB', perspective);
+
+  // Show tier dividers only when sorted by rank or draft capital
+  const showTiers = sortBy === 'rank' || sortBy === 'draftCapital';
 
   return (
     <div style={{ padding: '20px 24px' }}>
@@ -92,6 +97,46 @@ const ScoutBoard = () => {
             </span>
           )}
         </span>
+
+        {/* View toggle */}
+        <div style={{
+          display: 'flex',
+          gap: 0,
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontWeight: 700,
+          fontSize: 12,
+          letterSpacing: 0.5,
+        }}>
+          <button
+            onClick={() => setViewMode('table')}
+            style={{
+              padding: '5px 14px',
+              border: '1px solid #2a2d3e',
+              borderRadius: '4px 0 0 4px',
+              background: viewMode === 'table' ? '#2a2d3e' : 'transparent',
+              color: viewMode === 'table' ? '#f1f5f9' : '#6b7280',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            TABLE
+          </button>
+          <button
+            onClick={() => setViewMode('cards')}
+            style={{
+              padding: '5px 14px',
+              border: '1px solid #2a2d3e',
+              borderLeft: 'none',
+              borderRadius: '0 4px 4px 0',
+              background: viewMode === 'cards' ? '#2a2d3e' : 'transparent',
+              color: viewMode === 'cards' ? '#f1f5f9' : '#6b7280',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            CARDS
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -138,20 +183,33 @@ const ScoutBoard = () => {
         </div>
       )}
 
-      {!loading && <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-        gap: 16,
-      }}>
-        {sorted.map(player => (
-          <PlayerCard
-            key={player.id}
-            player={player}
-            perspective={perspective}
-            onClick={setSelectedPlayer}
-          />
-        ))}
-      </div>}
+      {/* Table View (default) */}
+      {!loading && viewMode === 'table' && sorted.length > 0 && (
+        <PlayerTableView
+          players={sorted}
+          perspective={perspective}
+          onPlayerClick={setSelectedPlayer}
+          showTiers={showTiers}
+        />
+      )}
+
+      {/* Card View (legacy) */}
+      {!loading && viewMode === 'cards' && sorted.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gap: 16,
+        }}>
+          {sorted.map(player => (
+            <PlayerCard
+              key={player.id}
+              player={player}
+              perspective={perspective}
+              onClick={setSelectedPlayer}
+            />
+          ))}
+        </div>
+      )}
 
       {!loading && sorted.length === 0 && (
         <div style={{
