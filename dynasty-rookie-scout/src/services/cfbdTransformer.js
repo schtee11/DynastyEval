@@ -81,7 +81,7 @@ const enrichFromStatic = (player) => {
   const staticData = getStaticCollegeStats(player.name);
   if (!staticData) return null;
 
-  const { passing, rushing, receiving, ppa, teamRecYdsTotal, teamTargetsTotal } = staticData;
+  const { passing, rushing, receiving, ppa, teamTargetsTotal } = staticData;
 
   // Position-specific stat builder
   let stats;
@@ -207,7 +207,7 @@ const fillFromStaticData = (players) => {
     if (player.position === 'WR' || !player.stats) continue;
     const staticData = getStaticCollegeStats(player.name);
     if (!staticData) continue;
-    const { receiving, teamRecYdsTotal, teamTargetsTotal } = staticData;
+    const { receiving, teamTargetsTotal } = staticData;
 
     // Fill advanced rushing metrics from static PFF data
     if (player.yardsAfterContact == null && staticData.yardsAfterContact != null) player.yardsAfterContact = staticData.yardsAfterContact;
