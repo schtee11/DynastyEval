@@ -26,7 +26,7 @@ const MyBoard = () => {
       }
       setAllPlayers(data);
 
-      const safeRank = (p, key) => p.rank?.[key] ?? 999;
+      const safeRank = (p, key) => { const r = p.rank?.[key]; return (r == null || r === 'UNR') ? 999 : r; };
 
       // Load from localStorage or default to rank order
       let saved1QB, savedSF;

@@ -127,12 +127,13 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
     ];
   };
 
-  const rankComparisonData = player.rank && player.dynastyADP ? [
+  const isUnranked = player.rank?.oneQB === 'UNR' || player.rank?.superflex === 'UNR';
+  const rankComparisonData = player.rank && player.dynastyADP && !isUnranked ? [
     { format: '1QB', rank: player.rank.oneQB, adp: player.dynastyADP.oneQB },
     { format: 'SF', rank: player.rank.superflex, adp: player.dynastyADP.superflex },
   ] : [];
 
-  const rankDelta = player.rank ? (player.rank.oneQB - player.rank.superflex) : 0;
+  const rankDelta = player.rank && !isUnranked ? (player.rank.oneQB - player.rank.superflex) : 0;
 
   return (
     <div
@@ -479,6 +480,22 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                   />
                 </RadarChart>
               </ResponsiveContainer>
+
+              {/* Unranked notice */}
+              {isUnranked && (
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 12,
+                  color: '#6b7280',
+                  background: '#1a1d2e',
+                  borderRadius: 6,
+                  padding: '10px 14px',
+                  marginTop: 16,
+                  textAlign: 'center',
+                }}>
+                  UNR — Not ranked on FantasyCalc
+                </div>
+              )}
 
               {/* 1QB vs SF comparison */}
               {rankComparisonData.length > 0 && (<>

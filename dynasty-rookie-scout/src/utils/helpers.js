@@ -101,7 +101,7 @@ export const getTopStats = (player, perspective = 'overall') => {
 
 export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective = 'overall') => {
   const sorted = [...players];
-  const getRank = (p) => p.rank?.[leagueType] ?? 999;
+  const getRank = (p) => { const r = p.rank?.[leagueType]; return (r == null || r === 'UNR') ? 999 : r; };
   const getAdp = (p) => p.dynastyADP?.[leagueType] ?? 999;
   // Perspective-based getters (only meaningful for WRs with perspective data)
   const getYprr = (p) => p.receivingByPerspective?.[perspective]?.yprr ?? p.yprr ?? 0;

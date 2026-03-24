@@ -165,14 +165,24 @@ export const applyFantasyCalcRankings = async (players) => {
   oneQBRanked.forEach((e, rank) => { oneQBRankMap[e.index] = rank + 1; });
   sfRanked.forEach((e, rank) => { sfRankMap[e.index] = rank + 1; });
 
-  // Step 3: Write ranks back
+  // Step 3: Write ranks back — unmatched players get 'UNR' (unranked)
+  const matchedIndices = new Set(matchedEntries.map((e) => e.index));
   const result = enriched.map((player, i) => {
-    if (!(i in oneQBRankMap) && !(i in sfRankMap)) return player;
+    if (matchedIndices.has(i)) {
+      return {
+        ...player,
+        rank: {
+          oneQB: oneQBRankMap[i] ?? player.rank?.oneQB ?? null,
+          superflex: sfRankMap[i] ?? player.rank?.superflex ?? null,
+        },
+      };
+    }
+    // Unmatched — mark as UNR so they sort to the bottom but remain visible
     return {
       ...player,
       rank: {
-        oneQB: oneQBRankMap[i] ?? player.rank?.oneQB ?? null,
-        superflex: sfRankMap[i] ?? player.rank?.superflex ?? null,
+        oneQB: 'UNR',
+        superflex: 'UNR',
       },
     };
   });
@@ -185,24 +195,10 @@ export const applyFantasyCalcRankings = async (players) => {
     console.info('[FantasyCalc] Top 3 rookies by value:', top3.join(', '));
   }
   if (matched < total) {
-    const matchedIndices = new Set(matchedEntries.map((e) => e.index));
-    const unmatchedPlayers = players.filter((_, i) => !matchedIndices.has(i));
-    const unmatched = unmatchedPlayers
-      .map((p) => `${p.name} (${p.position}, sleeperId: ${p.sleeperId || 'none'}, normalized: "${normalizeName(p.name)}")`);
-    console.warn(`[FantasyCalc] Unmatched players (${unmatched.length}):`, unmatched.join('; '));
-    // Check if unmatched players exist in sheet under different IDs/names
-    const allSheetNames = Object.keys(lookup.byName);
-    const allSheetIds = Object.keys(lookup.bySleeperId);
-    for (const p of unmatchedPlayers) {
-      const norm = normalizeName(p.name);
-      const fuzzy = allSheetNames.filter((n) => n.includes(norm.split(' ').pop()) && n.includes(norm.split(' ')[0]));
-      if (fuzzy.length > 0) {
-        console.warn(`[FantasyCalc] Possible sheet match for "${p.name}": ${fuzzy.join(', ')}`);
-      }
-      if (p.sleeperId && allSheetIds.includes(String(p.sleeperId))) {
-        console.warn(`[FantasyCalc] sleeperId ${p.sleeperId} IS in sheet but didn't match (bug)`);
-      }
-    }
+    const unmatchedNames = players
+      .filter((_, i) => !matchedIndices.has(i))
+      .map((p) => p.name);
+    console.info(`[FantasyCalc] ${unmatchedNames.length} players marked UNR (not in FantasyCalc):`, unmatchedNames.join(', '));
   }
 
   return result;
