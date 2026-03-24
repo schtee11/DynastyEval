@@ -4,6 +4,7 @@ const Header = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: 'scout', label: 'SCOUT BOARD' },
     { id: 'myboard', label: 'MY BOARD' },
+    { id: 'admin', label: 'ADMIN' },
   ];
 
   return (
