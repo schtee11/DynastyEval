@@ -11,7 +11,7 @@ import { getReceivingData } from './receivingData';
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
 // ── Cache layer ──────────────────────────────────────────────────────────────
-const CACHE_KEY = 'sleeper_players_v2'; // v2: removed searchRank filter
+const CACHE_KEY = 'sleeper_players_v3'; // v3: added active field for rookie validation
 const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — player data updates infrequently
 
 const getFromCache = () => {
@@ -69,6 +69,7 @@ export const fetchSleeperPlayers = async () => {
       college: p.college,
       yearsExp: p.years_exp, // 0 = rookie
       status: p.status, // "Active", "Inactive", etc.
+      active: p.active,  // boolean — false for retired/inactive players
       age: p.age,
       searchRank: p.search_rank,
     };
@@ -81,11 +82,30 @@ export const fetchSleeperPlayers = async () => {
 /**
  * Get only 2026 rookies from Sleeper (years_exp === 0 at time of query).
  * Pre-draft this returns an empty array — that's expected.
+ *
+ * Validation filters applied:
+ *  - active !== false     → exclude retired/deactivated players (e.g. Byron Leftwich)
+ *  - valid name           → exclude Sleeper placeholder entries ("Player Invalid")
+ *  - age <= MAX_ROOKIE_AGE → exclude players too old to be genuine rookies
+ *  - status not Inactive  → exclude IR/inactive roster designations
  */
+const MAX_ROOKIE_AGE = 27;
+const INACTIVE_STATUSES = new Set(['Inactive', 'Suspended', 'Physically Unable to Perform']);
+
 export const fetchSleeperRookies = async (draftYear = 2026) => {
   const all = await fetchSleeperPlayers();
-  // years_exp === 0 means current-year rookie / incoming prospect
-  return Object.values(all).filter((p) => p.yearsExp === 0);
+  return Object.values(all).filter((p) => {
+    if (p.yearsExp !== 0) return false;
+    // Exclude deactivated / retired players
+    if (p.active === false) return false;
+    // Exclude Sleeper placeholder entries like "Player Invalid"
+    if (!p.name || /^player\s+invalid$/i.test(p.name.trim())) return false;
+    // Exclude players too old to plausibly be a true rookie
+    if (p.age != null && p.age > MAX_ROOKIE_AGE) return false;
+    // Exclude known inactive roster designations
+    if (p.status && INACTIVE_STATUSES.has(p.status)) return false;
+    return true;
+  });
 };
 
 // ── Matching utilities ───────────────────────────────────────────────────────
