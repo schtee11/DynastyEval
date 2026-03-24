@@ -48,6 +48,8 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
+  const [slideIn, setSlideIn] = useState(false);
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
@@ -66,6 +68,18 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       setLoadingSummary(false);
     }
   };
+
+  // Trigger slide-in animation on mount
+  useEffect(() => {
+    requestAnimationFrame(() => setSlideIn(true));
+  }, []);
+
+  // Reset AI summary when player changes
+  useEffect(() => {
+    setSummary(null);
+    setLoadingSummary(false);
+    setModalPerspective(initialPerspective);
+  }, [player, initialPerspective]);
 
   useEffect(() => {
     const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
@@ -140,32 +154,34 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.8)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        padding: '40px 20px',
+        background: isDesktop ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.8)',
         zIndex: 200,
-        overflowY: 'auto',
+        transition: 'background 0.3s ease',
       }}
       onClick={onClose}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: isDesktop ? 560 : '100%',
+          maxWidth: '100vw',
           background: '#0f1117',
-          borderRadius: 12,
-          border: `1px solid ${posColor.border}44`,
-          width: '100%',
-          maxWidth: 900,
-          maxHeight: '90vh',
+          borderLeft: isDesktop ? `2px solid ${posColor.border}44` : 'none',
+          borderRadius: isDesktop ? 0 : 12,
           overflowY: 'auto',
+          transform: slideIn ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          boxShadow: isDesktop ? '-8px 0 30px rgba(0,0,0,0.5)' : 'none',
         }}
       >
         {/* Header */}
         <div style={{
           background: `linear-gradient(135deg, ${posColor.border}22, #1a1d2e)`,
-          padding: '24px 28px',
+          padding: isDesktop ? '20px 24px' : '24px 28px',
           borderBottom: '1px solid #2a2d3e',
           position: 'relative',
         }}>
@@ -188,59 +204,50 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
             </div>
           )}
 
-          <div style={{ marginTop: injured ? 24 : 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-                <h2 style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 800,
-                  fontSize: 32,
-                  color: '#f1f5f9',
-                  margin: 0,
-                }}>
-                  {player.name}
-                </h2>
+          <div style={{ marginTop: injured ? 24 : 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap', paddingRight: 40 }}>
+              <h2 style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 800,
+                fontSize: isDesktop ? 26 : 32,
+                color: '#f1f5f9',
+                margin: 0,
+              }}>
+                {player.name}
+              </h2>
+              <span style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                color: posColor.text,
+                background: posColor.bg,
+                padding: '3px 10px',
+                borderRadius: 6,
+              }}>
+                {player.position}
+              </span>
+              {player.draftPick && (
                 <span style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 12,
                   fontWeight: 700,
-                  fontSize: 16,
-                  color: posColor.text,
-                  background: posColor.bg,
-                  padding: '4px 12px',
+                  color: capital.color,
+                  background: `${capital.color}18`,
+                  padding: '3px 10px',
                   borderRadius: 6,
                 }}>
-                  {player.position}
+                  {player.draftTeam
+                    ? `R${player.draftRound} #${player.draftPick} ${player.draftTeam}`
+                    : `Proj Rd ${player.draftRound} (#${player.draftPick})`}
                 </span>
-              </div>
-              <div style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 13,
-                color: '#9ca3af',
-              }}>
-                {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' · ') || 'TBD'}
-              </div>
+              )}
             </div>
-
-            <div style={{ textAlign: 'right' }}>
-              <div style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 14,
-                fontWeight: 700,
-                color: capital.color,
-              }}>
-                {player.draftTeam
-                  ? `${capital.emoji} Round ${player.draftRound}, Pick #${player.draftPick}`
-                  : `${capital.emoji} Projected ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}`}
-              </div>
-              <div style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 11,
-                color: '#6b7280',
-              }}>
-                {player.draftTeam
-                  ? `${player.draftTeam} · ${capital.label} Capital`
-                  : `${capital.label} Capital`}
-              </div>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 12,
+              color: '#9ca3af',
+            }}>
+              {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' · ') || 'TBD'}
             </div>
           </div>
 
@@ -250,21 +257,26 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               position: 'absolute',
               top: injured ? 36 : 12,
               right: 12,
-              background: 'none',
-              border: 'none',
-              color: '#6b7280',
-              fontSize: 24,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid #2a2d3e',
+              borderRadius: 6,
+              color: '#9ca3af',
+              fontSize: 18,
               cursor: 'pointer',
               lineHeight: 1,
+              padding: '4px 10px',
+              transition: 'color 0.15s',
             }}
+            onMouseEnter={e => e.currentTarget.style.color = '#f1f5f9'}
+            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
           >
             ×
           </button>
         </div>
 
         {/* Body */}
-        <div style={{ padding: 28 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+        <div style={{ padding: isDesktop ? 20 : 28 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr' : '1fr 1fr', gap: 24, marginBottom: 24 }}>
             {/* Left: Stats */}
             <div>
               <h3 style={{

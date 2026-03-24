@@ -1,5 +1,5 @@
 import React from 'react';
-import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
+import { positionColors, getDraftCapitalInfo, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
 
 const TIER_ORDER = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
 
@@ -127,7 +127,7 @@ const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
         {player.college || '—'}
       </td>
 
-      {/* Draft Range */}
+      {/* Draft Projection */}
       <td style={{
         padding: '10px 12px',
         fontFamily: "'JetBrains Mono', monospace",
@@ -136,28 +136,32 @@ const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
         whiteSpace: 'nowrap',
       }}>
         {(() => {
-          const rangeLabel = getDraftRangeLabel(player.draftRound, player.draftPick);
-          if (player.draftTeam) {
-            // Post-draft: show actual pick and team
-            return (
-              <>
-                <span style={{ color: '#d1d5db', fontWeight: 600 }}>
-                  R{player.draftRound} #{player.draftPick}
-                </span>
-                <span style={{ color: capital.color, marginLeft: 6, fontWeight: 700, fontSize: 10 }}>
+          if (!player.draftPick) {
+            return <span style={{ color: '#4b5563' }}>—</span>;
+          }
+          const rdColor = player.draftRound <= 1 ? '#f59e0b'
+            : player.draftRound <= 2 ? '#22c55e'
+            : player.draftRound <= 3 ? '#60a5fa'
+            : '#6b7280';
+          return (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{
+                color: rdColor,
+                fontWeight: 700,
+                fontSize: 12,
+              }}>
+                Rd {player.draftRound}
+              </span>
+              <span style={{ color: '#6b7280', fontSize: 10 }}>
+                #{player.draftPick}
+              </span>
+              {player.draftTeam && (
+                <span style={{ color: '#9ca3af', fontWeight: 600, fontSize: 10 }}>
                   {player.draftTeam}
                 </span>
-              </>
-            );
-          }
-          if (rangeLabel) {
-            return (
-              <span style={{ color: capital.color, fontWeight: 700 }}>
-                {rangeLabel}
-              </span>
-            );
-          }
-          return <span style={{ color: '#6b7280' }}>TBD</span>;
+              )}
+            </span>
+          );
         })()}
       </td>
 
