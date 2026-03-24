@@ -68,6 +68,13 @@ function norm(name) {
     .trim();
 }
 
+/** Strip common suffixes (Jr, Sr, II, III, IV) for fuzzy matching. */
+function normFuzzy(name) {
+  return norm(name)
+    .replace(/\b(jr|sr|ii|iii|iv)\s*$/g, '')
+    .trim();
+}
+
 // ── Load prospect list from rookieProspects2026.js ─────────────────────────
 
 function loadProspects() {
@@ -96,7 +103,12 @@ function indexCSV(rows, positionFilter) {
     const pos = (row.position || '').toUpperCase();
     if (positionFilter && !positionFilter.includes(pos)) continue;
     const key = norm(row.player || '');
-    if (key) index[key] = row;
+    if (key) {
+      index[key] = row;
+      // Also index by fuzzy key (without Jr/Sr/II/III) for fallback matching
+      const fuzzy = normFuzzy(row.player || '');
+      if (fuzzy !== key && !index[fuzzy]) index[fuzzy] = row;
+    }
   }
   return index;
 }
@@ -214,15 +226,50 @@ function main() {
       continue;
     }
 
-    // Primary CSV lookup
+    // Primary CSV lookup (try exact key, then fuzzy key without Jr/Sr/II/III)
     const primaryRows = getCSV(posConfig.csvFile);
     const primaryIndex = indexCSV(primaryRows, posConfig.positionFilter);
-    const primaryRow = primaryIndex[normKey];
+    let primaryRow = primaryIndex[normKey] || primaryIndex[normFuzzy(prospect.name)];
+
+    // Cross-position fallback: some players are listed under different positions
+    // in PFF (e.g., WR listed as HB/FB, RB listed as TE)
+    if (!primaryRow) {
+      const crossPositionFilters = {
+        WR: ['HB', 'FB'],   // Some WRs listed as HB/FB in PFF
+        RB: ['TE', 'WR', 'HB', 'FB'],  // Some RBs listed differently in PFF
+      };
+      const altFilters = crossPositionFilters[prospect.position];
+      if (altFilters) {
+        const altIndex = indexCSV(primaryRows, altFilters);
+        primaryRow = altIndex[normKey] || altIndex[normFuzzy(prospect.name)];
+        if (primaryRow) {
+          console.log(`    (cross-position match: PFF has ${(primaryRow.position || '').toUpperCase()})`);
+        }
+      }
+    }
+
+    // Cross-CSV fallback: RBs not found in rushing CSV might be in receiving CSV
+    // (e.g., listed as TE in PFF receiving data)
+    let crossCsvMatch = false;
+    if (!primaryRow && posConfig.receivingCsvFile) {
+      const altRecRows = getCSV(posConfig.receivingCsvFile);
+      const allRecIndex = indexCSV(altRecRows, null); // no position filter
+      const altRow = allRecIndex[normKey] || allRecIndex[normFuzzy(prospect.name)];
+      if (altRow) {
+        primaryRow = altRow;
+        crossCsvMatch = true;
+        console.log(`    (found in ${posConfig.receivingCsvFile} as ${(altRow.position || '').toUpperCase()})`);
+      }
+    }
 
     let entry = {};
 
     if (primaryRow) {
-      entry = extractFields(primaryRow, posConfig.fields);
+      // Use receiving field mappings if we found the player in the receiving CSV instead
+      const fieldMap = crossCsvMatch && posConfig.receivingFields
+        ? posConfig.receivingFields
+        : posConfig.fields;
+      entry = extractFields(primaryRow, fieldMap);
       stats.matched++;
 
       // Auto-populate teamTargetsTotal from CSV team totals
