@@ -242,7 +242,6 @@ export const buildRookiePlayersFromSleeper = async () => {
       draftIsProjected: !sleeperPlayer.team,
       stats: prospect?.stats || {},
       breakoutAge: prospect?.breakoutAge ?? null,
-      dominatorRating: prospect?.dominatorRating ?? null,
       targetShare: prospect?.advancedStats?.targetShare ?? null,
       yprr: prospect?.advancedStats?.yprr ?? null,
       yacPerRR: prospect?.yacPerRR ?? null,

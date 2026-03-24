@@ -163,7 +163,6 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
           <option value="draftCapital">Draft Capital</option>
           <option value="breakoutAge">Breakout Age</option>
           <option value="yprr">YPRR</option>
-          {!isRB && <option value="dominator">Dominator Rating</option>}
           {isWR && <option value="recGrade">Rec Grade</option>}
           {isWR && <option value="tgtPerRR">Tgt/RR</option>}
         </select>

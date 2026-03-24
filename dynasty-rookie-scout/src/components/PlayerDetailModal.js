@@ -124,17 +124,15 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       // WR fallback (no perspective data)
       return [
         { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-        { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
         { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
         { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
         { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
       ];
     }
 
-    // TE — CFBD stats
+    // TE — same metrics as WR fallback
     return [
       { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-      { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
       { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
       { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
       { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
@@ -321,13 +319,12 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 </>
               )}
 
-              {/* TE stats — from CFBD API */}
+              {/* TE stats — same metrics as WR */}
               {player.position === 'TE' && (
                 <>
                   <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                   <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
                   <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
-                  <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
                   <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                   <StatRow label="Receptions" value={player.stats?.receptions} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
@@ -406,7 +403,6 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                         <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                         <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
                         <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
-                        <StatRow label="Dominator Rating" value={player.dominatorRating} benchmark={25} unit="%" />
                         <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                         <StatRow label="Receptions" value={player.stats?.receptions} />
                         <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />

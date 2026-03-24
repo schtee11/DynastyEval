@@ -304,12 +304,6 @@ const MyBoard = () => {
                               {player.dynastyADP?.[activeFormat] != null ? `#${player.dynastyADP[activeFormat]}` : '—'}
                             </div>
                           </div>
-                          {player.dominatorRating > 0 && (
-                            <div style={{ textAlign: 'center' }}>
-                              <div style={{ color: '#9ca3af', fontSize: 9, textTransform: 'uppercase' }}>DOM %</div>
-                              <div style={{ color: '#f1f5f9', fontWeight: 700 }}>{player.dominatorRating}%</div>
-                            </div>
-                          )}
                           {player.breakoutAge && (
                             <div style={{ textAlign: 'center' }}>
                               <div style={{ color: '#9ca3af', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>

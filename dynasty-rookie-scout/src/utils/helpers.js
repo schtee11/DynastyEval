@@ -63,8 +63,8 @@ export const getTopStats = (player, perspective = 'overall') => {
     // WR fallback (no perspective data)
     return [
       { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-      { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
       { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
+      { label: 'Rec YDs', value: stats?.receivingYards?.toLocaleString() || 'N/A' },
     ];
   }
 
@@ -86,11 +86,11 @@ export const getTopStats = (player, perspective = 'overall') => {
     ];
   }
 
-  // TE — CFBD / static stats
+  // TE — same metrics as WR
   if (position === 'TE') {
     return [
       { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-      { label: 'DOM %', value: player.dominatorRating ? `${player.dominatorRating}%` : 'N/A' },
+      { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
       { label: 'Rec YDs', value: stats?.receivingYards?.toLocaleString() || 'N/A' },
     ];
   }
@@ -121,7 +121,7 @@ export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective =
     case 'yprr':
       return stableSort((a, b) => getYprr(b) - getYprr(a));
     case 'dominator':
-      return stableSort((a, b) => (b.dominatorRating || 0) - (a.dominatorRating || 0));
+      return stableSort((a, b) => (b.targetShare || 0) - (a.targetShare || 0));
     case 'recGrade':
       return stableSort((a, b) => getRecGrade(b) - getRecGrade(a));
     case 'tgtPerRR':

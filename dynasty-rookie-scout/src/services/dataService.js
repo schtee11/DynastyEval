@@ -36,7 +36,6 @@ const mapProspectToPlayer = (p) => ({
   draftIsProjected: true,
   stats: p.stats || {},
   breakoutAge: p.breakoutAge,
-  dominatorRating: p.dominatorRating ?? null,
   targetShare: p.advancedStats?.targetShare ?? null,
   yprr: p.advancedStats?.yprr ?? null,
   yacPerRR: p.yacPerRR ?? null,

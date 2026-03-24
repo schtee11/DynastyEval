@@ -64,12 +64,7 @@ const buildTEStats = (receiving) => ({
   epa: null,
 });
 
-// ── dominator / target-share calculators (TE only) ───────────────────────────
-
-const calcDominatorRating = (playerRec, teamRecTotal) => {
-  if (!playerRec || !teamRecTotal || teamRecTotal === 0) return 0;
-  return +((playerRec / teamRecTotal) * 100).toFixed(1);
-};
+// ── target-share calculator ──────────────────────────────────────────────────
 
 const calcTargetShare = (playerTargets, teamTargetsTotal) => {
   if (!playerTargets || !teamTargetsTotal || teamTargetsTotal === 0) return null;
@@ -110,8 +105,7 @@ const enrichFromStatic = (player) => {
     if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
   }
 
-  // Dominator rating + target share (TE only — RB dominator requires team rush totals we don't have)
-  let dominatorRating = player.dominatorRating || 0;
+  // Target share for TE / RB
   let targetShare = player.targetShare;
   let yprr = player.yprr;
   let yacPerRR = player.yacPerRR;
@@ -119,9 +113,6 @@ const enrichFromStatic = (player) => {
   if (player.position === 'TE' && receiving) {
     const recYds = val(receiving, 'YDS', 'REC_YDS');
     const targets = val(receiving, 'TARGETS', 'TGT');
-    if (teamRecYdsTotal) {
-      dominatorRating = calcDominatorRating(recYds, teamRecYdsTotal);
-    }
     if (targets > 0 && teamTargetsTotal) {
       targetShare = calcTargetShare(targets, teamTargetsTotal);
     }
@@ -147,7 +138,6 @@ const enrichFromStatic = (player) => {
   return {
     ...player,
     stats,
-    dominatorRating,
     targetShare,
     yprr,
     yacPerRR,
@@ -188,7 +178,6 @@ const enrichFromESPN = (player, espnStats) => {
   }
 
   // ESPN doesn't provide PPA/EPA, so leave as null
-  let dominatorRating = player.dominatorRating || 0;
   let targetShare = player.targetShare;
   let yprr = player.yprr;
   let yacPerRR = player.yacPerRR;
@@ -203,7 +192,6 @@ const enrichFromESPN = (player, espnStats) => {
   return {
     ...player,
     stats,
-    dominatorRating,
     targetShare,
     yprr,
     yacPerRR,
@@ -212,7 +200,7 @@ const enrichFromESPN = (player, espnStats) => {
   };
 };
 
-// ── fill dominator for players with inline stats ────────────────────────────
+// ── fill target share / advanced metrics for players with inline stats ───────
 
 const fillFromStaticData = (players) => {
   for (const player of players) {
@@ -227,21 +215,17 @@ const fillFromStaticData = (players) => {
     if (player.ycoPerAttempt == null && staticData.ycoPerAttempt != null) player.ycoPerAttempt = staticData.ycoPerAttempt;
     if (player.explosiveRuns == null && staticData.explosiveRuns != null) player.explosiveRuns = staticData.explosiveRuns;
 
-    // Fill dominator rating (TE only — RB dominator requires team rush totals we don't have)
-    if (player.dominatorRating == null) {
-      if (player.position === 'RB') {
-        const targets = val(receiving, 'TARGETS', 'TGT');
-        if (targets > 0 && player.targetShare == null && teamTargetsTotal) {
-          player.targetShare = calcTargetShare(targets, teamTargetsTotal);
-        }
+    // Fill target share for RB / TE
+    if (player.position === 'RB' && player.targetShare == null) {
+      const targets = val(receiving, 'TARGETS', 'TGT');
+      if (targets > 0 && teamTargetsTotal) {
+        player.targetShare = calcTargetShare(targets, teamTargetsTotal);
       }
-      if (player.position === 'TE' && receiving && teamRecYdsTotal) {
-        const recYds = val(receiving, 'YDS', 'REC_YDS');
-        const targets = val(receiving, 'TARGETS', 'TGT');
-        player.dominatorRating = calcDominatorRating(recYds, teamRecYdsTotal);
-        if (targets > 0 && player.targetShare == null && teamTargetsTotal) {
-          player.targetShare = calcTargetShare(targets, teamTargetsTotal);
-        }
+    }
+    if (player.position === 'TE' && player.targetShare == null && receiving) {
+      const targets = val(receiving, 'TARGETS', 'TGT');
+      if (targets > 0 && teamTargetsTotal) {
+        player.targetShare = calcTargetShare(targets, teamTargetsTotal);
       }
     }
   }
@@ -255,7 +239,7 @@ const fillFromStaticData = (players) => {
  * WR players in the array are returned unchanged.
  */
 export const enrichNonWRStats = async (players) => {
-  // Fill dominator/targetShare/advanced metrics for players that already have inline stats
+  // Fill targetShare/advanced metrics for players that already have inline stats
   fillFromStaticData(players);
 
   // Only enrich players that are not WR and don't already have stats
