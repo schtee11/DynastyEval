@@ -45,7 +45,7 @@ const ScoutBoard = () => {
   const showTiers = sortBy === 'draftCapital';
 
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div style={{ padding: '20px 24px 20px 12px' }}>
       <FilterBar
         filters={filters}
         setFilters={setFilters}
