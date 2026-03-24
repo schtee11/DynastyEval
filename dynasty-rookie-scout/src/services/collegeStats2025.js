@@ -685,7 +685,7 @@ const collegeStats2025 = {
   },
   "rahsul faison": {
     position: "RB",
-    team: "East Carolina",
+    team: "South Carolina",
     rushing: { YDS: 1150, TD: 14, CAR: 209 },
     receiving: { REC: 20, YDS: 160, TD: 1, TARGETS: 25 },
     ppa: { averagePPA: { all: 0.14 } },
@@ -727,7 +727,7 @@ const collegeStats2025 = {
   },
   "davon booth": {
     position: "RB",
-    team: "Temple",
+    team: "Mississippi State",
     rushing: { YDS: 780, TD: 7, CAR: 170 },
     receiving: { REC: 14, YDS: 100, TD: 0, TARGETS: 18 },
     ppa: { averagePPA: { all: 0.09 } },
@@ -755,7 +755,7 @@ const collegeStats2025 = {
   },
   "j'mari taylor": {
     position: "RB",
-    team: "Florida Atlantic",
+    team: "Virginia",
     rushing: { YDS: 750, TD: 6, CAR: 160 },
     receiving: { REC: 18, YDS: 145, TD: 1, TARGETS: 22 },
     ppa: { averagePPA: { all: 0.09 } },
