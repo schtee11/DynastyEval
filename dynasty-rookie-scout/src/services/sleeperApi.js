@@ -205,9 +205,12 @@ export const buildRookiePlayersFromSleeper = async () => {
     prospectByFuzzy[key] = p;
   }
 
-  let nextId = 10000; // IDs for Sleeper-only players not in our prospect list
-
-  return rookies.map((sleeperPlayer) => {
+  // Only include Sleeper players that match our curated prospect list.
+  // Sleeper's yearsExp===0 pool includes NFL players who haven't accrued a
+  // season yet (practice squad, IR, late prior-year picks, etc.) — these are
+  // NOT 2026 draft prospects and should be excluded.
+  return rookies
+    .map((sleeperPlayer) => {
     // Try to find a matching prospect: exact name first, then fuzzy
     const key = normName(sleeperPlayer.name);
     let prospect = prospectByNorm[key];
@@ -218,7 +221,10 @@ export const buildRookiePlayersFromSleeper = async () => {
       prospect = prospectByFuzzy[fuzzyKey];
     }
 
-    const id = prospect?.id ?? nextId++;
+    // No match in our prospect database → skip (not a 2026 prospect)
+    if (!prospect) return null;
+
+    const id = prospect.id;
 
     // Base fields from Sleeper
     const player = {
@@ -256,7 +262,8 @@ export const buildRookiePlayersFromSleeper = async () => {
     }
 
     return player;
-  });
+  })
+  .filter(Boolean); // Remove nulls (unmatched Sleeper players)
 };
 
 const sleeperApi = {
