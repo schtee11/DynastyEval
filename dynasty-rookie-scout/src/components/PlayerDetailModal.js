@@ -154,15 +154,17 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       style={{
         position: 'fixed',
         inset: 0,
-        background: isDesktop ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.8)',
+        background: isDesktop ? 'none' : 'rgba(0,0,0,0.8)',
         zIndex: 200,
         transition: 'background 0.3s ease',
+        pointerEvents: isDesktop ? 'none' : 'auto',
       }}
-      onClick={onClose}
+      onClick={isDesktop ? undefined : onClose}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
+          pointerEvents: 'auto',
           position: 'fixed',
           top: 0,
           right: 0,
