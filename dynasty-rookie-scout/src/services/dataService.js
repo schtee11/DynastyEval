@@ -8,6 +8,7 @@ import { buildRookiePlayersFromSleeper } from './sleeperApi';
 import { enrichNonWRStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
 import { applyFantasyCalcRankings } from './fantasyCalcRankings';
+import { getDraftPicks, getNameAliases } from './draftData';
 
 // Cache live data so we only fetch once per session
 let playersCache = null;
@@ -52,6 +53,48 @@ const getStaticPlayers = () =>
     .filter((p) => ['QB', 'RB', 'WR', 'TE'].includes(p.position))
     .map(mapProspectToPlayer);
 
+/**
+ * Overlay draft projections from draftData.js onto the player list.
+ * draftData.js is the most up-to-date mock draft — it takes priority
+ * over the older projections in rookieProspects2026.js.
+ */
+const normDraft = (n) => (n || '').toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+
+const applyDraftData = (players) => {
+  const picks = getDraftPicks();
+  const aliases = getNameAliases();
+
+  // Build lookup: normalized name → draft pick entry
+  // Also index by alias targets so prospect names can match
+  const pickByName = {};
+  for (const dp of picks) {
+    const norm = normDraft(dp.name);
+    pickByName[norm] = dp;
+    // If this name has an alias, also index under the alias target
+    if (aliases[norm]) {
+      pickByName[aliases[norm]] = dp;
+    }
+  }
+
+  let applied = 0;
+  const result = players.map((player) => {
+    const norm = normDraft(player.name);
+    const dp = pickByName[norm] || pickByName[aliases[norm]];
+    if (!dp) return player;
+    applied++;
+    return {
+      ...player,
+      draftRound: dp.round,
+      draftPick: dp.pick,
+      draftTeam: player.draftTeam || dp.team || null,
+      draftIsProjected: !player.draftTeam,
+    };
+  });
+
+  console.info(`[DataService] Draft data applied to ${applied}/${players.length} players from consensus big board`);
+  return result;
+};
+
 export const getPlayers = async () => {
   if (playersCache) return playersCache;
 
@@ -78,6 +121,9 @@ export const getPlayers = async () => {
       dataSourceStatus.source = 'sleeper';
     }
 
+    // Step 1b: Overlay latest draft projections from draftData.js
+    players = applyDraftData(players);
+
     // Step 2: Enrich QB/RB/TE with college stats (static data → ESPN API)
     try {
       players = await enrichNonWRStats(players);
@@ -102,7 +148,7 @@ export const getPlayers = async () => {
   } catch (err) {
     console.error('[DataService] Data fetch failed, falling back to static data:', err);
     dataSourceStatus = { sleeper: { ok: false, reason: err.message }, source: 'static' };
-    playersCache = getStaticPlayers().map(({ _prospect, ...p }) => p);
+    playersCache = applyDraftData(getStaticPlayers()).map(({ _prospect, ...p }) => p);
     return playersCache;
   }
 };
