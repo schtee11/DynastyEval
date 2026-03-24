@@ -8,7 +8,7 @@ import { buildRookiePlayersFromSleeper } from './sleeperApi';
 import { enrichNonWRStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
 import { applyFantasyCalcRankings } from './fantasyCalcRankings';
-import { getDraftPicks } from './draftData';
+import { getDraftPicks, getNameAliases } from './draftData';
 
 // Cache live data so we only fetch once per session
 let playersCache = null;
@@ -62,26 +62,36 @@ const normDraft = (n) => (n || '').toLowerCase().replace(/[^a-z ]/g, '').replace
 
 const applyDraftData = (players) => {
   const picks = getDraftPicks();
+  const aliases = getNameAliases();
+
+  // Build lookup: normalized name → draft pick entry
+  // Also index by alias targets so prospect names can match
   const pickByName = {};
   for (const dp of picks) {
-    pickByName[normDraft(dp.name)] = dp;
+    const norm = normDraft(dp.name);
+    pickByName[norm] = dp;
+    // If this name has an alias, also index under the alias target
+    if (aliases[norm]) {
+      pickByName[aliases[norm]] = dp;
+    }
   }
 
   let applied = 0;
   const result = players.map((player) => {
-    const dp = pickByName[normDraft(player.name)];
+    const norm = normDraft(player.name);
+    const dp = pickByName[norm] || pickByName[aliases[norm]];
     if (!dp) return player;
     applied++;
     return {
       ...player,
       draftRound: dp.round,
       draftPick: dp.pick,
-      draftTeam: player.draftTeam || dp.team, // keep actual team if Sleeper has it
+      draftTeam: player.draftTeam || dp.team || null,
       draftIsProjected: !player.draftTeam,
     };
   });
 
-  console.info(`[DataService] Draft data applied to ${applied}/${players.length} players from draftData.js`);
+  console.info(`[DataService] Draft data applied to ${applied}/${players.length} players from consensus big board`);
   return result;
 };
 
