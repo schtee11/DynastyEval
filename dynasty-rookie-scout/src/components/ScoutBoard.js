@@ -49,7 +49,7 @@ const ScoutBoard = () => {
   const panelOpen = !!selectedPlayer && isDesktop;
 
   return (
-    <div style={{
+    <div className="scout-board-root" style={{
       padding: '20px 24px 20px 12px',
       marginRight: panelOpen ? 570 : 0,
       transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',

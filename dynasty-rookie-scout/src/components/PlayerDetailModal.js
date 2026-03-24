@@ -160,6 +160,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       onClick={isDesktop ? undefined : onClose}
     >
       <div
+        className="detail-modal-panel"
         onClick={e => e.stopPropagation()}
         style={{
           pointerEvents: 'auto',
@@ -276,7 +277,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
         {/* Body */}
         <div style={{ padding: isDesktop ? 20 : 28 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr' : '1fr 1fr', gap: 24, marginBottom: 24 }}>
+          <div className="detail-modal-body-grid" style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr' : '1fr 1fr', gap: 24, marginBottom: 24 }}>
             {/* Left: Stats */}
             <div>
               <h3 style={{

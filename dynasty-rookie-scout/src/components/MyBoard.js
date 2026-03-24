@@ -122,15 +122,15 @@ const MyBoard = () => {
   }
 
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="myboard-root" style={{ padding: '20px 24px' }}>
       {/* Tab bar */}
-      <div style={{
+      <div className="myboard-tab-bar" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 16,
       }}>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div className="myboard-tabs" style={{ display: 'flex', gap: 4 }}>
           {[
             { id: 'oneQB', label: '1QB BOARD' },
             { id: 'superflex', label: 'SUPERFLEX BOARD' },
@@ -289,7 +289,7 @@ const MyBoard = () => {
                         </div>
 
                         {/* Quick stats */}
-                        <div style={{
+                        <div className="myboard-row-stats" style={{
                           display: 'flex',
                           gap: 16,
                           fontFamily: "'JetBrains Mono', monospace",
