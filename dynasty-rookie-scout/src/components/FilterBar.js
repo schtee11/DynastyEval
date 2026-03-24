@@ -48,6 +48,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
   ];
 
   const isWR = filters.position === 'WR';
+  const isRB = filters.position === 'RB';
 
   return (
     <div style={{
@@ -162,7 +163,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
           <option value="draftCapital">Draft Capital</option>
           <option value="breakoutAge">Breakout Age</option>
           <option value="yprr">YPRR</option>
-          <option value="dominator">Dominator Rating</option>
+          {!isRB && <option value="dominator">Dominator Rating</option>}
           {isWR && <option value="recGrade">Rec Grade</option>}
           {isWR && <option value="tgtPerRR">Tgt/RR</option>}
         </select>

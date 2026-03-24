@@ -1,9 +1,8 @@
 import React from 'react';
-import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk, getTopStats } from '../utils/helpers';
+import { positionColors, getDraftCapitalInfo, hasInjuryRisk, getTopStats } from '../utils/helpers';
 
 const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
-  const breakout = getBreakoutIndicator(player.breakoutAge);
   const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
   const topStats = getTopStats(player, perspective);
@@ -161,26 +160,14 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
         ))}
       </div>
 
-      {/* Bottom row: breakout + ranks */}
+      {/* Bottom row: ranks */}
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         alignItems: 'center',
         borderTop: '1px solid #2a2d3e',
         paddingTop: 8,
       }}>
-        {/* Breakout indicator */}
-        {player.breakoutAge && (
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            fontWeight: 600,
-            color: breakout.color,
-          }}>
-            {breakout.emoji} BO: {player.breakoutAge} ({breakout.label})
-          </span>
-        )}
-
         {/* 1QB vs SF ranks */}
         {player.rank && (
           <div style={{
