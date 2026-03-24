@@ -17,9 +17,9 @@ const groupByTier = (players) => {
   }));
 };
 
-const TierDivider = ({ tier, count }) => (
+const TierDivider = ({ tier, count, compact }) => (
   <tr>
-    <td colSpan={7} style={{
+    <td colSpan={compact ? 6 : 7} style={{
       padding: '12px 16px 6px',
       fontFamily: "'Barlow Condensed', sans-serif",
       fontWeight: 700,
@@ -38,7 +38,7 @@ const TierDivider = ({ tier, count }) => (
   </tr>
 );
 
-const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
+const PlayerRow = ({ player, perspective, onClick, isOdd, compact }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const topStats = getTopStats(player, perspective);
@@ -187,29 +187,31 @@ const PlayerRow = ({ player, perspective, onClick, isOdd }) => {
       </td>
 
       {/* 1QB / SF Ranks */}
-      <td style={{
-        padding: '10px 12px',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        verticalAlign: 'middle',
-        whiteSpace: 'nowrap',
-      }}>
-        {rank1QB != null && (
-          <span style={{ color: rank1QB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
-            {rank1QB === 'UNR' ? '1QB UNR' : `1QB #${rank1QB}`}
-          </span>
-        )}
-        {rankSF != null && (
-          <span style={{ color: rankSF === 'UNR' ? '#6b7280' : '#a78bfa', marginLeft: 8 }}>
-            {rankSF === 'UNR' ? 'SF UNR' : `SF #${rankSF}`}
-          </span>
-        )}
-      </td>
+      {!compact && (
+        <td style={{
+          padding: '10px 12px',
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+          verticalAlign: 'middle',
+          whiteSpace: 'nowrap',
+        }}>
+          {rank1QB != null && (
+            <span style={{ color: rank1QB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
+              {rank1QB === 'UNR' ? '1QB UNR' : `1QB #${rank1QB}`}
+            </span>
+          )}
+          {rankSF != null && (
+            <span style={{ color: rankSF === 'UNR' ? '#6b7280' : '#a78bfa', marginLeft: 8 }}>
+              {rankSF === 'UNR' ? 'SF UNR' : `SF #${rankSF}`}
+            </span>
+          )}
+        </td>
+      )}
     </tr>
   );
 };
 
-const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers }) => {
+const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compact }) => {
   const tierGroups = showTiers ? groupByTier(players) : null;
 
   return (
@@ -223,7 +225,7 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers }) => 
           <tr style={{
             borderBottom: '2px solid #2a2d3e',
           }}>
-            {['#', 'Player', 'School', 'Draft', 'Key Stats', 'Ranks (FantasyCalc)'].map((h) => (
+            {(['#', 'Player', 'School', 'Draft', 'Key Stats'].concat(compact ? [] : ['Ranks (FantasyCalc)'])).map((h) => (
               <th key={h} style={{
                 padding: '8px 12px',
                 fontFamily: "'Barlow Condensed', sans-serif",
@@ -244,7 +246,7 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers }) => 
           {showTiers ? (
             tierGroups.map(({ tier, players: group }) => (
               <React.Fragment key={tier}>
-                <TierDivider tier={tier} count={group.length} />
+                <TierDivider tier={tier} count={group.length} compact={compact} />
                 {group.map((player, i) => (
                   <PlayerRow
                     key={player.id}
@@ -252,6 +254,7 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers }) => 
                     perspective={perspective}
                     onClick={onPlayerClick}
                     isOdd={i % 2 === 1}
+                    compact={compact}
                   />
                 ))}
               </React.Fragment>
@@ -264,6 +267,7 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers }) => 
                 perspective={perspective}
                 onClick={onPlayerClick}
                 isOdd={i % 2 === 1}
+                compact={compact}
               />
             ))
           )}
