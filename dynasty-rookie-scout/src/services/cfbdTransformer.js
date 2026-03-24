@@ -116,19 +116,18 @@ const enrichFromStatic = (player) => {
     if (epaVal != null) stats.epa = +Number(epaVal).toFixed(2);
   }
 
-  // Target share for TE / RB
+  // Target share for TE / WR / RB
   let targetShare = player.targetShare;
   let yprr = player.yprr;
   let yacPerRR = player.yacPerRR;
+  let routesRun = null;
+  let tgtPerRR = null;
+  let firstDownTDPerRR = null;
 
   if ((player.position === 'TE' || player.position === 'WR') && receiving) {
-    const recYds = val(receiving, 'YDS', 'REC_YDS');
     const targets = val(receiving, 'TARGETS', 'TGT');
     if (targets > 0 && teamTargetsTotal) {
       targetShare = calcTargetShare(targets, teamTargetsTotal);
-    }
-    if (targets > 0) {
-      yprr = +(recYds / targets).toFixed(2);
     }
   }
 
@@ -137,6 +136,23 @@ const enrichFromStatic = (player) => {
     if (targets > 0 && teamTargetsTotal) {
       targetShare = calcTargetShare(targets, teamTargetsTotal);
     }
+  }
+
+  // Use PFF yprr from CSV (yards per route run, not yards per target)
+  if (staticData.pffYprr != null) {
+    yprr = staticData.pffYprr;
+  }
+
+  // Calculate route-based metrics from CSV data
+  if (staticData.routesRun > 0) {
+    routesRun = staticData.routesRun;
+    const targets = val(receiving, 'TARGETS', 'TGT');
+    if (targets > 0) {
+      tgtPerRR = +((targets / staticData.routesRun) * 100).toFixed(1);
+    }
+    const tds = val(receiving, 'TD', 'REC_TD');
+    const firstDowns = staticData.firstDowns || 0;
+    firstDownTDPerRR = +((firstDowns + tds) / staticData.routesRun).toFixed(2);
   }
 
   // Prefer hardcoded advanced stats (PFF-sourced) if available
@@ -152,6 +168,9 @@ const enrichFromStatic = (player) => {
     targetShare,
     yprr,
     yacPerRR,
+    routesRun,
+    tgtPerRR,
+    firstDownTDPerRR,
     yardsAfterContact: staticData.yardsAfterContact ?? player.yardsAfterContact,
     avoidedTackles: staticData.avoidedTackles ?? player.avoidedTackles,
     ycoPerAttempt: staticData.ycoPerAttempt ?? player.ycoPerAttempt,
@@ -243,6 +262,19 @@ const fillFromStaticData = (players) => {
     if (player.contestedCatchRate == null && staticData.contestedCatchRate != null) player.contestedCatchRate = staticData.contestedCatchRate;
     if (player.contestedReceptions == null && staticData.contestedReceptions != null) player.contestedReceptions = staticData.contestedReceptions;
     if (player.recGrade == null && staticData.recGrade != null) player.recGrade = staticData.recGrade;
+
+    // Fill route-based metrics
+    if (player.yprr == null && staticData.pffYprr != null) player.yprr = staticData.pffYprr;
+    if (player.routesRun == null && staticData.routesRun != null) player.routesRun = staticData.routesRun;
+    if (player.tgtPerRR == null && staticData.routesRun > 0) {
+      const targets = val(receiving, 'TARGETS', 'TGT');
+      if (targets > 0) player.tgtPerRR = +((targets / staticData.routesRun) * 100).toFixed(1);
+    }
+    if (player.firstDownTDPerRR == null && staticData.routesRun > 0) {
+      const tds = val(receiving, 'TD', 'REC_TD');
+      const firstDowns = staticData.firstDowns || 0;
+      player.firstDownTDPerRR = +((firstDowns + tds) / staticData.routesRun).toFixed(2);
+    }
 
     // Fill target share for RB / TE
     if (player.position === 'RB' && player.targetShare == null) {

@@ -116,26 +116,35 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       if (pData) {
         return [
           { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
-          { stat: 'Rec Grade', value: Math.min(100, (pData.recGrade || 0)), fullMark: 100 },
           { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
           { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
+          { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
+          { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
+          { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
+          { stat: 'Rec YDs', value: Math.min(100, ((pData.recYds || s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
         ];
       }
       // WR fallback (no perspective data)
       return [
         { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
+        { stat: 'Tgt/RR', value: Math.min(100, ((player.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
+        { stat: '1D+TD/RR', value: Math.min(100, ((player.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
+        { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
+        { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
         { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-        { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
-        { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
+        { stat: 'Rec YDs', value: Math.min(100, ((s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
       ];
     }
 
-    // TE — same metrics as WR fallback
+    // TE — same advanced metrics as WR
     return [
       { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
+      { stat: 'Tgt/RR', value: Math.min(100, ((player.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
+      { stat: '1D+TD/RR', value: Math.min(100, ((player.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
+      { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
+      { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
       { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-      { stat: 'YAC/RR', value: Math.min(100, ((player.yacPerRR || 0) / 2) * 100), fullMark: 100 },
-      { stat: 'Rec TDs', value: Math.min(100, ((s.receivingTDs || 0) / 15) * 100), fullMark: 100 },
+      { stat: 'Rec YDs', value: Math.min(100, ((s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
     ];
   };
 
@@ -326,6 +335,9 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                   <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                   <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
                   <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} />
+                  <StatRow label="Routes Run" value={player.routesRun} />
+                  <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} />
+                  <StatRow label="1D+TD/RR" value={player.firstDownTDPerRR} />
                   <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                   <StatRow label="Receptions" value={player.stats?.receptions} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />

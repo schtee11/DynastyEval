@@ -353,6 +353,7 @@ function getFieldOrder(pos) {
       return [
         'position', 'team', 'receiving', 'ppa',
         'teamRecYdsTotal', 'teamTargetsTotal',
+        'routesRun', 'firstDowns', 'pffYprr',
         'recGrade', 'routeGrade',
         'yardsAfterCatch', 'yardsAfterCatchPerRec',
         'slotRate', 'wideRate', 'inlineRate',
@@ -363,6 +364,7 @@ function getFieldOrder(pos) {
       return [
         'position', 'team', 'receiving', 'ppa',
         'teamRecYdsTotal', 'teamTargetsTotal',
+        'routesRun', 'firstDowns', 'pffYprr',
         'recGrade', 'routeGrade',
         'yardsAfterCatch', 'yardsAfterCatchPerRec',
         'slotRate', 'wideRate', 'inlineRate',
