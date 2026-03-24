@@ -240,6 +240,47 @@ const enrichFromESPN = (player, espnStats) => {
   };
 };
 
+// ── fill dominator for players with inline stats ────────────────────────────
+
+const fillFromStaticData = (players) => {
+  for (const player of players) {
+    if (player.position === 'WR' || !player.stats) continue;
+    const staticData = getStaticCollegeStats(player.name);
+    if (!staticData) continue;
+    const { rushing, receiving, teamRecYdsTotal, teamTargetsTotal } = staticData;
+
+    // Fill advanced rushing metrics from static PFF data
+    if (player.yardsAfterContact == null && staticData.yardsAfterContact != null) player.yardsAfterContact = staticData.yardsAfterContact;
+    if (player.avoidedTackles == null && staticData.avoidedTackles != null) player.avoidedTackles = staticData.avoidedTackles;
+    if (player.ycoPerAttempt == null && staticData.ycoPerAttempt != null) player.ycoPerAttempt = staticData.ycoPerAttempt;
+    if (player.explosiveRuns == null && staticData.explosiveRuns != null) player.explosiveRuns = staticData.explosiveRuns;
+
+    // Fill dominator rating
+    if (player.dominatorRating == null) {
+      if (player.position === 'RB') {
+        const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
+        const recYds = val(receiving, 'YDS', 'REC_YDS');
+        const teamTotal = (teamRecYdsTotal || 0) + rushYds;
+        if (teamTotal > 0) {
+          player.dominatorRating = +(((rushYds + recYds) / teamTotal) * 100).toFixed(1);
+        }
+        const targets = val(receiving, 'TARGETS', 'TGT');
+        if (targets > 0 && player.targetShare == null) {
+          player.targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
+        }
+      }
+      if (player.position === 'TE' && receiving) {
+        const recYds = val(receiving, 'YDS', 'REC_YDS');
+        const targets = val(receiving, 'TARGETS', 'TGT');
+        player.dominatorRating = calcDominatorRating(recYds, teamRecYdsTotal || 1);
+        if (targets > 0 && player.targetShare == null) {
+          player.targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
+        }
+      }
+    }
+  }
+};
+
 // ── main enrichment function ────────────────────────────────────────────────
 
 /**
@@ -248,6 +289,9 @@ const enrichFromESPN = (player, espnStats) => {
  * WR players in the array are returned unchanged.
  */
 export const enrichNonWRStats = async (players) => {
+  // Fill dominator/targetShare/advanced metrics for players that already have inline stats
+  fillFromStaticData(players);
+
   // Only enrich players that have a cfbdLookup, are not WR, and don't already have stats
   const nonWR = players.filter((p) => p.position !== 'WR' && p._cfbdLookup && !p.stats);
   if (nonWR.length === 0) {
@@ -477,34 +521,6 @@ export const enrichNonWRStats = async (players) => {
       || espnResults.get(player.id)
       || cfbdResults.get(player.id)
       || player;
-
-    // Calculate dominator/targetShare for players that had inline stats (skipped enrichment)
-    if (result === player && player.stats && player.dominatorRating == null) {
-      const staticData = getStaticCollegeStats(player.name);
-      if (staticData) {
-        const { rushing, receiving, teamRecYdsTotal, teamTargetsTotal } = staticData;
-        if (player.position === 'RB') {
-          const rushYds = val(rushing, 'YDS', 'RUSH_YDS');
-          const recYds = val(receiving, 'YDS', 'REC_YDS');
-          const teamTotal = (teamRecYdsTotal || 0) + rushYds;
-          if (teamTotal > 0) {
-            player.dominatorRating = +(((rushYds + recYds) / teamTotal) * 100).toFixed(1);
-          }
-          const targets = val(receiving, 'TARGETS', 'TGT');
-          if (targets > 0 && player.targetShare == null) {
-            player.targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
-          }
-        }
-        if (player.position === 'TE' && receiving) {
-          const recYds = val(receiving, 'YDS', 'REC_YDS');
-          const targets = val(receiving, 'TARGETS', 'TGT');
-          player.dominatorRating = calcDominatorRating(recYds, teamRecYdsTotal || 1);
-          if (targets > 0 && player.targetShare == null) {
-            player.targetShare = calcTargetShare(targets, teamTargetsTotal || 1);
-          }
-        }
-      }
-    }
 
     return result;
   });
