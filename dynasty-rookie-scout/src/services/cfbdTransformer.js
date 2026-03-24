@@ -85,7 +85,7 @@ const enrichFromStatic = (player) => {
   const staticData = getStaticCollegeStats(player.name);
   if (!staticData) return null;
 
-  const { passing, rushing, receiving, ppa, teamTargetsTotal } = staticData;
+  const { passing, rushing, receiving, teamTargetsTotal } = staticData;
 
   // Position-specific stat builder
   let stats;
