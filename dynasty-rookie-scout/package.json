@@ -14,6 +14,9 @@
     "tailwindcss": "^4.2.2"
   },
   "scripts": {
+    "generate-stats": "node scripts/generateStats.js",
+    "prestart": "node scripts/generateStats.js",
+    "prebuild": "node scripts/generateStats.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
