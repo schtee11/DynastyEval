@@ -92,7 +92,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
         { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 2000) * 100), fullMark: 100 },
         { stat: 'YPC', value: Math.min(100, ((s.yardsPerCarry || 0) / 8) * 100), fullMark: 100 },
         { stat: 'Receiving', value: Math.min(100, ((s.receivingYards || 0) / 500) * 100), fullMark: 100 },
-        { stat: 'Dominator', value: Math.min(100, ((player.dominatorRating || 0) / 50) * 100), fullMark: 100 },
+        { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 20) * 100), fullMark: 100 },
       ];
     }
 
@@ -401,11 +401,8 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 );
               })()}
 
+              {!(player.position === 'WR' && player.receivingByPerspective) && (
               <div style={{ marginTop: 16 }}>
-                {player.position === 'WR' && player.receivingByPerspective ? (
-                  <StatRow label="Receiving Grade" value={player.receivingByPerspective?.overall?.recGrade || 'N/A'} benchmark={80} />
-                ) : (
-                  <>
                     <StatRow label="Breakout Age" value={player.breakoutAge || 'N/A'} />
                     <div style={{
                       display: 'flex',
@@ -419,9 +416,8 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                     }}>
                       {breakout.emoji} {breakout.label} Breakout Profile
                     </div>
-                  </>
-                )}
               </div>
+              )}
             </div>
 
             {/* Right: Radar chart */}

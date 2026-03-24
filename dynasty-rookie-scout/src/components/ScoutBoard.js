@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PlayerCard from './PlayerCard';
 import PlayerDetailModal from './PlayerDetailModal';
 import FilterBar from './FilterBar';
-import { getPlayers, isUsingLiveData, getDataSourceStatus } from '../services/dataService';
+import { getPlayers, isUsingLiveData } from '../services/dataService';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
 
 const ScoutBoard = () => {
@@ -10,7 +10,6 @@ const ScoutBoard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [showDebug, setShowDebug] = useState(false);
   const [filters, setFilters] = useState({
     position: 'ALL',
     draftDay: '',
@@ -92,85 +91,8 @@ const ScoutBoard = () => {
               2026 CLASS
             </span>
           )}
-          {(() => {
-            const status = getDataSourceStatus();
-            const cfbd = status.cfbd;
-            if (!cfbd) return null;
-            const badgeStyle = {
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 1,
-              cursor: 'pointer',
-            };
-            if (cfbd.ok) {
-              return (
-                <span onClick={() => setShowDebug(!showDebug)} style={{
-                  ...badgeStyle,
-                  background: 'rgba(34,197,94,0.15)',
-                  color: '#22c55e',
-                }}>
-                  CFBD {cfbd.matched}/{cfbd.attempted}
-                </span>
-              );
-            }
-            return (
-              <span onClick={() => setShowDebug(!showDebug)} style={{
-                ...badgeStyle,
-                background: 'rgba(239,68,68,0.15)',
-                color: '#ef4444',
-              }}>
-                CFBD {cfbd.reason ? '✗' : `0/${cfbd.attempted}`} — TAP FOR DEBUG
-              </span>
-            );
-          })()}
         </span>
       </div>
-
-      {showDebug && (() => {
-        const status = getDataSourceStatus();
-        const cfbd = status.cfbd || {};
-        const debug = cfbd.debug || {};
-        return (
-          <div style={{
-            background: '#1a1d2e',
-            border: '1px solid #2a2d3e',
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 12,
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            color: '#d1d5db',
-            lineHeight: 1.6,
-          }}>
-            <div style={{ color: '#f59e0b', fontWeight: 700, marginBottom: 8, fontSize: 12 }}>
-              CFBD DEBUG INFO
-              <span onClick={() => setShowDebug(false)} style={{ float: 'right', cursor: 'pointer', color: '#6b7280' }}>✕</span>
-            </div>
-            <div>Source: <span style={{ color: '#22c55e' }}>{status.source}</span></div>
-            <div>Sleeper: {status.sleeper?.ok ? `✅ ${status.sleeper.count} rookies` : `❌ ${status.sleeper?.reason}`}</div>
-            <div>API base: <span style={{ color: '#60a5fa' }}>{debug.apiBase || '?'}</span></div>
-            {debug.errors && (
-              <div style={{ color: '#ef4444', marginTop: 4, marginBottom: 4 }}>
-                ERRORS: {debug.errors.map((e, i) => <div key={i} style={{ marginLeft: 8, wordBreak: 'break-all' }}>{e}</div>)}
-              </div>
-            )}
-            {!debug.errors && <div style={{ color: '#22c55e' }}>No fetch errors (API returned 200 OK with empty data)</div>}
-            <div>CFBD matched: <span style={{ color: cfbd.matched > 0 ? '#22c55e' : '#ef4444' }}>{cfbd.matched ?? '?'}/{cfbd.attempted ?? '?'}</span></div>
-            <div>API rows → pass: {cfbd.apiRows?.passing ?? '?'}, rush: {cfbd.apiRows?.rushing ?? '?'}, rec: {cfbd.apiRows?.receiving ?? '?'}</div>
-            <div>Grouped → pass: {debug.groupedCounts?.passing ?? '?'}, rush: {debug.groupedCounts?.rushing ?? '?'}, rec: {debug.groupedCounts?.receiving ?? '?'}</div>
-            <div style={{ marginTop: 8, color: '#f59e0b' }}>Sample CFBD row fields:</div>
-            <div style={{ wordBreak: 'break-all' }}>{debug.sampleRowFields?.join(', ') || 'none'}</div>
-            <div style={{ marginTop: 4, color: '#f59e0b' }}>Sample CFBD row:</div>
-            <div style={{ wordBreak: 'break-all', fontSize: 10 }}>{debug.sampleRow || 'none'}</div>
-            <div style={{ marginTop: 8, color: '#f59e0b' }}>CFBD grouped names (first 5):</div>
-            <div>{debug.cfbdNames?.join(', ') || 'none (0 grouped)'}</div>
-            <div style={{ marginTop: 4, color: '#f59e0b' }}>Searched names (first 5):</div>
-            <div>{debug.searchedNames?.join(', ') || 'none'}</div>
-          </div>
-        );
-      })()}
 
       {loading && (
         <div style={{
@@ -180,7 +102,7 @@ const ScoutBoard = () => {
           fontSize: 18,
           color: '#6b7280',
         }}>
-          {isUsingLiveData() ? 'Loading live stats from CFBD...' : 'Loading prospects...'}
+          Loading prospects...
         </div>
       )}
 

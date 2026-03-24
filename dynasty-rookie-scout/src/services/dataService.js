@@ -2,7 +2,7 @@
 // 1. Fetch rookies from Sleeper API (source of truth for valid rookies)
 // 2. Cross-reference with prospect metadata for scouting data
 // 3. WR stats come from receivingData.js (no API calls)
-// 4. QB/RB/TE stats enriched via CFBD API with fallback to static data
+// 4. QB/RB/TE stats enriched via static data or ESPN API
 
 import { buildRookiePlayersFromSleeper } from './sleeperApi';
 import { enrichNonWRStats } from './cfbdTransformer';
@@ -12,13 +12,13 @@ import { getProspects, getProspectById as getRawProspectById } from './rookiePro
 let playersCache = null;
 
 // Exposed to UI for data source status banner
-let dataSourceStatus = { sleeper: null, cfbd: null, source: 'loading' };
+let dataSourceStatus = { sleeper: null, source: 'loading' };
 
 export const getDataSourceStatus = () => dataSourceStatus;
 
 /**
  * Map a raw prospect (from rookieProspects2026.js) into the UI player shape.
- * Used as static fallback when Sleeper/CFBD are unavailable.
+ * Used as static fallback when Sleeper is unavailable.
  */
 const mapProspectToPlayer = (p) => ({
   id: p.id,
@@ -43,8 +43,6 @@ const mapProspectToPlayer = (p) => ({
   rank: p.rank,
   playerComps: p.playerComps,
   receivingByPerspective: p.position === 'WR' ? (p.receivingByPerspective || null) : null,
-  // Carry through for CFBD enrichment (stripped before exposing to UI)
-  _cfbdLookup: p.cfbdLookup ?? null,
   _prospect: p,
 });
 
@@ -79,35 +77,23 @@ export const getPlayers = async () => {
       dataSourceStatus.source = 'sleeper';
     }
 
-    // Step 2: Enrich QB/RB/TE with college stats
-    // Priority: static 2025 data → ESPN API → CFBD API (no key required for static/ESPN)
-    console.info('[DataService] Attempting QB/RB/TE enrichment (static → ESPN → CFBD)...');
+    // Step 2: Enrich QB/RB/TE with college stats (static data → ESPN API)
     try {
-      const enriched = await enrichNonWRStats(players);
-      const status = enriched._cfbdStatus;
-      if (status) {
-        dataSourceStatus.cfbd = {
-          ok: status.matched > 0,
-          ...status,
-        };
-        delete enriched._cfbdStatus;
-      }
-      players = enriched;
+      players = await enrichNonWRStats(players);
       console.info('[DataService] Enrichment complete');
     } catch (err) {
       console.error('[DataService] Enrichment failed:', err);
-      dataSourceStatus.cfbd = { ok: false, reason: err.message };
     }
 
     // Clean up internal fields before exposing to UI
-    players = players.map(({ _cfbdLookup, _prospect, ...player }) => player);
+    players = players.map(({ _prospect, ...player }) => player);
 
     playersCache = players;
     return players;
   } catch (err) {
     console.error('[DataService] Data fetch failed, falling back to static data:', err);
-    dataSourceStatus = { sleeper: { ok: false, reason: err.message }, cfbd: { ok: false, reason: 'skipped' }, source: 'static' };
-    playersCache = getStaticPlayers().map(({ _cfbdLookup, _prospect, ...p }) => p);
+    dataSourceStatus = { sleeper: { ok: false, reason: err.message }, source: 'static' };
+    playersCache = getStaticPlayers().map(({ _prospect, ...p }) => p);
     return playersCache;
   }
 };

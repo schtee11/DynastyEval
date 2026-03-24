@@ -250,8 +250,6 @@ export const buildRookiePlayersFromSleeper = async () => {
       rank: prospect?.rank ?? null,
       playerComps: prospect?.playerComps || [],
       receivingByPerspective: null,
-      // Carry forward cfbdLookup for CFBD enrichment of QB/RB/TE
-      _cfbdLookup: prospect?.cfbdLookup ?? null,
       _prospect: prospect, // reference for fallback stats
     };
 
