@@ -20,6 +20,15 @@ export const getDraftCapitalInfo = (pick) => {
   return { label: 'Day 3', color: '#6b7280', emoji: '' };
 };
 
+/** Human-readable draft range label (pre-draft projections) */
+export const getDraftRangeLabel = (round, pick) => {
+  if (!round && !pick) return null;
+  if (pick && pick <= 10) return 'Top 10';
+  if (round === 1 || (pick && pick <= 32)) return '1st Round';
+  if (round === 2 || round === 3 || (pick && pick <= 100)) return '2nd-3rd Round';
+  return 'Day 3';
+};
+
 export const hasInjuryRisk = (player) => player.injuries && player.injuries.length > 0;
 
 /** Tier label for section dividers — based on draft capital */

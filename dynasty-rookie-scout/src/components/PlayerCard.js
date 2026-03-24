@@ -1,5 +1,5 @@
 import React from 'react';
-import { positionColors, getDraftCapitalInfo, hasInjuryRisk, getTopStats } from '../utils/helpers';
+import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk, getTopStats } from '../utils/helpers';
 
 const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
@@ -68,7 +68,7 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
             color: '#9ca3af',
             marginTop: 2,
           }}>
-            {[player.college, player.draftTeam].filter(Boolean).join(' · ') || 'TBD'}
+            {player.college || 'TBD'}
           </div>
         </div>
         <span style={{
@@ -98,7 +98,9 @@ const PlayerCard = ({ player, perspective = 'overall', onClick }) => {
           fontWeight: 600,
           color: capital.color,
         }}>
-          {player.draftRound ? `${capital.emoji} R${player.draftRound} Pick #${player.draftPick}` : 'Draft TBD'}
+          {player.draftTeam
+            ? `${capital.emoji} R${player.draftRound} Pick #${player.draftPick}`
+            : getDraftRangeLabel(player.draftRound, player.draftPick) || 'Draft TBD'}
         </span>
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",

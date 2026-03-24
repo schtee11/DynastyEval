@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk } from '../utils/helpers';
+import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/anthropicApi';
 import { perspectiveLabels } from '../services/receivingData';
 
@@ -229,14 +229,18 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 fontWeight: 700,
                 color: capital.color,
               }}>
-                {capital.emoji} {player.draftIsProjected ? 'Projected ' : ''}Round {player.draftRound}, Pick #{player.draftPick}
+                {player.draftTeam
+                  ? `${capital.emoji} Round ${player.draftRound}, Pick #${player.draftPick}`
+                  : `${capital.emoji} Projected ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}`}
               </div>
               <div style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 11,
                 color: '#6b7280',
               }}>
-                {player.draftTeam} · {capital.label} Capital{player.draftIsProjected ? ' (Mock)' : ''}
+                {player.draftTeam
+                  ? `${player.draftTeam} · ${capital.label} Capital`
+                  : `${capital.label} Capital`}
               </div>
             </div>
           </div>

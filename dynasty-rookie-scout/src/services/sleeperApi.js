@@ -237,7 +237,7 @@ export const buildRookiePlayersFromSleeper = async () => {
       weight: prospect?.weight ?? null,
       draftRound: prospect?.projectedRound ?? null,
       draftPick: prospect?.projectedPick ?? null,
-      draftTeam: sleeperPlayer.team || prospect?.projectedTeam || null,
+      draftTeam: sleeperPlayer.team || null,
       draftIsProjected: !sleeperPlayer.team,
       stats: prospect?.stats || {},
       breakoutAge: prospect?.breakoutAge ?? null,
