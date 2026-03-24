@@ -320,17 +320,24 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                 </>
               )}
 
-              {/* TE stats — same metrics as WR */}
+              {/* TE stats */}
               {player.position === 'TE' && (
                 <>
                   <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                   <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
-                  <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
+                  <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} />
                   <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                   <StatRow label="Receptions" value={player.stats?.receptions} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
                   <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
                   <StatRow label="Targets" value={player.stats?.targets} />
+                  <StatRow label="YAC" value={player.yardsAfterCatch} />
+                  <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
+                  <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
+                  <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
+                  <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
+                  <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
+                  <StatRow label="Contested Receptions" value={player.contestedReceptions} />
                 </>
               )}
 
@@ -385,6 +392,13 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                             <StatRow label="Receiving TDs" value={val('recTDs')} />
                             <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
                             <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
+                            <StatRow label="YAC" value={player.yardsAfterCatch} />
+                            <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
+                            <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
+                            <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
+                            <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
+                            <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
+                            <StatRow label="Contested Receptions" value={player.contestedReceptions} />
                           </>
                         ) : (
                           <>
@@ -403,12 +417,19 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                         {/* WR fallback — CFBD stats */}
                         <StatRow label="EPA" value={player.stats?.epa} benchmark={0.15} />
                         <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
-                        <StatRow label="YAC/RR" value={player.yacPerRR} benchmark={1.0} />
+                        <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
                         <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                         <StatRow label="Receptions" value={player.stats?.receptions} />
                         <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
                         <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
                         <StatRow label="Targets" value={player.stats?.targets} />
+                        <StatRow label="YAC" value={player.yardsAfterCatch} />
+                        <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
+                        <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
+                        <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
+                        <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
+                        <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
+                        <StatRow label="Contested Receptions" value={player.contestedReceptions} />
                       </>
                     )}
                   </>

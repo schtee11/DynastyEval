@@ -81,7 +81,7 @@ function loadProspects() {
   let m;
   while ((m = re.exec(src)) !== null) {
     const [, name, position, college] = m;
-    if (['QB', 'RB', 'TE'].includes(position)) {
+    if (['QB', 'RB', 'WR', 'TE'].includes(position)) {
       prospects.push({ name, position, college, key: name.toLowerCase() });
     }
   }
@@ -161,7 +161,7 @@ function formatValue(val, indent = 4) {
 
 function main() {
   const prospects = loadProspects();
-  console.log(`Found ${prospects.length} QB/RB/TE prospects\n`);
+  console.log(`Found ${prospects.length} QB/RB/WR/TE prospects\n`);
 
   // Load and index all CSVs
   const csvCache = {};
@@ -179,7 +179,7 @@ function main() {
   }
 
   const stats = { matched: 0, override: 0, missed: 0 };
-  const byPosition = { QB: [], RB: [], TE: [] };
+  const byPosition = { QB: [], RB: [], WR: [], TE: [] };
 
   for (const prospect of prospects) {
     const posConfig = columnMap[prospect.position];
@@ -242,7 +242,7 @@ function main() {
   // ── Generate output file ───────────────────────────────────────────────
 
   const lines = [];
-  lines.push('// Static 2025 college football season stats for QB/RB/TE prospects.');
+  lines.push('// Static 2025 college football season stats for QB/RB/WR/TE prospects.');
   lines.push('// The 2025 CFB season is complete — these numbers are final.');
   lines.push('// Sources: PFF CSVs (passing_summary, receiving_summary, rushing_summary).');
   lines.push('//');
@@ -252,9 +252,9 @@ function main() {
   lines.push('');
   lines.push('const collegeStats2025 = {');
 
-  const sectionLabels = { QB: 'QBs', RB: 'RBs', TE: 'TEs' };
+  const sectionLabels = { QB: 'QBs', RB: 'RBs', WR: 'WRs', TE: 'TEs' };
 
-  for (const pos of ['QB', 'RB', 'TE']) {
+  for (const pos of ['QB', 'RB', 'WR', 'TE']) {
     const entries = byPosition[pos];
     if (entries.length === 0) continue;
 
@@ -349,10 +349,25 @@ function getFieldOrder(pos) {
         'yardsAfterContact', 'avoidedTackles', 'ycoPerAttempt', 'explosiveRuns',
         'longest', 'gamesPlayed',
       ];
+    case 'WR':
+      return [
+        'position', 'team', 'receiving', 'ppa',
+        'teamRecYdsTotal', 'teamTargetsTotal',
+        'recGrade', 'routeGrade',
+        'yardsAfterCatch', 'yardsAfterCatchPerRec',
+        'slotRate', 'wideRate', 'inlineRate',
+        'contestedCatchRate', 'contestedReceptions',
+        'gamesPlayed',
+      ];
     case 'TE':
       return [
         'position', 'team', 'receiving', 'ppa',
-        'teamRecYdsTotal', 'teamTargetsTotal', 'gamesPlayed',
+        'teamRecYdsTotal', 'teamTargetsTotal',
+        'recGrade', 'routeGrade',
+        'yardsAfterCatch', 'yardsAfterCatchPerRec',
+        'slotRate', 'wideRate', 'inlineRate',
+        'contestedCatchRate', 'contestedReceptions',
+        'gamesPlayed',
       ];
     default:
       return ['position', 'team'];
