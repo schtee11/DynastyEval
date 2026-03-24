@@ -1,5 +1,5 @@
-// Enriches QB/RB/TE players with college stats.
-// WR stats come exclusively from receivingData.js — this module skips WRs entirely.
+// Enriches QB/RB/WR/TE players with college stats.
+// WR perspective data comes from receivingData.js; base receiving metrics (YAC, alignment, contested) come from the CSV pipeline.
 //
 // Data source priority:
 //   1. Static 2025 stats (collegeStats2025.js) — zero API calls, instant
@@ -64,6 +64,14 @@ const buildTEStats = (receiving) => ({
   epa: null,
 });
 
+const buildWRStats = (receiving) => ({
+  receptions: val(receiving, 'REC', 'RECEPTIONS'),
+  receivingYards: val(receiving, 'YDS', 'REC_YDS'),
+  receivingTDs: val(receiving, 'TD', 'REC_TD'),
+  targets: val(receiving, 'TARGETS', 'TGT'),
+  epa: null,
+});
+
 // ── target-share calculator ──────────────────────────────────────────────────
 
 const calcTargetShare = (playerTargets, teamTargetsTotal) => {
@@ -92,6 +100,9 @@ const enrichFromStatic = (player) => {
     case 'RB':
       stats = buildRBStats(rushing, receiving);
       break;
+    case 'WR':
+      stats = buildWRStats(receiving);
+      break;
     case 'TE':
       stats = buildTEStats(receiving);
       break;
@@ -110,7 +121,7 @@ const enrichFromStatic = (player) => {
   let yprr = player.yprr;
   let yacPerRR = player.yacPerRR;
 
-  if (player.position === 'TE' && receiving) {
+  if ((player.position === 'TE' || player.position === 'WR') && receiving) {
     const recYds = val(receiving, 'YDS', 'REC_YDS');
     const targets = val(receiving, 'TARGETS', 'TGT');
     if (targets > 0 && teamTargetsTotal) {
@@ -145,6 +156,14 @@ const enrichFromStatic = (player) => {
     avoidedTackles: staticData.avoidedTackles ?? player.avoidedTackles,
     ycoPerAttempt: staticData.ycoPerAttempt ?? player.ycoPerAttempt,
     explosiveRuns: staticData.explosiveRuns ?? player.explosiveRuns,
+    yardsAfterCatch: staticData.yardsAfterCatch ?? player.yardsAfterCatch,
+    yardsAfterCatchPerRec: staticData.yardsAfterCatchPerRec ?? player.yardsAfterCatchPerRec,
+    slotRate: staticData.slotRate ?? player.slotRate,
+    wideRate: staticData.wideRate ?? player.wideRate,
+    inlineRate: staticData.inlineRate ?? player.inlineRate,
+    contestedCatchRate: staticData.contestedCatchRate ?? player.contestedCatchRate,
+    contestedReceptions: staticData.contestedReceptions ?? player.contestedReceptions,
+    recGrade: staticData.recGrade ?? player.recGrade,
     _liveData: true,
     _dataSource: 'static',
   };
@@ -204,7 +223,7 @@ const enrichFromESPN = (player, espnStats) => {
 
 const fillFromStaticData = (players) => {
   for (const player of players) {
-    if (player.position === 'WR' || !player.stats) continue;
+    if (!player.stats) continue;
     const staticData = getStaticCollegeStats(player.name);
     if (!staticData) continue;
     const { receiving, teamTargetsTotal } = staticData;
@@ -215,6 +234,16 @@ const fillFromStaticData = (players) => {
     if (player.ycoPerAttempt == null && staticData.ycoPerAttempt != null) player.ycoPerAttempt = staticData.ycoPerAttempt;
     if (player.explosiveRuns == null && staticData.explosiveRuns != null) player.explosiveRuns = staticData.explosiveRuns;
 
+    // Fill receiving metrics from static PFF data (WR / TE)
+    if (player.yardsAfterCatch == null && staticData.yardsAfterCatch != null) player.yardsAfterCatch = staticData.yardsAfterCatch;
+    if (player.yardsAfterCatchPerRec == null && staticData.yardsAfterCatchPerRec != null) player.yardsAfterCatchPerRec = staticData.yardsAfterCatchPerRec;
+    if (player.slotRate == null && staticData.slotRate != null) player.slotRate = staticData.slotRate;
+    if (player.wideRate == null && staticData.wideRate != null) player.wideRate = staticData.wideRate;
+    if (player.inlineRate == null && staticData.inlineRate != null) player.inlineRate = staticData.inlineRate;
+    if (player.contestedCatchRate == null && staticData.contestedCatchRate != null) player.contestedCatchRate = staticData.contestedCatchRate;
+    if (player.contestedReceptions == null && staticData.contestedReceptions != null) player.contestedReceptions = staticData.contestedReceptions;
+    if (player.recGrade == null && staticData.recGrade != null) player.recGrade = staticData.recGrade;
+
     // Fill target share for RB / TE
     if (player.position === 'RB' && player.targetShare == null) {
       const targets = val(receiving, 'TARGETS', 'TGT');
@@ -222,7 +251,7 @@ const fillFromStaticData = (players) => {
         player.targetShare = calcTargetShare(targets, teamTargetsTotal);
       }
     }
-    if (player.position === 'TE' && player.targetShare == null && receiving) {
+    if ((player.position === 'TE' || player.position === 'WR') && player.targetShare == null && receiving) {
       const targets = val(receiving, 'TARGETS', 'TGT');
       if (targets > 0 && teamTargetsTotal) {
         player.targetShare = calcTargetShare(targets, teamTargetsTotal);
@@ -234,29 +263,29 @@ const fillFromStaticData = (players) => {
 // ── main enrichment function ────────────────────────────────────────────────
 
 /**
- * Enrich QB/RB/TE players with college stats.
+ * Enrich QB/RB/WR/TE players with college stats.
  * Priority: static data → ESPN API.
- * WR players in the array are returned unchanged.
+ * WR players receive CSV-based receiving metrics (YAC, alignment, contested).
  */
 export const enrichNonWRStats = async (players) => {
   // Fill targetShare/advanced metrics for players that already have inline stats
   fillFromStaticData(players);
 
-  // Only enrich players that are not WR and don't already have stats
-  const nonWR = players.filter((p) => p.position !== 'WR' && !p.stats);
-  if (nonWR.length === 0) {
-    const alreadyHaveStats = players.filter((p) => p.position !== 'WR' && p.stats).length;
-    console.info(`[Enrichment] ${alreadyHaveStats} non-WR players already have inline stats — skipping enrichment`);
+  // Enrich players that don't already have stats
+  const needsEnrichment = players.filter((p) => !p.stats);
+  if (needsEnrichment.length === 0) {
+    const alreadyHaveStats = players.filter((p) => p.stats).length;
+    console.info(`[Enrichment] ${alreadyHaveStats} players already have inline stats — skipping enrichment`);
     return players;
   }
 
-  console.info(`[Enrichment] Enriching ${nonWR.length} non-WR players (others have inline stats)`);
+  console.info(`[Enrichment] Enriching ${needsEnrichment.length} players (others have inline stats)`);
 
   // ── Phase 1: Static data (instant, no API calls) ──────────────────────
   const staticResults = new Map();
   const needsAPI = [];
 
-  for (const player of nonWR) {
+  for (const player of needsEnrichment) {
     const enriched = enrichFromStatic(player);
     if (enriched) {
       staticResults.set(player.id, enriched);
@@ -266,7 +295,7 @@ export const enrichNonWRStats = async (players) => {
     }
   }
 
-  console.info(`[Enrichment] Static: ${staticResults.size}/${nonWR.length} matched, ${needsAPI.length} need ESPN`);
+  console.info(`[Enrichment] Static: ${staticResults.size}/${needsEnrichment.length} matched, ${needsAPI.length} need ESPN`);
 
   // ── Phase 2: ESPN API for remaining players ───────────────────────────
   const espnResults = new Map();
@@ -295,14 +324,13 @@ export const enrichNonWRStats = async (players) => {
 
   // ── Merge results ─────────────────────────────────────────────────────
   const enriched = players.map((player) => {
-    if (player.position === 'WR') return player;
     return staticResults.get(player.id)
       || espnResults.get(player.id)
       || player;
   });
 
   const totalMatched = staticResults.size + espnResults.size;
-  console.info(`[Enrichment] Final: ${totalMatched}/${nonWR.length} enriched (static: ${staticResults.size}, ESPN: ${espnResults.size})`);
+  console.info(`[Enrichment] Final: ${totalMatched}/${needsEnrichment.length} enriched (static: ${staticResults.size}, ESPN: ${espnResults.size})`);
 
   return enriched;
 };
