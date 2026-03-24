@@ -290,7 +290,8 @@ function main() {
       if (posConfig.receivingCsvFile && posConfig.receivingFields) {
         const rbRecRows = getCSV(posConfig.receivingCsvFile);
         const rbRecIndex = indexCSV(rbRecRows, posConfig.receivingPositionFilter);
-        const recRow = rbRecIndex[normKey];
+        const recRow = rbRecIndex[normKey] || rbRecIndex[normFuzzy(prospect.name)]
+          || (aliasKey && rbRecIndex[aliasKey]);
         if (recRow) {
           const recFields = extractFields(recRow, posConfig.receivingFields);
           entry = deepMerge(entry, recFields);

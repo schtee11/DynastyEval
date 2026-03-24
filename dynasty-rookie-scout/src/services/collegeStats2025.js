@@ -1187,6 +1187,7 @@ const collegeStats2025 = {
   "jamarion miller": {
     position: "RB",
     rushing: { YDS: 504, TD: 3, CAR: 130 },
+    receiving: { REC: 19, YDS: 109, TD: 0, TARGETS: 23 },
     teamTargetsTotal: 494,
     pffGrade: 66.2,
     pffRunGrade: 69.4,
