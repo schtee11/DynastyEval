@@ -75,6 +75,12 @@ function normFuzzy(name) {
     .trim();
 }
 
+/** Name aliases for players whose CSV name doesn't match their prospect name. */
+const NAME_ALIASES = {
+  'jamarion miller': 'jam miller',  // PFF uses nickname "Jam Miller"
+};
+
+
 // ── Load prospect list from rookieProspects2026.js ─────────────────────────
 
 function loadProspects() {
@@ -229,7 +235,9 @@ function main() {
     // Primary CSV lookup (try exact key, then fuzzy key without Jr/Sr/II/III)
     const primaryRows = getCSV(posConfig.csvFile);
     const primaryIndex = indexCSV(primaryRows, posConfig.positionFilter);
-    let primaryRow = primaryIndex[normKey] || primaryIndex[normFuzzy(prospect.name)];
+    const aliasKey = NAME_ALIASES[normKey];
+    let primaryRow = primaryIndex[normKey] || primaryIndex[normFuzzy(prospect.name)]
+      || (aliasKey && primaryIndex[aliasKey]);
 
     // Cross-position fallback: some players are listed under different positions
     // in PFF (e.g., WR listed as HB/FB, RB listed as TE)

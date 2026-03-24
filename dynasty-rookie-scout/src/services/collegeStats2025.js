@@ -1186,6 +1186,17 @@ const collegeStats2025 = {
   },
   "jamarion miller": {
     position: "RB",
+    rushing: { YDS: 504, TD: 3, CAR: 130 },
+    teamTargetsTotal: 494,
+    pffGrade: 66.2,
+    pffRunGrade: 69.4,
+    elusiveRating: 37.8,
+    yardsAfterContact: 318,
+    avoidedTackles: 22,
+    ycoPerAttempt: 2.45,
+    explosiveRuns: 11,
+    longest: 24,
+    gamesPlayed: 11,
   },
   "roman hemby": {
     position: "RB",
