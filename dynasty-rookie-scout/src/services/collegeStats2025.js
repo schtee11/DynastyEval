@@ -396,7 +396,7 @@ const collegeStats2025 = {
     longest: 59,
     gamesPlayed: 12,
   },
-  "mike washington jr.": {
+  "mike washington jr": {
     position: "RB",
     team: "Arkansas",
     rushing: { YDS: 1066, TD: 8, CAR: 167 },
@@ -492,12 +492,10 @@ const collegeStats2025 = {
     longest: 72,
     gamesPlayed: 13,
   },
-  "jai'den thomas": {
+  "jaiden thomas": {
     position: "RB",
-    team: "Unlv",
     rushing: { YDS: 1036, TD: 12, CAR: 148 },
     receiving: { REC: 39, YDS: 237, TD: 1, TARGETS: 47 },
-    ppa: { averagePPA: { all: 0.15 } },
     pffGrade: 90.7,
     pffRunGrade: 92.7,
     elusiveRating: 155.7,
@@ -604,12 +602,10 @@ const collegeStats2025 = {
     longest: 51,
     gamesPlayed: 12,
   },
-  "j'koby williams": {
+  "jkoby williams": {
     position: "RB",
-    team: "Texas Tech",
     rushing: { YDS: 859, TD: 6, CAR: 155 },
     receiving: { REC: 35, YDS: 388, TD: 2, TARGETS: 44 },
-    ppa: { averagePPA: { all: 0.15 } },
     pffGrade: 88.4,
     pffRunGrade: 87.9,
     elusiveRating: 139.9,
@@ -716,12 +712,10 @@ const collegeStats2025 = {
     longest: 67,
     gamesPlayed: 10,
   },
-  "mark fletcher jr.": {
+  "mark fletcher jr": {
     position: "RB",
-    team: "Miami",
     rushing: { YDS: 1184, TD: 12, CAR: 217 },
     receiving: { REC: 17, YDS: 140, TD: 2, TARGETS: 22 },
-    ppa: { averagePPA: { all: 0.15 } },
     pffGrade: 86.7,
     pffRunGrade: 92,
     elusiveRating: 102.8,
@@ -940,12 +934,10 @@ const collegeStats2025 = {
     longest: 54,
     gamesPlayed: 12,
   },
-  "le'veon moss": {
+  "leveon moss": {
     position: "RB",
-    team: "Texas A&M",
     rushing: { YDS: 397, TD: 6, CAR: 77 },
     receiving: { REC: 2, YDS: 3, TD: 0, TARGETS: 4 },
-    ppa: { averagePPA: { all: 0.1 } },
     pffGrade: 75.8,
     pffRunGrade: 80,
     elusiveRating: 65.8,
@@ -1100,12 +1092,10 @@ const collegeStats2025 = {
     longest: 85,
     gamesPlayed: 12,
   },
-  "j'mari taylor": {
+  "jmari taylor": {
     position: "RB",
-    team: "Virginia",
     rushing: { YDS: 1064, TD: 14, CAR: 222 },
     receiving: { REC: 43, YDS: 251, TD: 1, TARGETS: 54 },
-    ppa: { averagePPA: { all: 0.13 } },
     pffGrade: 76.1,
     pffRunGrade: 80.3,
     elusiveRating: 90.9,
@@ -1210,7 +1200,7 @@ const collegeStats2025 = {
     longest: 82,
     gamesPlayed: 16,
   },
-  "robert henry jr.": {
+  "robert henry jr": {
     position: "RB",
     rushing: { YDS: 1051, TD: 9, CAR: 152 },
     receiving: { REC: 17, YDS: 112, TD: 2, TARGETS: 24 },
@@ -1403,7 +1393,7 @@ const collegeStats2025 = {
     contestedReceptions: 10,
     gamesPlayed: 12,
   },
-  "omar cooper jr.": {
+  "omar cooper jr": {
     position: "WR",
     receiving: { REC: 69, YDS: 937, TD: 13, TARGETS: 91 },
     routesRun: 367,
@@ -1420,7 +1410,7 @@ const collegeStats2025 = {
     contestedReceptions: 7,
     gamesPlayed: 16,
   },
-  "j. michael sturdivant": {
+  "j michael sturdivant": {
     position: "WR",
     receiving: { REC: 27, YDS: 411, TD: 3, TARGETS: 50 },
     routesRun: 312,
@@ -1437,7 +1427,7 @@ const collegeStats2025 = {
     contestedReceptions: 5,
     gamesPlayed: 12,
   },
-  "kevin coleman jr.": {
+  "kevin coleman jr": {
     position: "WR",
     receiving: { REC: 66, YDS: 732, TD: 1, TARGETS: 84 },
     routesRun: 328,
@@ -1777,7 +1767,7 @@ const collegeStats2025 = {
     contestedReceptions: 7,
     gamesPlayed: 12,
   },
-  "emmanuel henderson jr.": {
+  "emmanuel henderson jr": {
     position: "WR",
     receiving: { REC: 45, YDS: 766, TD: 5, TARGETS: 68 },
     routesRun: 332,
@@ -1896,7 +1886,7 @@ const collegeStats2025 = {
     contestedReceptions: 6,
     gamesPlayed: 10,
   },
-  "de'zhaun stribling": {
+  "dezhaun stribling": {
     position: "WR",
     receiving: { REC: 55, YDS: 811, TD: 6, TARGETS: 74 },
     routesRun: 378,
@@ -1913,7 +1903,7 @@ const collegeStats2025 = {
     contestedReceptions: 8,
     gamesPlayed: 15,
   },
-  "ja'kobi lane": {
+  "jakobi lane": {
     position: "WR",
     receiving: { REC: 49, YDS: 750, TD: 4, TARGETS: 74 },
     routesRun: 310,
@@ -2481,7 +2471,7 @@ const collegeStats2025 = {
     contestedReceptions: 1,
     gamesPlayed: 6,
   },
-  "c.j. williams": {
+  "cj williams": {
     position: "WR",
     receiving: { REC: 59, YDS: 749, TD: 6, TARGETS: 92 },
     routesRun: 403,
@@ -2518,7 +2508,7 @@ const collegeStats2025 = {
     contestedReceptions: 2,
     gamesPlayed: 10,
   },
-  "antonio gates jr.": {
+  "antonio gates jr": {
     position: "WR",
   },
   // ── TEs ────────────────────────────────────────────────────────────────
@@ -2795,13 +2785,9 @@ const collegeStats2025 = {
     contestedReceptions: 1,
     gamesPlayed: 14,
   },
-  "dae'quan wright": {
+  "daequan wright": {
     position: "TE",
-    team: "Mississippi",
     receiving: { REC: 39, YDS: 635, TD: 5, TARGETS: 55 },
-    ppa: { averagePPA: { all: 0.13 } },
-    teamRecYdsTotal: 2600,
-    teamTargetsTotal: 320,
     routesRun: 305,
     firstDowns: 30,
     pffYprr: 2.08,
@@ -3047,13 +3033,9 @@ const collegeStats2025 = {
     contestedReceptions: 2,
     gamesPlayed: 11,
   },
-  "r.j. maryland": {
+  "rj maryland": {
     position: "TE",
-    team: "SMU",
     receiving: { REC: 27, YDS: 320, TD: 2, TARGETS: 38 },
-    ppa: { averagePPA: { all: 0.1 } },
-    teamRecYdsTotal: 2800,
-    teamTargetsTotal: 340,
     routesRun: 197,
     firstDowns: 16,
     pffYprr: 1.62,

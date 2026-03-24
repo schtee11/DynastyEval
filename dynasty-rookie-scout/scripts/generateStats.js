@@ -82,7 +82,7 @@ function loadProspects() {
   while ((m = re.exec(src)) !== null) {
     const [, name, position, college] = m;
     if (['QB', 'RB', 'WR', 'TE'].includes(position)) {
-      prospects.push({ name, position, college, key: name.toLowerCase() });
+      prospects.push({ name, position, college, key: norm(name) });
     }
   }
   return prospects;
