@@ -178,6 +178,10 @@ const enrichFromStatic = (player) => {
     targetShare,
     yprr,
     yacPerRR,
+    yardsAfterContact: staticData.yardsAfterContact ?? player.yardsAfterContact,
+    avoidedTackles: staticData.avoidedTackles ?? player.avoidedTackles,
+    ycoPerAttempt: staticData.ycoPerAttempt ?? player.ycoPerAttempt,
+    explosiveRuns: staticData.explosiveRuns ?? player.explosiveRuns,
     _liveData: true,
     _dataSource: 'static',
   };

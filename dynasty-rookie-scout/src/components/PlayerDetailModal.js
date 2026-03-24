@@ -294,6 +294,10 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                   <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} />
                   <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} />
                   <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} />
+                  <StatRow label="Yards After Contact" value={player.yardsAfterContact} />
+                  <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} />
+                  <StatRow label="Missed Tackles Forced" value={player.avoidedTackles} benchmark={40} />
+                  <StatRow label="10+ Yard Runs" value={player.explosiveRuns} benchmark={25} />
                   <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards} />
                   <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
@@ -398,19 +402,25 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               })()}
 
               <div style={{ marginTop: 16 }}>
-                <StatRow label="Breakout Age" value={player.breakoutAge || 'N/A'} />
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  marginTop: 4,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 12,
-                  color: breakout.color,
-                  fontWeight: 700,
-                }}>
-                  {breakout.emoji} {breakout.label} Breakout Profile
-                </div>
+                {player.position === 'WR' && player.receivingByPerspective ? (
+                  <StatRow label="Receiving Grade" value={player.receivingByPerspective?.overall?.recGrade || 'N/A'} benchmark={80} />
+                ) : (
+                  <>
+                    <StatRow label="Breakout Age" value={player.breakoutAge || 'N/A'} />
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      marginTop: 4,
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: 12,
+                      color: breakout.color,
+                      fontWeight: 700,
+                    }}>
+                      {breakout.emoji} {breakout.label} Breakout Profile
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
