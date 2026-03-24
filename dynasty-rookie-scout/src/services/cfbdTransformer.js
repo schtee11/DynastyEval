@@ -244,14 +244,15 @@ const enrichFromESPN = (player, espnStats) => {
  * WR players in the array are returned unchanged.
  */
 export const enrichNonWRStats = async (players) => {
-  // Only enrich players that have a cfbdLookup and are not WR
-  const nonWR = players.filter((p) => p.position !== 'WR' && p._cfbdLookup);
+  // Only enrich players that have a cfbdLookup, are not WR, and don't already have stats
+  const nonWR = players.filter((p) => p.position !== 'WR' && p._cfbdLookup && !p.stats);
   if (nonWR.length === 0) {
-    console.warn('[Enrichment] No non-WR players with _cfbdLookup found — skipping');
+    const alreadyHaveStats = players.filter((p) => p.position !== 'WR' && p.stats).length;
+    console.info(`[Enrichment] ${alreadyHaveStats} non-WR players already have inline stats — skipping enrichment`);
     return players;
   }
 
-  console.info(`[Enrichment] Enriching ${nonWR.length} non-WR players`);
+  console.info(`[Enrichment] Enriching ${nonWR.length} non-WR players (others have inline stats)`);
 
   // ── Phase 1: Static data (instant, no API calls) ──────────────────────
   const staticResults = new Map();
