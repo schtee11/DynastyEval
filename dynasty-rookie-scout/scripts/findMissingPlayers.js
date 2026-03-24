@@ -228,7 +228,6 @@ for (const e of entries) {
   const rec = e.recData;
 
   let statsStr = '';
-  let dominatorStr = '';
   let advStatsStr = 'advancedStats: null,';
 
   if (e.position === 'TE' && csv) {
@@ -304,6 +303,6 @@ for (const e of entries) {
     injuries: [],
     ${advStatsStr}
     cfbdLookup: { team: "${e.college}", year: 2025 },
-    ${statsStr}${e.position === 'TE' ? '\n    dominatorRating: 0,' : ''}
+    ${statsStr}
   },`);
 }

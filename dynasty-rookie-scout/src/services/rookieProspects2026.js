@@ -131,7 +131,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.98, targetShare: 15.0 },
     cfbdLookup: { team: "Oregon", year: 2025 },
     stats: { receptions: 56, receivingYards: 748, receivingTDs: 6, targets: 78, epa: 0.22 },
-    dominatorRating: 23.0, // 748 / 3250
   },
   {
     id: 7,
@@ -153,7 +152,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Penn State", year: 2025 },
     stats: { rushingYards: 547, rushingTDs: 13, yardsPerCarry: 4.4, receptions: 24, receivingYards: 219, receivingTDs: 0, epa: 0.18, pffGrade: 77.6, pffRunGrade: 76.9, elusiveRating: 47.3 },
-    dominatorRating: 6.1, // 178 / 2920
   },
   {
     id: 8,
@@ -195,7 +193,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arkansas", year: 2025 },
     stats: { rushingYards: 1066, rushingTDs: 8, yardsPerCarry: 6.4, receptions: 28, receivingYards: 226, receivingTDs: 0, epa: 0.14, pffGrade: 78.3, pffRunGrade: 84.3, elusiveRating: 73.2 },
-    dominatorRating: 8.4, // 198 / 2350
   },
   {
     id: 10,
@@ -258,7 +255,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Washington", year: 2025 },
     stats: { rushingYards: 758, rushingTDs: 15, yardsPerCarry: 4.8, receptions: 31, receivingYards: 346, receivingTDs: 0, epa: 0.15, pffGrade: 82.1, pffRunGrade: 83.8, elusiveRating: 85.7 },
-    dominatorRating: 5.5, // 152 / 2780
   },
   {
     id: 13,
@@ -300,7 +296,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
     stats: { rushingYards: 674, rushingTDs: 11, yardsPerCarry: 6.0, receptions: 6, receivingYards: 87, receivingTDs: 0, epa: 0.12, pffGrade: 78.6, pffRunGrade: 79.9, elusiveRating: 118.6 },
-    dominatorRating: 6.6, // 185 / 2815
   },
   {
     id: 15,
@@ -322,7 +317,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Nebraska", year: 2025 },
     stats: { rushingYards: 1450, rushingTDs: 12, yardsPerCarry: 5.8, receptions: 46, receivingYards: 370, receivingTDs: 0, epa: 0.16, pffGrade: 85.6, pffRunGrade: 88.1, elusiveRating: 88.3 },
-    dominatorRating: 4.8, // 118 / 2450
   },
   {
     id: 16,
@@ -383,7 +377,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 2.55, targetShare: 22.0 },
     cfbdLookup: { team: "Vanderbilt", year: 2025 },
     stats: { receptions: 62, receivingYards: 820, receivingTDs: 8, targets: 85, epa: 0.28 },
-    dominatorRating: 37.6, // 820 / 2180
   },
   {
     id: 19,
@@ -508,7 +501,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.71, targetShare: 12.0 },
     cfbdLookup: { team: "Ohio State", year: 2025 },
     stats: { receptions: 38, receivingYards: 485, receivingTDs: 5, targets: 52, epa: 0.16 },
-    dominatorRating: 14.5, // 485 / 3350
   },
 
 
@@ -551,7 +543,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.90, targetShare: 18.0 },
     cfbdLookup: { team: "NC State", year: 2025 },
     stats: { receptions: 49, receivingYards: 489, receivingTDs: 7, targets: 65, epa: 0.18 },
-    dominatorRating: 23.1, // 489 / 2120
   },
   {
     id: 29,
@@ -2159,7 +2150,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.39, targetShare: 10.0 },
     cfbdLookup: { team: "Stanford", year: 2025 },
     stats: { receptions: 49, receivingYards: 545, receivingTDs: 2, targets: 80, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 116,
@@ -2181,7 +2171,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.29, targetShare: 3.0 },
     cfbdLookup: { team: "Georgia", year: 2025 },
     stats: { receptions: 20, receivingYards: 261, receivingTDs: 1, targets: 28, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 117,
@@ -2203,7 +2192,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 2.18, targetShare: 11.6 },
     cfbdLookup: { team: "Baylor", year: 2025 },
     stats: { receptions: 50, receivingYards: 694, receivingTDs: 6, targets: 85, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 118,
@@ -2225,7 +2213,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.07, targetShare: 5.2 },
     cfbdLookup: { team: "Texas", year: 2025 },
     stats: { receptions: 33, receivingYards: 346, receivingTDs: 3, targets: 45, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 119,
@@ -2268,7 +2255,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.49, targetShare: 3.8 },
     cfbdLookup: { team: "Cincinnati", year: 2025 },
     stats: { receptions: 29, receivingYards: 416, receivingTDs: 4, targets: 33, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 121,
@@ -2290,7 +2276,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 2.23, targetShare: 5.5 },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
     stats: { receptions: 32, receivingYards: 482, receivingTDs: 0, targets: 44, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 122,
@@ -2312,7 +2297,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.12, targetShare: 2.5 },
     cfbdLookup: { team: "Texas A&M", year: 2025 },
     stats: { receptions: 19, receivingYards: 198, receivingTDs: 3, targets: 22, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 123,
@@ -2334,7 +2318,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 2.26, targetShare: 10.8 },
     cfbdLookup: { team: "Houston", year: 2025 },
     stats: { receptions: 74, receivingYards: 727, receivingTDs: 6, targets: 94, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 124,
@@ -2356,7 +2339,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.46, targetShare: 1.8 },
     cfbdLookup: { team: "Ohio State", year: 2025 },
     stats: { receptions: 15, receivingYards: 168, receivingTDs: 2, targets: 17, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 125,
@@ -2378,7 +2360,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 2.08, targetShare: 5.5 },
     cfbdLookup: { team: "Mississippi", year: 2025 },
     stats: { receptions: 39, receivingYards: 635, receivingTDs: 5, targets: 55, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 126,
@@ -2442,7 +2423,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 2.07, targetShare: 8.8 },
     cfbdLookup: { team: "Utah", year: 2025 },
     stats: { receptions: 48, receivingYards: 620, receivingTDs: 6, targets: 76, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 129,
@@ -2464,7 +2444,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.53, targetShare: 5.6 },
     cfbdLookup: { team: "Michigan", year: 2025 },
     stats: { receptions: 24, receivingYards: 248, receivingTDs: 1, targets: 41, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 130,
@@ -2591,7 +2570,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.18, targetShare: 5.8 },
     cfbdLookup: { team: "Wyoming", year: 2025 },
     stats: { receptions: 24, receivingYards: 211, receivingTDs: 1, targets: 35, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 136,
@@ -2613,7 +2591,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.68, targetShare: 3.4 },
     cfbdLookup: { team: "Indiana", year: 2025 },
     stats: { receptions: 32, receivingYards: 387, receivingTDs: 2, targets: 36, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 137,
@@ -2635,7 +2612,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.25, targetShare: 6.3 },
     cfbdLookup: { team: "Alabama", year: 2025 },
     stats: { receptions: 37, receivingYards: 411, receivingTDs: 4, targets: 50, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 138,
@@ -2843,7 +2819,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.40, targetShare: 4.6 },
     cfbdLookup: { team: "TCU", year: 2025 },
     stats: { receptions: 34, receivingYards: 319, receivingTDs: 2, targets: 40, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 148,
@@ -2907,7 +2882,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.37, targetShare: 5.0 },
     cfbdLookup: { team: "SMU", year: 2025 },
     stats: { receptions: 31, receivingYards: 436, receivingTDs: 4, targets: 43, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 151,
@@ -3076,7 +3050,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.51, targetShare: 6.0 },
     cfbdLookup: { team: "USC", year: 2025 },
     stats: { receptions: 30, receivingYards: 445, receivingTDs: 4, targets: 48, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 159,
@@ -3140,7 +3113,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.14, targetShare: 3.6 },
     cfbdLookup: { team: "LSU", year: 2025 },
     stats: { receptions: 24, receivingYards: 248, receivingTDs: 2, targets: 31, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 162,
@@ -3182,7 +3154,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.12, targetShare: 6.9 },
     cfbdLookup: { team: "Syracuse", year: 2025 },
     stats: { receptions: 39, receivingYards: 406, receivingTDs: 0, targets: 55, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 164,
@@ -3246,7 +3217,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.41, targetShare: 5.7 },
     cfbdLookup: { team: "Tennessee", year: 2025 },
     stats: { receptions: 27, receivingYards: 264, receivingTDs: 2, targets: 42, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 167,
@@ -3307,7 +3277,6 @@ const prospects2026Raw = [
     advancedStats: null,
     cfbdLookup: { team: "SMU", year: 2025 },
     stats: {},
-    dominatorRating: 0,
   },
   {
     id: 170,
@@ -3455,7 +3424,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.89, targetShare: 6.1 },
     cfbdLookup: { team: "Wisconsin", year: 2025 },
     stats: { receptions: 30, receivingYards: 398, receivingTDs: 4, targets: 49, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 177,
@@ -3477,7 +3445,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.12, targetShare: 2.6 },
     cfbdLookup: { team: "Penn State", year: 2025 },
     stats: { receptions: 14, receivingYards: 167, receivingTDs: 2, targets: 21, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 178,
@@ -3624,7 +3591,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.08, targetShare: 5.5 },
     cfbdLookup: { team: "Mississippi State", year: 2025 },
     stats: { receptions: 35, receivingYards: 374, receivingTDs: 5, targets: 48, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 185,
@@ -3646,7 +3612,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.73, targetShare: 6.6 },
     cfbdLookup: { team: "Oklahoma", year: 2025 },
     stats: { receptions: 44, receivingYards: 530, receivingTDs: 0, targets: 57, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 186,
@@ -3668,7 +3633,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 0.65, targetShare: 2.0 },
     cfbdLookup: { team: "Illinois", year: 2025 },
     stats: { receptions: 13, receivingYards: 114, receivingTDs: 2, targets: 17, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 187,
@@ -3690,7 +3654,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 1.05, targetShare: 4.7 },
     cfbdLookup: { team: "Minnesota", year: 2025 },
     stats: { receptions: 26, receivingYards: 206, receivingTDs: 4, targets: 41, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 188,
@@ -3919,7 +3882,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 0.69, targetShare: 0.3 },
     cfbdLookup: { team: "Illinois", year: 2025 },
     stats: { receptions: 1, receivingYards: 24, receivingTDs: 0, targets: 2, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 199,
@@ -4045,7 +4007,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 0.97, targetShare: 1.4 },
     cfbdLookup: { team: "Texas A&M", year: 2025 },
     stats: { receptions: 5, receivingYards: 69, receivingTDs: 0, targets: 11, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 205,
@@ -4109,7 +4070,6 @@ const prospects2026Raw = [
     advancedStats: { yprr: 0.79, targetShare: 0.9 },
     cfbdLookup: { team: "Indiana", year: 2025 },
     stats: { receptions: 7, receivingYards: 62, receivingTDs: 2, targets: 10, epa: 0.15 },
-    dominatorRating: 0,
   },
   {
     id: 208,

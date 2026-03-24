@@ -20,7 +20,6 @@ Age: ${player.age || 'Unknown'}
 ${positionStats}
 
 Breakout Age: ${player.breakoutAge || 'N/A'}
-Dominator Rating: ${player.dominatorRating}%
 ${player.targetShare ? `Target Share: ${player.targetShare}%` : ''}
 ${player.yprr ? `YPRR: ${player.yprr}` : ''}
 ${player.yacPerRR ? `YAC/RR: ${player.yacPerRR}` : ''}
@@ -113,10 +112,10 @@ const getFallbackSummary = (player) => {
     return `${name} posted ${stats.rushingYards} rushing yards at ${stats.yardsPerCarry} YPC with ${capital} draft capital — a ${breakout} breakout producer. ${stats.receptions > 25 ? 'Receiving work adds PPR upside.' : 'Limited receiving profile caps PPR ceiling.'} Valued similarly in 1QB and SF formats, though the positional shelf life demands a quicker return on investment.${injuryNote}`;
   }
   if (position === 'WR') {
-    return `${name} profiles as a ${player.yprr > 2.5 ? 'high-efficiency' : 'developing'} route runner (${player.yprr} YPRR) with a ${player.dominatorRating > 30 ? 'dominant' : 'modest'} ${player.dominatorRating}% dominator rating and ${breakout} breakout age. ${capital} draft capital confirms NFL evaluators believe in the talent. Premium asset in both 1QB and SF rookie drafts — WR is the safest dynasty position.${injuryNote}`;
+    return `${name} profiles as a ${player.yprr > 2.5 ? 'high-efficiency' : 'developing'} route runner (${player.yprr} YPRR) with ${player.targetShare ? `a ${player.targetShare}% target share and ` : ''}${breakout} breakout age. ${capital} draft capital confirms NFL evaluators believe in the talent. Premium asset in both 1QB and SF rookie drafts — WR is the safest dynasty position.${injuryNote}`;
   }
   if (position === 'TE') {
-    return `${name} is a ${player.yprr > 2.0 ? 'productive' : 'developmental'} tight end prospect (${player.yprr} YPRR) with ${capital} draft capital. ${breakout} breakout age and ${player.dominatorRating}% dominator rating. TE is a patience position in dynasty — expect a 2-year runway before consistent production. Value is comparable across 1QB and SF formats.${injuryNote}`;
+    return `${name} is a ${player.yprr > 2.0 ? 'productive' : 'developmental'} tight end prospect (${player.yprr} YPRR) with ${capital} draft capital and ${breakout} breakout age. ${player.targetShare ? `${player.targetShare}% target share. ` : ''}TE is a patience position in dynasty — expect a 2-year runway before consistent production. Value is comparable across 1QB and SF formats.${injuryNote}`;
   }
   return `${name} is a prospect with ${capital} draft capital. Evaluate based on landing spot and usage projections.`;
 };
