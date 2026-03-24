@@ -191,21 +191,6 @@ module.exports = {
     team: "Houston",
     ppa: { averagePPA: { all: 0.10 } }
   },
-  "sone ntoh": {
-    position: "RB",
-    team: "Monmouth",
-    rushing: { YDS: 487, TD: 25, CAR: 109 },
-    receiving: { REC: 5, YDS: 30, TD: 0, TARGETS: 7 },
-    ppa: { averagePPA: { all: 0.10 } },
-    pffGrade: 72.0,
-    pffRunGrade: 74.0,
-    elusiveRating: 65.0,
-    yardsAfterContact: 300,
-    avoidedTackles: 20,
-    longest: 40,
-    gamesPlayed: 11,
-    _fullEntry: true,
-  },
   "cj donaldson": {
     team: "West Virginia",
     ppa: { averagePPA: { all: 0.14 } }
@@ -213,21 +198,6 @@ module.exports = {
   "hollywood smothers": {
     team: "NC State",
     ppa: { averagePPA: { all: 0.12 } }
-  },
-  "dylan devezin": {
-    position: "RB",
-    team: "Notre Dame",
-    rushing: { YDS: 0, TD: 0, CAR: 0 },
-    receiving: { REC: 0, YDS: 0, TD: 0, TARGETS: 0 },
-    ppa: { averagePPA: { all: null } },
-    pffGrade: null,
-    pffRunGrade: null,
-    elusiveRating: null,
-    yardsAfterContact: 0,
-    avoidedTackles: 0,
-    longest: 0,
-    gamesPlayed: 0,
-    _fullEntry: true,
   },
   "kejon owens": {
     team: "Florida International",
