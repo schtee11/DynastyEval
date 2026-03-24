@@ -1896,6 +1896,7 @@ const prospects2026Raw = [
   },
   {
     id: 101,
+    sleeperId: "13277",
     name: "CJ Donaldson",
     position: "RB",
     college: "Ohio State",
@@ -2016,6 +2017,7 @@ const prospects2026Raw = [
   },
   {
     id: 109,
+    sleeperId: "13347",
     name: "Demond Claiborne",
     position: "RB",
     college: "Wake Forest",
@@ -2036,6 +2038,7 @@ const prospects2026Raw = [
   },
   {
     id: 110,
+    sleeperId: "13348",
     name: "J'Mari Taylor",
     position: "RB",
     college: "Virginia",
