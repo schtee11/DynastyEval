@@ -147,6 +147,10 @@ const collegeStats2025 = {
     pffRunGrade: 93.7,
     elusiveRating: 127.5,
     longest: 56,
+    yardsAfterContact: 896,
+    avoidedTackles: 56,
+    ycoPerAttempt: 4.5,
+    explosiveRuns: 39,
     gamesPlayed: 12,
   },
   "nicholas singleton": {
@@ -161,6 +165,8 @@ const collegeStats2025 = {
     yardsAfterContact: 334,
     avoidedTackles: 19,
     longest: 59,
+    ycoPerAttempt: 2.69,
+    explosiveRuns: 12,
     gamesPlayed: 12,
   },
   "mike washington jr": {
@@ -189,6 +195,8 @@ const collegeStats2025 = {
     yardsAfterContact: 562,
     avoidedTackles: 37,
     longest: 38,
+    ycoPerAttempt: 3.58,
+    explosiveRuns: 20,
     gamesPlayed: 12,
   },
   "jadarian price": {
@@ -203,6 +211,8 @@ const collegeStats2025 = {
     yardsAfterContact: 443,
     avoidedTackles: 32,
     longest: 58,
+    ycoPerAttempt: 3.92,
+    explosiveRuns: 24,
     gamesPlayed: 12,
   },
   "emmett johnson": {
@@ -217,6 +227,8 @@ const collegeStats2025 = {
     yardsAfterContact: 740,
     avoidedTackles: 68,
     longest: 70,
+    ycoPerAttempt: 2.95,
+    explosiveRuns: 36,
     gamesPlayed: 12,
   },
   "caleb hawkins": {
@@ -231,6 +243,8 @@ const collegeStats2025 = {
     yardsAfterContact: 1056,
     avoidedTackles: 86,
     longest: 51,
+    ycoPerAttempt: 4.57,
+    explosiveRuns: 43,
     gamesPlayed: 13,
   },
   "ahmad hardy": {
@@ -245,6 +259,8 @@ const collegeStats2025 = {
     yardsAfterContact: 1181,
     avoidedTackles: 97,
     longest: 72,
+    ycoPerAttempt: 4.6,
+    explosiveRuns: 43,
     gamesPlayed: 13,
   },
   "jai'den thomas": {
@@ -259,6 +275,8 @@ const collegeStats2025 = {
     yardsAfterContact: 684,
     avoidedTackles: 49,
     longest: 70,
+    ycoPerAttempt: 4.62,
+    explosiveRuns: 26,
     gamesPlayed: 13,
   },
   "kentrel bullock": {
@@ -273,6 +291,8 @@ const collegeStats2025 = {
     yardsAfterContact: 702,
     avoidedTackles: 50,
     longest: 64,
+    ycoPerAttempt: 3.22,
+    explosiveRuns: 26,
     gamesPlayed: 12,
   },
   "nate frazier": {
@@ -287,6 +307,8 @@ const collegeStats2025 = {
     yardsAfterContact: 595,
     avoidedTackles: 40,
     longest: 59,
+    ycoPerAttempt: 3.44,
+    explosiveRuns: 21,
     gamesPlayed: 14,
   },
   "kaytron allen": {
@@ -301,6 +323,8 @@ const collegeStats2025 = {
     yardsAfterContact: 792,
     avoidedTackles: 57,
     longest: 67,
+    ycoPerAttempt: 3.77,
+    explosiveRuns: 30,
     gamesPlayed: 12,
   },
   "nate sheppard": {
@@ -315,6 +339,8 @@ const collegeStats2025 = {
     yardsAfterContact: 711,
     avoidedTackles: 63,
     longest: 60,
+    ycoPerAttempt: 3.56,
+    explosiveRuns: 35,
     gamesPlayed: 14,
   },
   "jordon davison": {
@@ -329,6 +355,8 @@ const collegeStats2025 = {
     yardsAfterContact: 376,
     avoidedTackles: 19,
     longest: 67,
+    ycoPerAttempt: 3.33,
+    explosiveRuns: 15,
     gamesPlayed: 14,
   },
   "antwan raymond": {
@@ -343,6 +371,8 @@ const collegeStats2025 = {
     yardsAfterContact: 884,
     avoidedTackles: 76,
     longest: 51,
+    ycoPerAttempt: 3.62,
+    explosiveRuns: 36,
     gamesPlayed: 12,
   },
   "j'koby williams": {
@@ -357,6 +387,8 @@ const collegeStats2025 = {
     yardsAfterContact: 597,
     avoidedTackles: 48,
     longest: 50,
+    ycoPerAttempt: 3.85,
+    explosiveRuns: 24,
     gamesPlayed: 14,
   },
   "jordan marshall": {
@@ -371,6 +403,8 @@ const collegeStats2025 = {
     yardsAfterContact: 589,
     avoidedTackles: 33,
     longest: 65,
+    ycoPerAttempt: 3.93,
+    explosiveRuns: 20,
     gamesPlayed: 11,
   },
   "jadan baugh": {
@@ -385,6 +419,8 @@ const collegeStats2025 = {
     yardsAfterContact: 767,
     avoidedTackles: 65,
     longest: 26,
+    ycoPerAttempt: 3.47,
+    explosiveRuns: 35,
     gamesPlayed: 12,
   },
   "braylon mcreynolds": {
@@ -399,6 +435,8 @@ const collegeStats2025 = {
     yardsAfterContact: 571,
     avoidedTackles: 42,
     longest: 74,
+    ycoPerAttempt: 4.6,
+    explosiveRuns: 22,
     gamesPlayed: 12,
   },
   "bo jackson": {
@@ -413,6 +451,8 @@ const collegeStats2025 = {
     yardsAfterContact: 724,
     avoidedTackles: 35,
     longest: 64,
+    ycoPerAttempt: 4.07,
+    explosiveRuns: 36,
     gamesPlayed: 13,
   },
   "kewan lacy": {
@@ -427,6 +467,8 @@ const collegeStats2025 = {
     yardsAfterContact: 1010,
     avoidedTackles: 89,
     longest: 73,
+    ycoPerAttempt: 3.29,
+    explosiveRuns: 38,
     gamesPlayed: 15,
   },
   "keyjuan brown": {
@@ -441,6 +483,8 @@ const collegeStats2025 = {
     yardsAfterContact: 493,
     avoidedTackles: 35,
     longest: 67,
+    ycoPerAttempt: 5.14,
+    explosiveRuns: 22,
     gamesPlayed: 10,
   },
   "mark fletcher jr.": {
@@ -455,6 +499,8 @@ const collegeStats2025 = {
     yardsAfterContact: 842,
     avoidedTackles: 57,
     longest: 57,
+    ycoPerAttempt: 3.88,
+    explosiveRuns: 36,
     gamesPlayed: 14,
   },
   "desean bishop": {
@@ -469,6 +515,8 @@ const collegeStats2025 = {
     yardsAfterContact: 649,
     avoidedTackles: 32,
     longest: 50,
+    ycoPerAttempt: 3.57,
+    explosiveRuns: 27,
     gamesPlayed: 13,
   },
   "cam edwards": {
@@ -483,6 +531,8 @@ const collegeStats2025 = {
     yardsAfterContact: 763,
     avoidedTackles: 49,
     longest: 73,
+    ycoPerAttempt: 3.65,
+    explosiveRuns: 28,
     gamesPlayed: 13,
   },
   "greg burrell": {
@@ -497,6 +547,8 @@ const collegeStats2025 = {
     yardsAfterContact: 447,
     avoidedTackles: 34,
     longest: 61,
+    ycoPerAttempt: 4.47,
+    explosiveRuns: 16,
     gamesPlayed: 12,
   },
   "lj martin": {
@@ -511,6 +563,8 @@ const collegeStats2025 = {
     yardsAfterContact: 893,
     avoidedTackles: 56,
     longest: 49,
+    ycoPerAttempt: 3.75,
+    explosiveRuns: 36,
     gamesPlayed: 13,
   },
   "sire gaines": {
@@ -525,6 +579,8 @@ const collegeStats2025 = {
     yardsAfterContact: 573,
     avoidedTackles: 46,
     longest: 46,
+    ycoPerAttempt: 3.54,
+    explosiveRuns: 19,
     gamesPlayed: 14,
   },
   "oj arnold": {
@@ -539,6 +595,8 @@ const collegeStats2025 = {
     yardsAfterContact: 541,
     avoidedTackles: 27,
     longest: 62,
+    ycoPerAttempt: 3.73,
+    explosiveRuns: 24,
     gamesPlayed: 12,
   },
   "marcellous hawkins": {
@@ -553,6 +611,8 @@ const collegeStats2025 = {
     yardsAfterContact: 562,
     avoidedTackles: 44,
     longest: 40,
+    ycoPerAttempt: 4.72,
+    explosiveRuns: 23,
     gamesPlayed: 11,
   },
   "adam mohammed": {
@@ -567,6 +627,8 @@ const collegeStats2025 = {
     yardsAfterContact: 378,
     avoidedTackles: 40,
     longest: 25,
+    ycoPerAttempt: 3.57,
+    explosiveRuns: 11,
     gamesPlayed: 13,
   },
   "trequan jones": {
@@ -581,6 +643,8 @@ const collegeStats2025 = {
     yardsAfterContact: 483,
     avoidedTackles: 19,
     longest: 93,
+    ycoPerAttempt: 4.69,
+    explosiveRuns: 21,
     gamesPlayed: 13,
   },
   "cam cook": {
@@ -595,6 +659,8 @@ const collegeStats2025 = {
     yardsAfterContact: 1142,
     avoidedTackles: 101,
     longest: 73,
+    ycoPerAttempt: 3.87,
+    explosiveRuns: 53,
     gamesPlayed: 13,
   },
   "lucky sutton": {
@@ -609,6 +675,8 @@ const collegeStats2025 = {
     yardsAfterContact: 846,
     avoidedTackles: 56,
     longest: 50,
+    ycoPerAttempt: 3.33,
+    explosiveRuns: 32,
     gamesPlayed: 13,
   },
   "will henderson iii": {
@@ -623,6 +691,8 @@ const collegeStats2025 = {
     yardsAfterContact: 437,
     avoidedTackles: 36,
     longest: 59,
+    ycoPerAttempt: 3.5,
+    explosiveRuns: 21,
     gamesPlayed: 13,
   },
   "tawee walker": {
@@ -637,6 +707,8 @@ const collegeStats2025 = {
     yardsAfterContact: 383,
     avoidedTackles: 30,
     longest: 54,
+    ycoPerAttempt: 3.22,
+    explosiveRuns: 21,
     gamesPlayed: 12,
   },
 
@@ -652,6 +724,8 @@ const collegeStats2025 = {
     yardsAfterContact: 268,
     avoidedTackles: 14,
     longest: 38,
+    ycoPerAttempt: 3.47,
+    explosiveRuns: 12,
     gamesPlayed: 7,
   },
   "adam randall": {
@@ -666,6 +740,8 @@ const collegeStats2025 = {
     yardsAfterContact: 480,
     avoidedTackles: 32,
     longest: 45,
+    ycoPerAttempt: 3.13,
+    explosiveRuns: 23,
     gamesPlayed: 13,
   },
   "dean connors": {
@@ -680,6 +756,8 @@ const collegeStats2025 = {
     yardsAfterContact: 420,
     avoidedTackles: 22,
     longest: 42,
+    ycoPerAttempt: 3.25,
+    explosiveRuns: 24,
     gamesPlayed: 12,
   },
   "sone ntoh": {
@@ -708,6 +786,8 @@ const collegeStats2025 = {
     yardsAfterContact: 620,
     avoidedTackles: 35,
     longest: 62,
+    ycoPerAttempt: 2.3,
+    explosiveRuns: 7,
     gamesPlayed: 11,
   },
   "hollywood smothers": {
@@ -722,6 +802,8 @@ const collegeStats2025 = {
     yardsAfterContact: 550,
     avoidedTackles: 38,
     longest: 52,
+    ycoPerAttempt: 3.84,
+    explosiveRuns: 24,
     gamesPlayed: 12,
   },
   "dylan devezin": {
@@ -750,6 +832,8 @@ const collegeStats2025 = {
     yardsAfterContact: 800,
     avoidedTackles: 45,
     longest: 62,
+    ycoPerAttempt: 3.96,
+    explosiveRuns: 34,
     gamesPlayed: 12,
   },
   "rahsul faison": {
@@ -764,6 +848,8 @@ const collegeStats2025 = {
     yardsAfterContact: 290,
     avoidedTackles: 18,
     longest: 35,
+    ycoPerAttempt: 3.47,
+    explosiveRuns: 14,
     gamesPlayed: 12,
   },
   "desmond reid": {
@@ -778,6 +864,8 @@ const collegeStats2025 = {
     yardsAfterContact: 180,
     avoidedTackles: 14,
     longest: 45,
+    ycoPerAttempt: 2.79,
+    explosiveRuns: 8,
     gamesPlayed: 7,
   },
   "anthony hankerson": {
@@ -792,6 +880,8 @@ const collegeStats2025 = {
     yardsAfterContact: 640,
     avoidedTackles: 32,
     longest: 48,
+    ycoPerAttempt: 2.94,
+    explosiveRuns: 30,
     gamesPlayed: 12,
   },
   "davon booth": {
@@ -806,6 +896,8 @@ const collegeStats2025 = {
     yardsAfterContact: 310,
     avoidedTackles: 18,
     longest: 38,
+    ycoPerAttempt: 2.82,
+    explosiveRuns: 18,
     gamesPlayed: 12,
   },
   "demond claiborne": {
@@ -820,6 +912,8 @@ const collegeStats2025 = {
     yardsAfterContact: 540,
     avoidedTackles: 36,
     longest: 65,
+    ycoPerAttempt: 3.04,
+    explosiveRuns: 23,
     gamesPlayed: 12,
   },
   "j'mari taylor": {
@@ -834,6 +928,8 @@ const collegeStats2025 = {
     yardsAfterContact: 620,
     avoidedTackles: 40,
     longest: 55,
+    ycoPerAttempt: 3.39,
+    explosiveRuns: 21,
     gamesPlayed: 12,
   },
   "lincoln pare": {
@@ -848,6 +944,8 @@ const collegeStats2025 = {
     yardsAfterContact: 660,
     avoidedTackles: 36,
     longest: 56,
+    ycoPerAttempt: 3.28,
+    explosiveRuns: 22,
     gamesPlayed: 12,
   },
   "jam miller": {
@@ -862,6 +960,8 @@ const collegeStats2025 = {
     yardsAfterContact: 310,
     avoidedTackles: 20,
     longest: 38,
+    ycoPerAttempt: 2.45,
+    explosiveRuns: 11,
     gamesPlayed: 9,
   },
 
