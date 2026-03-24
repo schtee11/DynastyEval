@@ -7,6 +7,7 @@
 import { buildRookiePlayersFromSleeper } from './sleeperApi';
 import { enrichNonWRStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
+import { applyFantasyCalcRankings } from './fantasyCalcRankings';
 
 // Cache live data so we only fetch once per session
 let playersCache = null;
@@ -83,6 +84,14 @@ export const getPlayers = async () => {
       console.info('[DataService] Enrichment complete');
     } catch (err) {
       console.error('[DataService] Enrichment failed:', err);
+    }
+
+    // Step 3: Apply live FantasyCalc dynasty rookie rankings
+    try {
+      players = await applyFantasyCalcRankings(players);
+      console.info('[DataService] FantasyCalc rankings applied');
+    } catch (err) {
+      console.warn('[DataService] FantasyCalc rankings failed, using static ranks:', err.message);
     }
 
     // Clean up internal fields before exposing to UI
