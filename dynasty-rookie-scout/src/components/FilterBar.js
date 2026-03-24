@@ -48,7 +48,6 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
   ];
 
   const isWR = filters.position === 'WR';
-  const isRB = filters.position === 'RB';
 
   return (
     <div style={{
