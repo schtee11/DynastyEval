@@ -99,14 +99,12 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
     // WR — receiving perspective data
     if (player.position === 'WR') {
       const pData = player.receivingByPerspective?.[modalPerspective];
-      const boVal = player.breakoutAge ? Math.min(100, ((25 - player.breakoutAge) / 5) * 100) : 0;
       if (pData) {
         return [
           { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
           { stat: 'Rec Grade', value: Math.min(100, (pData.recGrade || 0)), fullMark: 100 },
           { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
           { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-          { stat: 'Breakout', value: boVal, fullMark: 100 },
         ];
       }
       // WR fallback (no perspective data)
