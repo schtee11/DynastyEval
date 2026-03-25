@@ -49,7 +49,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
   const [slideIn, setSlideIn] = useState(false);
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1025;
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
