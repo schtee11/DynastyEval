@@ -292,10 +292,12 @@ export const enrichNonWRStats = async (players) => {
   // Fill targetShare/advanced metrics for players that already have inline stats
   fillFromStaticData(players);
 
-  // Enrich players that don't already have stats
-  const needsEnrichment = players.filter((p) => !p.stats);
+  // Enrich players that don't already have meaningful stats
+  // (stats: {} from mapProspectToPlayer counts as empty)
+  const hasRealStats = (p) => p.stats && Object.keys(p.stats).length > 0;
+  const needsEnrichment = players.filter((p) => !hasRealStats(p));
   if (needsEnrichment.length === 0) {
-    const alreadyHaveStats = players.filter((p) => p.stats).length;
+    const alreadyHaveStats = players.filter(hasRealStats).length;
     console.info(`[Enrichment] ${alreadyHaveStats} players already have inline stats — skipping enrichment`);
     return players;
   }
