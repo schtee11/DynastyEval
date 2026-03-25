@@ -49,7 +49,9 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
   const [slideIn, setSlideIn] = useState(false);
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1025;
+  const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const isDesktop = winWidth >= 1025;
+  const isTabletLandscape = winWidth >= 1025 && winWidth <= 1400;
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
@@ -177,7 +179,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
           top: 0,
           right: 0,
           bottom: 0,
-          width: isDesktop ? 560 : '100%',
+          width: isDesktop ? (isTabletLandscape ? 420 : 560) : '100%',
           maxWidth: '100vw',
           background: '#0f1117',
           borderLeft: isDesktop ? `2px solid ${posColor.border}44` : 'none',
@@ -191,7 +193,7 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
         {/* Header */}
         <div style={{
           background: `linear-gradient(135deg, ${posColor.border}22, #1a1d2e)`,
-          padding: isDesktop ? '20px 24px' : '24px 28px',
+          padding: isDesktop ? (isTabletLandscape ? '16px 18px' : '20px 24px') : '24px 28px',
           borderBottom: '1px solid #2a2d3e',
           position: 'relative',
         }}>
