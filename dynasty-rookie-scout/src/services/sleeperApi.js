@@ -7,6 +7,7 @@
 
 import { getProspects } from './rookieProspects2026';
 import { getReceivingData } from './receivingData';
+import { attachCollegeStats } from './cfbdTransformer';
 
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
@@ -225,12 +226,16 @@ export const buildRookiePlayersFromSleeper = async () => {
     if (!prospect) return null;
 
     const id = prospect.id;
+    const playerName = sleeperPlayer.name || prospect.name;
 
-    // Base fields from Sleeper
+    // Attach all college stats from the CSV-generated static data
+    const csvStats = attachCollegeStats(playerName, sleeperPlayer.position, prospect);
+
+    // Base fields from Sleeper + CSV stats
     const player = {
       id,
       sleeperId: sleeperPlayer.sleeperId,
-      name: sleeperPlayer.name,
+      name: playerName,
       position: sleeperPlayer.position,
       college: sleeperPlayer.college || prospect?.college || null,
       age: sleeperPlayer.age ?? prospect?.age ?? null,
@@ -240,17 +245,15 @@ export const buildRookiePlayersFromSleeper = async () => {
       draftPick: prospect?.projectedPick ?? null,
       draftTeam: sleeperPlayer.team || null,
       draftIsProjected: !sleeperPlayer.team,
-      stats: prospect?.stats || {},
       breakoutAge: prospect?.breakoutAge ?? null,
-      targetShare: prospect?.advancedStats?.targetShare ?? null,
-      yprr: prospect?.advancedStats?.yprr ?? null,
-      yacPerRR: prospect?.yacPerRR ?? null,
       injuries: prospect?.injuries || [],
       dynastyADP: prospect?.dynastyADP ?? null,
       rank: prospect?.rank ?? null,
       playerComps: prospect?.playerComps || [],
       receivingByPerspective: null,
-      _prospect: prospect, // reference for fallback stats
+      _prospect: prospect,
+      // CSV stats (YAC, slot rate, YPRR, etc.)
+      ...csvStats,
     };
 
     // Attach WR receiving perspective data from JSON
