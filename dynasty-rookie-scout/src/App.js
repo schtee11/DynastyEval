@@ -6,7 +6,6 @@ import './App.css';
 
 const ScoutBoard = lazy(() => import('./components/ScoutBoard'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
-const AdminPage = lazy(() => import('./components/AdminPage'));
 
 const LoadingFallback = () => (
   <div style={{
@@ -31,7 +30,6 @@ function App() {
           <Suspense fallback={<LoadingFallback />}>
             {activeTab === 'scout' && <ScoutBoard />}
             {activeTab === 'myboard' && <MyBoard />}
-            {activeTab === 'admin' && <AdminPage />}
           </Suspense>
         </ErrorBoundary>
       </main>
