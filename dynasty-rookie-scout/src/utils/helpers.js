@@ -71,18 +71,18 @@ export const getTopStats = (player, perspective = 'overall') => {
   // QB — CFBD / static stats
   if (position === 'QB') {
     return [
-      { label: stats?.epa != null ? 'EPA' : 'COMP %', value: stats?.epa != null ? stats.epa.toFixed(2) : stats?.completionPct != null ? `${stats.completionPct}%` : 'N/A' },
+      { label: 'COMP %', value: stats?.completionPct != null ? `${stats.completionPct}%` : 'N/A' },
       { label: 'Pass YDs', value: stats?.passingYards?.toLocaleString() },
-      { label: 'Pass TDs', value: stats?.passingTDs },
+      { label: 'Rush YDs', value: stats?.rushingYards?.toLocaleString() || 'N/A' },
     ];
   }
 
   // RB — CFBD / static stats
   if (position === 'RB') {
     return [
-      { label: 'EPA', value: stats?.epa?.toFixed(2) },
       { label: 'Rush YDs', value: stats?.rushingYards?.toLocaleString() },
       { label: 'YPC', value: stats?.yardsPerCarry?.toFixed(1) },
+      { label: 'Rush TDs', value: stats?.rushingTDs },
     ];
   }
 
@@ -95,7 +95,7 @@ export const getTopStats = (player, perspective = 'overall') => {
     ];
   }
 
-  return [{ label: 'EPA', value: stats?.epa?.toFixed(2) }];
+  return [{ label: 'Stats', value: 'N/A' }];
 };
 
 export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective = 'overall') => {
