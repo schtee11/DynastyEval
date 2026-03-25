@@ -1,11 +1,10 @@
 // Data service — Sleeper-first architecture
 // 1. Fetch rookies from Sleeper API (source of truth for valid rookies)
 // 2. Cross-reference with prospect metadata for scouting data
-// 3. WR stats come from receivingData.js (no API calls)
-// 4. QB/RB/TE stats enriched via static data or ESPN API
+// 3. All college stats attached from collegeStats2025.js (built from PFF CSVs)
 
 import { buildRookiePlayersFromSleeper } from './sleeperApi';
-import { enrichNonWRStats } from './cfbdTransformer';
+import { attachCollegeStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
 import { applyFantasyCalcRankings } from './fantasyCalcRankings';
 import { getDraftPicks, getNameAliases } from './draftData';
@@ -22,30 +21,33 @@ export const getDataSourceStatus = () => dataSourceStatus;
  * Map a raw prospect (from rookieProspects2026.js) into the UI player shape.
  * Used as static fallback when Sleeper is unavailable.
  */
-const mapProspectToPlayer = (p) => ({
-  id: p.id,
-  name: p.name,
-  position: p.position,
-  college: p.college,
-  age: p.age,
-  height: p.height,
-  weight: p.weight,
-  draftRound: p.projectedRound,
-  draftPick: p.projectedPick,
-  draftTeam: p.projectedTeam,
-  draftIsProjected: true,
-  stats: p.stats || {},
-  breakoutAge: p.breakoutAge,
-  targetShare: p.advancedStats?.targetShare ?? null,
-  yprr: p.advancedStats?.yprr ?? null,
-  yacPerRR: p.yacPerRR ?? null,
-  injuries: p.injuries,
-  dynastyADP: p.dynastyADP,
-  rank: p.rank,
-  playerComps: p.playerComps,
-  receivingByPerspective: p.position === 'WR' ? (p.receivingByPerspective || null) : null,
-  _prospect: p,
-});
+const mapProspectToPlayer = (p) => {
+  // Attach all college stats from the CSV-generated static data
+  const csvStats = attachCollegeStats(p.name, p.position, p);
+
+  return {
+    id: p.id,
+    name: p.name,
+    position: p.position,
+    college: p.college,
+    age: p.age,
+    height: p.height,
+    weight: p.weight,
+    draftRound: p.projectedRound,
+    draftPick: p.projectedPick,
+    draftTeam: p.projectedTeam,
+    draftIsProjected: true,
+    breakoutAge: p.breakoutAge,
+    injuries: p.injuries,
+    dynastyADP: p.dynastyADP,
+    rank: p.rank,
+    playerComps: p.playerComps,
+    receivingByPerspective: p.position === 'WR' ? (p.receivingByPerspective || null) : null,
+    _prospect: p,
+    // CSV stats (target share, yprr, YAC, slot rate, etc.) — all from receiving_summary.csv
+    ...csvStats,
+  };
+};
 
 const getStaticPlayers = () =>
   getProspects()
@@ -123,15 +125,7 @@ export const getPlayers = async () => {
     // Step 1b: Overlay latest draft projections from draftData.js
     players = applyDraftData(players);
 
-    // Step 2: Enrich QB/RB/TE with college stats (static data → ESPN API)
-    try {
-      players = await enrichNonWRStats(players);
-      console.info('[DataService] Enrichment complete');
-    } catch (err) {
-      console.error('[DataService] Enrichment failed:', err);
-    }
-
-    // Step 3: Apply live FantasyCalc dynasty rookie rankings
+    // Step 2: Apply live FantasyCalc dynasty rookie rankings
     try {
       players = await applyFantasyCalcRankings(players);
       console.info('[DataService] FantasyCalc rankings applied');
