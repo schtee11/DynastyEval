@@ -45,14 +45,24 @@ const ScoutBoard = () => {
   // Show tier dividers only when sorted by draft capital
   const showTiers = sortBy === 'draftCapital';
 
-  const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const isDesktop = windowWidth >= 1025;
+  const isTabletLandscape = windowWidth >= 1025 && windowWidth <= 1400;
   const panelOpen = !!selectedPlayer && isDesktop;
+  const panelMargin = panelOpen ? (isTabletLandscape ? 430 : 570) : 0;
 
   return (
     <div className="scout-board-root" style={{
       padding: '20px 24px 20px 12px',
-      marginRight: panelOpen ? 570 : 0,
+      marginRight: panelMargin,
       transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
     }}>
       <FilterBar
