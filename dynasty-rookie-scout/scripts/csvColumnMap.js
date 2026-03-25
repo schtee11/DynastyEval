@@ -29,6 +29,14 @@ module.exports = {
       'scrambles':        'scrambles',
       'gamesPlayed':      'player_game_count',
     },
+    // QB rushing stats come from a second CSV
+    rushingCsvFile: 'rushing_summary (1).csv',
+    rushingPositionFilter: ['QB'],
+    rushingFields: {
+      'rushing.YDS':       'yards',
+      'rushing.TD':        'touchdowns',
+      'rushing.CAR':       'attempts',
+    },
   },
 
   RB: {

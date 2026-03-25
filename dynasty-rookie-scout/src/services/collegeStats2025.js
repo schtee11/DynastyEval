@@ -12,6 +12,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "Indiana",
     passing: { YDS: 3536, TD: 41, INT: 6, ATT: 382, COMP: 273, PCT: 71.5 },
+    rushing: { YDS: 377, TD: 7, CAR: 76 },
     pffPassGrade: 90.7,
     pffOffGrade: 91.6,
     pffRunGrade: 74,
@@ -29,6 +30,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "Alabama",
     passing: { YDS: 3561, TD: 28, INT: 5, ATT: 474, COMP: 306, PCT: 64.6 },
+    rushing: { YDS: 292, TD: 2, CAR: 70 },
     pffPassGrade: 81.4,
     pffOffGrade: 83.1,
     pffRunGrade: 68.2,
@@ -46,6 +48,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "LSU",
     passing: { YDS: 1922, TD: 12, INT: 5, ATT: 288, COMP: 194, PCT: 67.4 },
+    rushing: { YDS: 64, TD: 1, CAR: 24 },
     pffPassGrade: 76.4,
     pffOffGrade: 77.1,
     pffRunGrade: 60,
@@ -63,6 +66,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "Miami",
     passing: { YDS: 3813, TD: 30, INT: 12, ATT: 469, COMP: 338, PCT: 72.1 },
+    rushing: { YDS: 158, TD: 2, CAR: 55 },
     pffPassGrade: 75.6,
     pffOffGrade: 73.6,
     pffRunGrade: 49.5,
@@ -80,6 +84,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "Penn State",
     passing: { YDS: 1100, TD: 8, INT: 3, ATT: 159, COMP: 103, PCT: 64.8 },
+    rushing: { YDS: 209, TD: 1, CAR: 30 },
     pffPassGrade: 66.1,
     pffOffGrade: 72.4,
     pffRunGrade: 75.7,
@@ -97,6 +102,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "Clemson",
     passing: { YDS: 2946, TD: 16, INT: 6, ATT: 394, COMP: 257, PCT: 65.2 },
+    rushing: { YDS: 223, TD: 4, CAR: 69 },
     pffPassGrade: 77.4,
     pffOffGrade: 76.5,
     pffRunGrade: 57.9,
@@ -114,6 +120,7 @@ const collegeStats2025 = {
     position: "QB",
     team: "Arkansas",
     passing: { YDS: 2713, TD: 19, INT: 11, ATT: 329, COMP: 198, PCT: 60.2 },
+    rushing: { YDS: 994, TD: 8, CAR: 113 },
     pffPassGrade: 65.6,
     pffOffGrade: 82.5,
     pffRunGrade: 92.2,
@@ -133,6 +140,7 @@ const collegeStats2025 = {
   "sawyer robertson": {
     position: "QB",
     passing: { YDS: 3683, TD: 31, INT: 12, ATT: 505, COMP: 304, PCT: 60.2 },
+    rushing: { YDS: 156, TD: 3, CAR: 35 },
     pffPassGrade: 67.2,
     pffOffGrade: 70.3,
     pffRunGrade: 68.4,
@@ -149,6 +157,7 @@ const collegeStats2025 = {
   "luke altmyer": {
     position: "QB",
     passing: { YDS: 2994, TD: 22, INT: 5, ATT: 365, COMP: 244, PCT: 66.8 },
+    rushing: { YDS: 476, TD: 5, CAR: 75 },
     pffPassGrade: 74.2,
     pffOffGrade: 78,
     pffRunGrade: 71,
@@ -165,6 +174,7 @@ const collegeStats2025 = {
   "jalon daniels": {
     position: "QB",
     passing: { YDS: 2531, TD: 22, INT: 7, ATT: 321, COMP: 198, PCT: 61.7 },
+    rushing: { YDS: 550, TD: 4, CAR: 102 },
     pffPassGrade: 72,
     pffOffGrade: 77.1,
     pffRunGrade: 72.3,
@@ -181,6 +191,7 @@ const collegeStats2025 = {
   "joe fagnano": {
     position: "QB",
     passing: { YDS: 3461, TD: 28, INT: 1, ATT: 414, COMP: 286, PCT: 69.1 },
+    rushing: { YDS: 211, TD: 3, CAR: 43 },
     pffPassGrade: 81.9,
     pffOffGrade: 87,
     pffRunGrade: 80.3,
@@ -197,6 +208,7 @@ const collegeStats2025 = {
   "diego pavia": {
     position: "QB",
     passing: { YDS: 3527, TD: 29, INT: 8, ATT: 379, COMP: 267, PCT: 70.4 },
+    rushing: { YDS: 983, TD: 10, CAR: 152 },
     pffPassGrade: 90.7,
     pffOffGrade: 92.2,
     pffRunGrade: 82.1,
@@ -213,6 +225,7 @@ const collegeStats2025 = {
   "athan kaliakmanis": {
     position: "QB",
     passing: { YDS: 3123, TD: 20, INT: 7, ATT: 370, COMP: 229, PCT: 61.9 },
+    rushing: { YDS: 164, TD: 4, CAR: 64 },
     pffPassGrade: 87.6,
     pffOffGrade: 88.8,
     pffRunGrade: 64.4,
@@ -229,6 +242,7 @@ const collegeStats2025 = {
   "kyron drones": {
     position: "QB",
     passing: { YDS: 1937, TD: 17, INT: 9, ATT: 317, COMP: 177, PCT: 55.8 },
+    rushing: { YDS: 816, TD: 9, CAR: 148 },
     pffPassGrade: 61.2,
     pffOffGrade: 69.9,
     pffRunGrade: 73.5,
@@ -245,6 +259,7 @@ const collegeStats2025 = {
   "haynes king": {
     position: "QB",
     passing: { YDS: 2936, TD: 14, INT: 6, ATT: 365, COMP: 252, PCT: 69 },
+    rushing: { YDS: 1019, TD: 15, CAR: 180 },
     pffPassGrade: 80.9,
     pffOffGrade: 85.9,
     pffRunGrade: 75,
@@ -261,6 +276,7 @@ const collegeStats2025 = {
   "behren morton": {
     position: "QB",
     passing: { YDS: 2780, TD: 22, INT: 6, ATT: 335, COMP: 219, PCT: 65.4 },
+    rushing: { YDS: 73, TD: 0, CAR: 25 },
     pffPassGrade: 72.7,
     pffOffGrade: 72,
     pffRunGrade: 50.1,
@@ -277,6 +293,7 @@ const collegeStats2025 = {
   "joey aguilar": {
     position: "QB",
     passing: { YDS: 3571, TD: 24, INT: 10, ATT: 406, COMP: 272, PCT: 67 },
+    rushing: { YDS: 249, TD: 4, CAR: 58 },
     pffPassGrade: 90.6,
     pffOffGrade: 90.5,
     pffRunGrade: 57.8,
@@ -293,6 +310,7 @@ const collegeStats2025 = {
   "mark gronowski": {
     position: "QB",
     passing: { YDS: 1744, TD: 10, INT: 7, ATT: 263, COMP: 167, PCT: 63.5 },
+    rushing: { YDS: 609, TD: 16, CAR: 120 },
     pffPassGrade: 73.4,
     pffOffGrade: 83.3,
     pffRunGrade: 79.9,
@@ -309,6 +327,7 @@ const collegeStats2025 = {
   "miller moss": {
     position: "QB",
     passing: { YDS: 2679, TD: 16, INT: 7, ATT: 383, COMP: 244, PCT: 63.7 },
+    rushing: { YDS: 91, TD: 9, CAR: 44 },
     pffPassGrade: 63.1,
     pffOffGrade: 68.2,
     pffRunGrade: 78.9,
@@ -325,6 +344,7 @@ const collegeStats2025 = {
   "grayson loftis": {
     position: "QB",
     passing: { YDS: 1415, TD: 8, INT: 8, ATT: 234, COMP: 128, PCT: 54.7 },
+    rushing: { YDS: 70, TD: 0, CAR: 28 },
     pffPassGrade: 61.8,
     pffOffGrade: 58.8,
     pffRunGrade: 46.4,
@@ -341,6 +361,7 @@ const collegeStats2025 = {
   "maalik murphy": {
     position: "QB",
     passing: { YDS: 1818, TD: 9, INT: 8, ATT: 280, COMP: 163, PCT: 58.2 },
+    rushing: { YDS: 38, TD: 1, CAR: 15 },
     pffPassGrade: 57.7,
     pffOffGrade: 59.8,
     pffRunGrade: 67.1,

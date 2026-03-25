@@ -14,6 +14,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent Safari/iOS from auto-linking detected data (dates, addresses, etc.) */
+a[x-apple-data-detectors] {
+  color: inherit !important;
+  text-decoration: none !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+
 .app-root {
   min-height: 100vh;
   background: #0f1117;
@@ -60,7 +70,75 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* ======= MOBILE RESPONSIVE STYLES ======= */
+/* ======= iPad / TABLET RESPONSIVE STYLES (769px–1024px) ======= */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Header — slightly tighter */
+  .header-root {
+    padding: 0 16px !important;
+    height: 56px !important;
+  }
+  .header-logo {
+    font-size: 20px !important;
+    letter-spacing: 1.5px !important;
+  }
+  .header-nav-btn {
+    font-size: 13px !important;
+    padding: 7px 16px !important;
+  }
+
+  /* FilterBar — compact wrap-friendly layout */
+  .filter-bar-root {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+  .filter-bar-root .filter-label {
+    font-size: 10px !important;
+  }
+  .filter-bar-root .pos-btn {
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+  }
+  .filter-bar-root select {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+
+  /* ScoutBoard — tighter padding */
+  .scout-board-root {
+    padding: 16px 12px !important;
+    margin-right: 0 !important;
+  }
+
+  /* Table — hide Ranks column, tighten cells for iPad */
+  .player-table-root table th:last-child,
+  .player-table-root table td:last-child {
+    display: none !important;
+  }
+  .player-table-root table th,
+  .player-table-root table td {
+    padding: 8px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Detail modal — narrower panel so content behind is still visible */
+  .detail-modal-panel {
+    width: 480px !important;
+  }
+  .detail-modal-body-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* MyBoard — tighter padding */
+  .myboard-root {
+    padding: 16px 12px !important;
+  }
+  .myboard-row-stats {
+    gap: 10px !important;
+  }
+}
+
+/* ======= MOBILE RESPONSIVE STYLES (≤768px) ======= */
 
 /* Header — mobile */
 @media (max-width: 768px) {
@@ -82,7 +160,7 @@ select:focus-visible {
   }
 }
 
-/* FilterBar — tablet: compact row */
+/* FilterBar — mobile compact row */
 @media (max-width: 768px) {
   .filter-bar-root {
     padding: 8px 10px !important;

@@ -286,6 +286,18 @@ function main() {
         entry.teamTargetsTotal = teamTargetTotals[team];
       }
 
+      // Secondary CSV for QB rushing
+      if (posConfig.rushingCsvFile && posConfig.rushingFields) {
+        const rushRows = getCSV(posConfig.rushingCsvFile);
+        const rushIndex = indexCSV(rushRows, posConfig.rushingPositionFilter);
+        const rushRow = rushIndex[normKey] || rushIndex[normFuzzy(prospect.name)]
+          || (aliasKey && rushIndex[aliasKey]);
+        if (rushRow) {
+          const rushFields = extractFields(rushRow, posConfig.rushingFields);
+          entry = deepMerge(entry, rushFields);
+        }
+      }
+
       // Secondary CSV for RB receiving
       if (posConfig.receivingCsvFile && posConfig.receivingFields) {
         const rbRecRows = getCSV(posConfig.receivingCsvFile);
@@ -418,7 +430,7 @@ function getFieldOrder(pos) {
   switch (pos) {
     case 'QB':
       return [
-        'position', 'team', 'passing', 'ppa',
+        'position', 'team', 'passing', 'rushing', 'ppa',
         'pffPassGrade', 'pffOffGrade', 'pffRunGrade',
         'bttRate', 'twpRate', 'yardsPerAttempt', 'adot',
         'accuracy', 'qbRating', 'sacks', 'scrambles', 'gamesPlayed',

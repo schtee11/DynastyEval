@@ -1,7 +1,22 @@
 // Attaches college stats from collegeStats2025.js (generated from PFF CSVs)
 // directly onto player objects. No API calls, no async, no enrichment pipeline.
 
-import { getStaticCollegeStats } from './collegeStats2025';
+import { getStaticCollegeStats as _rawLookup } from './collegeStats2025';
+
+// Fuzzy wrapper: handles Jr/Sr/II/III suffix mismatches between Sleeper and CSV
+const getStaticCollegeStats = (name) => {
+  const exact = _rawLookup(name);
+  if (exact) return exact;
+  // Strip suffix and retry (e.g. "Omar Cooper Jr." → "Omar Cooper")
+  const stripped = name.replace(/\s+(jr\.?|sr\.?|ii|iii|iv|v)\s*$/i, '').trim();
+  if (stripped !== name) return _rawLookup(stripped);
+  // No suffix in input — try adding common ones
+  for (const suf of [' Jr.', ' III', ' II', ' Sr.']) {
+    const result = _rawLookup(name + suf);
+    if (result) return result;
+  }
+  return null;
+};
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -55,7 +70,8 @@ const buildRecStats = (sd) => ({
  * Returns the extra fields to spread onto the player.
  */
 export const attachCollegeStats = (playerName, position, prospect) => {
-  const sd = getStaticCollegeStats(playerName);
+  const sd = getStaticCollegeStats(playerName)
+    || (prospect?.name && prospect.name !== playerName ? getStaticCollegeStats(prospect.name) : null);
   if (!sd) return {};
 
   // Position-specific basic stats

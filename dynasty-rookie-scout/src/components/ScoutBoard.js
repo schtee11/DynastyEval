@@ -45,7 +45,8 @@ const ScoutBoard = () => {
   // Show tier dividers only when sorted by draft capital
   const showTiers = sortBy === 'draftCapital';
 
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
+  const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const isDesktop = windowWidth >= 1025;
   const panelOpen = !!selectedPlayer && isDesktop;
 
   return (
