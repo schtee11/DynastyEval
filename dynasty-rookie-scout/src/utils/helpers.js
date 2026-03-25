@@ -135,9 +135,11 @@ export const filterPlayers = (players, filters) => {
   return players.filter(player => {
     if (filters.position && filters.position !== 'ALL' && player.position !== filters.position) return false;
     if (filters.draftDay) {
-      if (filters.draftDay === '1' && player.draftRound !== 1) return false;
-      if (filters.draftDay === '2' && player.draftRound !== 2) return false;
-      if (filters.draftDay === '3' && player.draftRound > 2) return false;
+      const round = player.draftRound;
+      if (!round) return false; // No draft data — exclude from day filter
+      if (filters.draftDay === '1' && round !== 1) return false;
+      if (filters.draftDay === '2' && (round < 2 || round > 3)) return false;
+      if (filters.draftDay === '3' && round <= 3) return false;
     }
     if (filters.hideInjured && player.injuries.length > 0) return false;
     if (filters.breakoutMax && player.breakoutAge && player.breakoutAge > filters.breakoutMax) return false;

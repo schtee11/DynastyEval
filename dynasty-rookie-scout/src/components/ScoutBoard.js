@@ -247,6 +247,7 @@ const ScoutBoard = () => {
         <Suspense fallback={null}>
           <PlayerDetailModal
             player={selectedPlayer}
+            allPlayers={players}
             perspective={perspective}
             onClose={() => setSelectedPlayer(null)}
           />
