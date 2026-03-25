@@ -14,6 +14,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent Safari/iOS from auto-linking detected data (dates, addresses, etc.) */
+a[x-apple-data-detectors] {
+  color: inherit !important;
+  text-decoration: none !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+
 .app-root {
   min-height: 100vh;
   background: #0f1117;
