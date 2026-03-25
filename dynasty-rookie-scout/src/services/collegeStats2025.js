@@ -1187,6 +1187,7 @@ const collegeStats2025 = {
   "jamarion miller": {
     position: "RB",
     rushing: { YDS: 504, TD: 3, CAR: 130 },
+    receiving: { REC: 19, YDS: 109, TD: 0, TARGETS: 23 },
     teamTargetsTotal: 494,
     pffGrade: 66.2,
     pffRunGrade: 69.4,
@@ -1290,6 +1291,9 @@ const collegeStats2025 = {
   },
   "curtis allen": {
     position: "RB",
+    rushing: { YDS: 2409, TD: 30, CAR: 297 },
+    receiving: { REC: 5, YDS: 63, TD: 0 },
+    gamesPlayed: 12,
   },
   "jamal haynes": {
     position: "RB",
@@ -1338,6 +1342,8 @@ const collegeStats2025 = {
   },
   "trevonte citizen": {
     position: "RB",
+    rushing: { YDS: 503, TD: 4, CAR: 85 },
+    gamesPlayed: 11,
   },
   // ── WRs ────────────────────────────────────────────────────────────────
   "carnell tate": {
@@ -2116,6 +2122,8 @@ const collegeStats2025 = {
   },
   "bryce lance": {
     position: "WR",
+    receiving: { REC: 75, YDS: 1071, TD: 17 },
+    gamesPlayed: 16,
   },
   "deion burks": {
     position: "WR",
@@ -2227,6 +2235,8 @@ const collegeStats2025 = {
   },
   "tyren montgomery": {
     position: "WR",
+    receiving: { REC: 119, YDS: 1528, TD: 15 },
+    gamesPlayed: 12,
   },
   "caleb douglas": {
     position: "WR",
@@ -2356,6 +2366,8 @@ const collegeStats2025 = {
   },
   "michael wortham": {
     position: "WR",
+    receiving: { REC: 85, YDS: 1224, TD: 10 },
+    gamesPlayed: 13,
   },
   "donaven mcculley": {
     position: "WR",
@@ -2503,9 +2515,13 @@ const collegeStats2025 = {
   },
   "jalen walthall": {
     position: "WR",
+    receiving: { REC: 75, YDS: 1290, TD: 14 },
+    gamesPlayed: 13,
   },
   "braylon james": {
     position: "WR",
+    receiving: { REC: 3, YDS: 11, TD: 0 },
+    gamesPlayed: 9,
   },
   "ayden williams": {
     position: "WR",
@@ -2655,6 +2671,8 @@ const collegeStats2025 = {
   },
   "antonio gates jr": {
     position: "WR",
+    receiving: { REC: 4, YDS: 49, TD: 0 },
+    gamesPlayed: 2,
   },
   // ── TEs ────────────────────────────────────────────────────────────────
   "kenyon sadiq": {

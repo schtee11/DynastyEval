@@ -106,4 +106,58 @@ module.exports = {
   "davin stoffel": { team: "Illinois" },
   "amari niblack": { team: "Texas A&M" },
   "holden staes": { team: "Indiana" },
+
+  // ── Full-entry overrides for small-school / non-PFF players ──────────────
+  // Stats sourced from ESPN, Sports-Reference, and school athletics sites.
+  // Advanced PFF metrics (YPRR, recGrade, yardsAfterContact, etc.) unavailable.
+
+  // WRs
+  "bryce lance": {
+    _fullEntry: true, position: "WR",
+    receiving: { REC: 75, YDS: 1071, TD: 17 },
+    gamesPlayed: 16,
+  },
+  "tyren montgomery": {
+    _fullEntry: true, position: "WR",
+    receiving: { REC: 119, YDS: 1528, TD: 15 },
+    gamesPlayed: 12,
+  },
+  "michael wortham": {
+    _fullEntry: true, position: "WR",
+    receiving: { REC: 85, YDS: 1224, TD: 10 },
+    gamesPlayed: 13,
+  },
+  "jalen walthall": {
+    _fullEntry: true, position: "WR",
+    receiving: { REC: 75, YDS: 1290, TD: 14 },
+    gamesPlayed: 13,
+  },
+  "braylon james": {
+    _fullEntry: true, position: "WR",
+    receiving: { REC: 3, YDS: 11, TD: 0 },
+    gamesPlayed: 9,
+  },
+  "raymond cottrell": {
+    _fullEntry: true, position: "WR",
+    // No publicly available college stats (West Alabama DII)
+  },
+  "antonio gates jr": {
+    _fullEntry: true, position: "WR",
+    // Limited stats: 4 rec, 49 yds at Michigan State (2024); DSU stats unavailable
+    receiving: { REC: 4, YDS: 49, TD: 0 },
+    gamesPlayed: 2,
+  },
+
+  // RBs
+  "curtis allen": {
+    _fullEntry: true, position: "RB",
+    rushing: { YDS: 2409, TD: 30, CAR: 297 },
+    receiving: { REC: 5, YDS: 63, TD: 0 },
+    gamesPlayed: 12,
+  },
+  "trevonte citizen": {
+    _fullEntry: true, position: "RB",
+    rushing: { YDS: 503, TD: 4, CAR: 85 },
+    gamesPlayed: 11,
+  },
 };
