@@ -165,14 +165,14 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
       </td>
 
       {/* Key Stats (2–3 position-specific) */}
-      <td style={{
+      <td className="key-stats-cell" style={{
         padding: '10px 12px',
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 11,
         color: '#d1d5db',
         verticalAlign: 'middle',
       }}>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'nowrap' }}>
+        <div className="key-stats-row" style={{ display: 'flex', gap: 12, flexWrap: 'nowrap' }}>
           {topStats.map((stat, i) => (
             <span key={i} style={{ whiteSpace: 'nowrap' }}>
               <span style={{ color: '#6b7280', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 }}>

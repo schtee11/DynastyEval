@@ -70,7 +70,93 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* ======= iPad / TABLET RESPONSIVE STYLES (769px–1024px) ======= */
+/* ======= iPad LANDSCAPE / TABLET RESPONSIVE STYLES (1025px–1400px) ======= */
+
+@media (min-width: 1025px) and (max-width: 1400px) {
+  /* Header — slightly tighter */
+  .header-root {
+    padding: 0 16px !important;
+    height: 56px !important;
+  }
+  .header-logo {
+    font-size: 20px !important;
+    letter-spacing: 1.5px !important;
+  }
+  .header-nav-btn {
+    font-size: 13px !important;
+    padding: 7px 14px !important;
+  }
+
+  /* FilterBar — compact */
+  .filter-bar-root {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+  .filter-bar-root .filter-label {
+    font-size: 10px !important;
+  }
+  .filter-bar-root .pos-btn {
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+  }
+  .filter-bar-root select {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+
+  /* ScoutBoard — tighter padding */
+  .scout-board-root {
+    padding: 16px 10px !important;
+  }
+
+  /* Table — hide Ranks column, tighten all cells */
+  .player-table-root table th:last-child,
+  .player-table-root table td:last-child {
+    display: none !important;
+  }
+  .player-table-root table th,
+  .player-table-root table td {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+  }
+  /* Rank column — narrower */
+  .player-table-root table th:first-child,
+  .player-table-root table td:first-child {
+    width: 40px !important;
+    padding: 8px 4px !important;
+  }
+  /* School column — allow truncation */
+  .player-table-root table td:nth-child(3) {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Key Stats — tighter gap, smaller labels */
+  .key-stats-row {
+    gap: 8px !important;
+  }
+  .key-stats-cell {
+    padding: 8px 4px !important;
+  }
+
+  /* Detail modal panel */
+  .detail-modal-panel {
+    width: 420px !important;
+  }
+  .detail-modal-body-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* MyBoard */
+  .myboard-root {
+    padding: 16px 12px !important;
+  }
+  .myboard-row-stats {
+    gap: 10px !important;
+  }
+}
+
+/* ======= iPad PORTRAIT / TABLET RESPONSIVE STYLES (769px–1024px) ======= */
 
 @media (min-width: 769px) and (max-width: 1024px) {
   /* Header — slightly tighter */
@@ -117,13 +203,31 @@ select:focus-visible {
   }
   .player-table-root table th,
   .player-table-root table td {
-    padding: 8px 8px !important;
+    padding: 8px 6px !important;
     font-size: 11px !important;
   }
+  .player-table-root table th:first-child,
+  .player-table-root table td:first-child {
+    width: 36px !important;
+    padding: 8px 4px !important;
+  }
+  .player-table-root table td:nth-child(3) {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .key-stats-row {
+    gap: 6px !important;
+  }
+  .key-stats-cell {
+    padding: 8px 4px !important;
+  }
 
-  /* Detail modal — narrower panel so content behind is still visible */
+  /* Detail modal — full screen on portrait iPad */
   .detail-modal-panel {
-    width: 480px !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    border-left: none !important;
   }
   .detail-modal-body-grid {
     grid-template-columns: 1fr !important;
