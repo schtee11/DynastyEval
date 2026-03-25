@@ -55,7 +55,8 @@ const buildRecStats = (sd) => ({
  * Returns the extra fields to spread onto the player.
  */
 export const attachCollegeStats = (playerName, position, prospect) => {
-  const sd = getStaticCollegeStats(playerName);
+  const sd = getStaticCollegeStats(playerName)
+    || (prospect?.name && prospect.name !== playerName ? getStaticCollegeStats(prospect.name) : null);
   if (!sd) return {};
 
   // Position-specific basic stats
