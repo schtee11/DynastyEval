@@ -7,7 +7,8 @@ import { perspectiveLabels } from '../services/receivingData';
 const StatRow = ({ label, value, benchmark, unit = '' }) => {
   const displayValue = value == null || value === '' ? 'N/A' : value;
   const isNA = displayValue === 'N/A';
-  const isAbove = !isNA && benchmark && parseFloat(value) >= benchmark;
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : parseFloat(value);
+  const isAbove = !isNA && benchmark != null && !isNaN(numericValue) && numericValue >= benchmark;
   return (
     <div style={{
       display: 'flex',
@@ -44,7 +45,18 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
   );
 };
 
-const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall', onClose }) => {
+/**
+ * Compute rank-based percentile for a value within a list of values.
+ * Returns the % of values this one is greater than or equal to (0–100).
+ */
+const computePercentile = (playerValue, allValues) => {
+  const valid = allValues.filter(v => v != null && !isNaN(v) && v > 0);
+  if (valid.length === 0 || playerValue == null || isNaN(playerValue)) return 0;
+  const below = valid.filter(v => v < playerValue).length;
+  return Math.round((below / valid.length) * 100);
+};
+
+const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose }) => {
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
@@ -91,62 +103,65 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
   const getRadarData = () => {
     const s = player.stats || {};
+    const pos = player.position;
+    // Get same-position peers for percentile calculations
+    const peers = allPlayers.filter(p => p.position === pos);
 
-    if (player.position === 'QB') {
+    if (pos === 'QB') {
       return [
-        { stat: 'Comp %', value: Math.min(100, ((s.completionPct || 0) / 80) * 100), fullMark: 100 },
-        { stat: 'Pass TDs', value: Math.min(100, ((s.passingTDs || 0) / 45) * 100), fullMark: 100 },
-        { stat: 'Pass YDs', value: Math.min(100, ((s.passingYards || 0) / 5000) * 100), fullMark: 100 },
-        { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 800) * 100), fullMark: 100 },
-        { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 15) * 100), fullMark: 100 },
+        { stat: 'Comp %', value: computePercentile(s.completionPct, peers.map(p => p.stats?.completionPct)), fullMark: 100 },
+        { stat: 'Pass TDs', value: computePercentile(s.passingTDs, peers.map(p => p.stats?.passingTDs)), fullMark: 100 },
+        { stat: 'Pass YDs', value: computePercentile(s.passingYards, peers.map(p => p.stats?.passingYards)), fullMark: 100 },
+        { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
+        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
       ];
     }
 
-    if (player.position === 'RB') {
+    if (pos === 'RB') {
       return [
-        { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 2000) * 100), fullMark: 100 },
-        { stat: 'YPC', value: Math.min(100, ((s.yardsPerCarry || 0) / 8) * 100), fullMark: 100 },
-        { stat: 'Receiving', value: Math.min(100, ((s.receivingYards || 0) / 500) * 100), fullMark: 100 },
-        { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 20) * 100), fullMark: 100 },
-        { stat: 'MTF', value: Math.min(100, ((player.avoidedTackles || 0) / 60) * 100), fullMark: 100 },
+        { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
+        { stat: 'YPC', value: computePercentile(s.yardsPerCarry, peers.map(p => p.stats?.yardsPerCarry)), fullMark: 100 },
+        { stat: 'Receiving', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
+        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
+        { stat: 'MTF', value: computePercentile(player.avoidedTackles, peers.map(p => p.avoidedTackles)), fullMark: 100 },
       ];
     }
 
     // WR — receiving perspective data
-    if (player.position === 'WR') {
+    if (pos === 'WR') {
       const pData = player.receivingByPerspective?.[modalPerspective];
       if (pData) {
         return [
-          { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
-          { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-          { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-          { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
-          { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
-          { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-          { stat: 'Rec YDs', value: Math.min(100, ((pData.recYds || s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
+          { stat: 'YPRR', value: computePercentile(pData.yprr, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.yprr)), fullMark: 100 },
+          { stat: 'Tgt/RR', value: computePercentile(pData.tgtPerRR, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.tgtPerRR)), fullMark: 100 },
+          { stat: '1D+TD/RR', value: computePercentile(pData.firstDownTDPerRR, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.firstDownTDPerRR)), fullMark: 100 },
+          { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+          { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
+          { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+          { stat: 'Rec YDs', value: computePercentile(pData.recYds || s.receivingYards, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.recYds || p.stats?.receivingYards)), fullMark: 100 },
         ];
       }
       // WR fallback (no perspective data)
       return [
-        { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-        { stat: 'Tgt/RR', value: Math.min(100, ((player.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-        { stat: '1D+TD/RR', value: Math.min(100, ((player.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-        { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
-        { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
-        { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-        { stat: 'Rec YDs', value: Math.min(100, ((s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
+        { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
+        { stat: 'Tgt/RR', value: computePercentile(player.tgtPerRR, peers.map(p => p.tgtPerRR)), fullMark: 100 },
+        { stat: '1D+TD/RR', value: computePercentile(player.firstDownTDPerRR, peers.map(p => p.firstDownTDPerRR)), fullMark: 100 },
+        { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+        { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
+        { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+        { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       ];
     }
 
     // TE — same advanced metrics as WR
     return [
-      { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-      { stat: 'Tgt/RR', value: Math.min(100, ((player.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-      { stat: '1D+TD/RR', value: Math.min(100, ((player.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-      { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
-      { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
-      { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-      { stat: 'Rec YDs', value: Math.min(100, ((s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
+      { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
+      { stat: 'Tgt/RR', value: computePercentile(player.tgtPerRR, peers.map(p => p.tgtPerRR)), fullMark: 100 },
+      { stat: '1D+TD/RR', value: computePercentile(player.firstDownTDPerRR, peers.map(p => p.firstDownTDPerRR)), fullMark: 100 },
+      { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+      { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
+      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+      { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
     ];
   };
 
