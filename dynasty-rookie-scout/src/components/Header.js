@@ -1,6 +1,22 @@
 import React from 'react';
 import { useTheme } from '../ThemeContext';
 
+const SunIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
 const Header = ({ activeTab, setActiveTab }) => {
   const { theme, toggleTheme } = useTheme();
   const tabs = [
@@ -10,24 +26,26 @@ const Header = ({ activeTab, setActiveTab }) => {
 
   return (
     <header className="header-root" style={{
-      background: 'var(--bg-header)',
+      background: theme === 'dark'
+        ? 'linear-gradient(180deg, var(--bg-header) 0%, var(--bg-primary) 100%)'
+        : 'var(--bg-header)',
       borderBottom: '1px solid var(--border-primary)',
       padding: '0 24px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      height: 60,
+      height: 56,
       position: 'sticky',
       top: 0,
       zIndex: 100,
       boxShadow: 'var(--shadow-sm)',
-      transition: 'background 0.2s ease, border-color 0.2s ease',
+      transition: 'background 0.2s ease',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <h1 className="header-logo" style={{
           fontFamily: "'Barlow Condensed', sans-serif",
           fontWeight: 800,
-          fontSize: 20,
+          fontSize: 19,
           letterSpacing: 1,
           color: 'var(--accent-text)',
           margin: 0,
@@ -37,18 +55,18 @@ const Header = ({ activeTab, setActiveTab }) => {
         </h1>
         <span className="header-class-badge" style={{
           fontFamily: "'Inter', sans-serif",
-          fontSize: 11,
-          fontWeight: 500,
+          fontSize: 10,
+          fontWeight: 600,
           color: 'var(--text-tertiary)',
           background: 'var(--bg-tertiary)',
-          padding: '2px 8px',
+          padding: '2px 7px',
           borderRadius: 'var(--radius-sm)',
         }}>
           2026
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <nav style={{ display: 'flex', gap: 2 }}>
           {tabs.map(tab => (
             <button
@@ -59,7 +77,7 @@ const Header = ({ activeTab, setActiveTab }) => {
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 600,
                 fontSize: 13,
-                padding: '7px 16px',
+                padding: '6px 14px',
                 border: 'none',
                 borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
@@ -73,7 +91,6 @@ const Header = ({ activeTab, setActiveTab }) => {
           ))}
         </nav>
 
-        {/* Theme toggle */}
         <button
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
@@ -81,19 +98,19 @@ const Header = ({ activeTab, setActiveTab }) => {
             background: 'var(--bg-tertiary)',
             border: '1px solid var(--border-primary)',
             borderRadius: 'var(--radius-sm)',
-            padding: '6px 8px',
+            padding: '5px 7px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 16,
-            lineHeight: 1,
             color: 'var(--text-secondary)',
             transition: 'all 0.15s',
-            marginLeft: 4,
+            marginLeft: 2,
           }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
         >
-          {theme === 'dark' ? '\u2600' : '\u263E'}
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>
       </div>
     </header>

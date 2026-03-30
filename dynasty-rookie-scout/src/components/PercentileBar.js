@@ -2,38 +2,39 @@ import React, { memo } from 'react';
 import { computePercentile, getPercentileColor } from '../utils/helpers';
 
 /**
- * Inline percentile bar — shows where a stat falls relative to peers.
- * Renders: [LABEL] [========----] [VALUE]
+ * Inline percentile bar showing where a stat falls vs peers.
  *
  * Props:
  *   - label: stat label (e.g. "YPRR")
- *   - value: raw numeric value for this player
- *   - allValues: array of all peer values (for percentile calc)
- *   - format: optional formatter (e.g. v => v.toFixed(2))
- *   - compact: if true, hide the label (for tight spaces)
+ *   - value: raw numeric value
+ *   - allValues: array of peer values (for percentile calc)
+ *   - format: optional formatter
+ *   - compact: hide label (tight spaces)
+ *   - showPct: show percentile badge (cards/modal)
  */
-const PercentileBar = memo(({ label, value, allValues, format, compact = false }) => {
+const PercentileBar = memo(({ label, value, allValues, format, compact = false, showPct = false }) => {
   const pct = computePercentile(value, allValues);
   const color = getPercentileColor(pct);
-  const displayValue = value == null ? 'N/A' : format ? format(value) : value;
+  const displayValue = value == null ? '\u2014' : format ? format(value) : value;
   const isNA = value == null;
 
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: compact ? 6 : 8,
+      gap: 5,
       minWidth: 0,
+      lineHeight: 1,
     }}>
-      {!compact && (
+      {!compact && label && (
         <span style={{
           fontFamily: "'Inter', sans-serif",
           fontSize: 9,
           fontWeight: 600,
           color: 'var(--text-tertiary)',
           textTransform: 'uppercase',
-          letterSpacing: 0.3,
-          width: 56,
+          letterSpacing: 0.2,
+          width: 46,
           flexShrink: 0,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -50,48 +51,43 @@ const PercentileBar = memo(({ label, value, allValues, format, compact = false }
         background: 'var(--bar-track)',
         borderRadius: 3,
         overflow: 'hidden',
-        minWidth: 40,
-        position: 'relative',
+        minWidth: 36,
       }}>
         {pct != null && (
           <div style={{
             width: `${Math.max(pct, 3)}%`,
             height: '100%',
-            background: color,
+            background: `linear-gradient(90deg, ${color}, ${color}dd)`,
             borderRadius: 3,
-            transition: 'width 0.4s ease',
+            transition: 'width 0.3s ease',
           }} />
         )}
       </div>
 
-      {/* Value */}
+      {/* Value + optional percentile */}
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
+        fontSize: 10.5,
         fontWeight: 600,
         color: isNA ? 'var(--text-tertiary)' : 'var(--text-primary)',
-        minWidth: compact ? 32 : 40,
+        minWidth: 32,
         textAlign: 'right',
         flexShrink: 0,
         whiteSpace: 'nowrap',
       }}>
         {displayValue}
+        {showPct && pct != null && (
+          <span style={{
+            fontSize: 8,
+            fontWeight: 700,
+            color: color,
+            verticalAlign: 'super',
+            marginLeft: 1,
+          }}>
+            {pct}
+          </span>
+        )}
       </span>
-
-      {/* Percentile badge */}
-      {pct != null && !compact && (
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 9,
-          fontWeight: 700,
-          color: color,
-          minWidth: 24,
-          textAlign: 'right',
-          flexShrink: 0,
-        }}>
-          {pct}th
-        </span>
-      )}
     </div>
   );
 });

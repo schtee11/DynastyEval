@@ -5,6 +5,8 @@ import { generateScoutingSummary } from '../services/anthropicApi';
 import { perspectiveLabels } from '../services/receivingData';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
+import PlayerCompChip from './PlayerCompChip';
+import ValueDelta from './ValueDelta';
 
 /**
  * Enhanced StatRow with inline percentile bar.
@@ -320,7 +322,10 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 {player.position}
               </span>
               {player.draftPick && (
-                <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
+                <>
+                  <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
+                  <ValueDelta rank={player.rank?.oneQB} adp={player.dynastyADP?.oneQB} />
+                </>
               )}
             </div>
             <div style={{
@@ -368,7 +373,17 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 8,
-              }}>Stats</h3>
+              }}>
+                Stats
+                {player.gamesPlayed && (
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 500,
+                    color: 'var(--text-tertiary)', marginLeft: 8, textTransform: 'none', letterSpacing: 0,
+                  }}>
+                    {player.gamesPlayed} games
+                  </span>
+                )}
+              </h3>
 
               {player.position === 'QB' && (
                 <>
@@ -668,22 +683,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 textTransform: 'uppercase',
                 marginBottom: 8,
               }}>Player Comps</h3>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {player.playerComps.map((comp, i) => (
-                  <span key={i} style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    color: 'var(--text-primary)',
-                    background: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-primary)',
-                    padding: '6px 14px',
-                    borderRadius: 'var(--radius-sm)',
-                  }}>
-                    {comp}
-                  </span>
-                ))}
-              </div>
+              <PlayerCompChip comps={player.playerComps} max={5} />
             </div>
           )}
 
