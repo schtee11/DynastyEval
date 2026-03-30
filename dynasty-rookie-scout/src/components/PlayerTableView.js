@@ -3,7 +3,14 @@ import { positionColors, hasInjuryRisk, getTopStats, getTierForPlayer } from '..
 
 const TIER_ORDER = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
 
-/** Group sorted players into tier buckets, preserving sort order within each tier */
+const TIER_COLORS = {
+  Elite: 'var(--warning)',
+  'Day 1': 'var(--success)',
+  'Day 2': 'var(--accent-text)',
+  'Day 3': 'var(--text-tertiary)',
+  'Undrafted / TBD': 'var(--text-tertiary)',
+};
+
 const groupByTier = (players) => {
   const groups = {};
   for (const player of players) {
@@ -20,18 +27,18 @@ const groupByTier = (players) => {
 const TierDivider = ({ tier, count, compact }) => (
   <tr>
     <td colSpan={compact ? 6 : 7} style={{
-      padding: '12px 16px 6px',
-      fontFamily: "'Barlow Condensed', sans-serif",
+      padding: '14px 16px 6px',
+      fontFamily: "'Inter', sans-serif",
       fontWeight: 700,
-      fontSize: 13,
-      color: tier === 'Elite' ? '#f59e0b' : tier === 'Day 1' ? '#22c55e' : tier === 'Day 2' ? '#60a5fa' : '#6b7280',
-      letterSpacing: 1.5,
+      fontSize: 12,
+      color: TIER_COLORS[tier],
+      letterSpacing: 0.5,
       textTransform: 'uppercase',
-      borderBottom: '1px solid #2a2d3e',
+      borderBottom: '1px solid var(--border-primary)',
       background: 'transparent',
     }}>
       {tier}
-      <span style={{ fontSize: 11, color: '#6b7280', fontWeight: 400, marginLeft: 8, letterSpacing: 0 }}>
+      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 8, letterSpacing: 0 }}>
         {count} prospect{count !== 1 ? 's' : ''}
       </span>
     </td>
@@ -50,62 +57,59 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
       onClick={() => onClick(player)}
       style={{
         cursor: 'pointer',
-        background: isOdd ? '#1a1d2e' : '#151724',
-        transition: 'background 0.15s',
+        background: isOdd ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+        transition: 'background 0.1s',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = '#22263a'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = isOdd ? '#1a1d2e' : '#151724'; }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = isOdd ? 'var(--bg-secondary)' : 'var(--bg-primary)'; }}
     >
       {/* Rank */}
       <td style={{
         padding: '10px 12px',
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: rank1QB === 'UNR' ? 600 : 800,
-        fontSize: rank1QB === 'UNR' ? 13 : 22,
-        color: rank1QB === 'UNR' ? '#6b7280' : '#f1f5f9',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: rank1QB === 'UNR' ? 500 : 700,
+        fontSize: rank1QB === 'UNR' ? 11 : 16,
+        color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
         textAlign: 'center',
-        width: 56,
+        width: 48,
         verticalAlign: 'middle',
-        letterSpacing: rank1QB === 'UNR' ? 1 : 0,
       }}>
-        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '—'}
+        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
       </td>
 
-      {/* Name + Position badge */}
+      {/* Name + Position */}
       <td style={{ padding: '10px 12px', verticalAlign: 'middle' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             fontWeight: 700,
             fontSize: 10,
             color: posColor.text,
             background: posColor.bg,
             padding: '2px 6px',
             borderRadius: 3,
-            letterSpacing: 1,
             flexShrink: 0,
           }}>
             {player.position}
           </span>
           <span style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: 15,
-            color: '#f1f5f9',
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            fontSize: 14,
+            color: 'var(--text-primary)',
             whiteSpace: 'nowrap',
           }}>
             {player.name}
           </span>
           {injured && (
             <span style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'Inter', sans-serif",
               fontSize: 9,
               fontWeight: 700,
               color: '#fff',
-              background: '#ef4444',
+              background: 'var(--danger)',
               padding: '1px 5px',
               borderRadius: 3,
-              letterSpacing: 0.5,
               flexShrink: 0,
             }}>
               INJ
@@ -117,45 +121,41 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
       {/* School */}
       <td style={{
         padding: '10px 12px',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        color: '#9ca3af',
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 12,
+        color: 'var(--text-secondary)',
         verticalAlign: 'middle',
         whiteSpace: 'nowrap',
       }}>
-        {player.college || '—'}
+        {player.college || '\u2014'}
       </td>
 
-      {/* Draft Projection */}
+      {/* Draft */}
       <td style={{
         padding: '10px 12px',
         fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
+        fontSize: 12,
         verticalAlign: 'middle',
         whiteSpace: 'nowrap',
       }}>
         {(() => {
           if (!player.draftPick) {
-            return <span style={{ color: '#4b5563' }}>—</span>;
+            return <span style={{ color: 'var(--text-tertiary)' }}>\u2014</span>;
           }
-          const rdColor = player.draftRound <= 1 ? '#f59e0b'
-            : player.draftRound <= 2 ? '#22c55e'
-            : player.draftRound <= 3 ? '#60a5fa'
-            : '#6b7280';
+          const rdColor = player.draftRound <= 1 ? 'var(--warning)'
+            : player.draftRound <= 2 ? 'var(--success)'
+            : player.draftRound <= 3 ? 'var(--accent-text)'
+            : 'var(--text-tertiary)';
           return (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{
-                color: rdColor,
-                fontWeight: 700,
-                fontSize: 12,
-              }}>
+              <span style={{ color: rdColor, fontWeight: 700, fontSize: 12 }}>
                 Rd {player.draftRound}
               </span>
-              <span style={{ color: '#6b7280', fontSize: 10 }}>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
                 #{player.draftPick}
               </span>
               {player.draftTeam && (
-                <span style={{ color: '#9ca3af', fontWeight: 600, fontSize: 10 }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: 10 }}>
                   {player.draftTeam}
                 </span>
               )}
@@ -164,29 +164,29 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
         })()}
       </td>
 
-      {/* Key Stats (2–3 position-specific) */}
+      {/* Key Stats */}
       <td className="key-stats-cell" style={{
         padding: '10px 12px',
         fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        color: '#d1d5db',
+        fontSize: 12,
+        color: 'var(--text-secondary)',
         verticalAlign: 'middle',
       }}>
-        <div className="key-stats-row" style={{ display: 'flex', gap: 12, flexWrap: 'nowrap' }}>
+        <div className="key-stats-row" style={{ display: 'flex', gap: 14, flexWrap: 'nowrap' }}>
           {topStats.map((stat, i) => (
             <span key={i} style={{ whiteSpace: 'nowrap' }}>
-              <span style={{ color: '#6b7280', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.3, fontFamily: "'Inter', sans-serif" }}>
                 {stat.label}
               </span>{' '}
-              <span style={{ fontWeight: 600, color: '#f1f5f9' }}>
-                {stat.value ?? '—'}
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                {stat.value ?? '\u2014'}
               </span>
             </span>
           ))}
         </div>
       </td>
 
-      {/* 1QB / SF Ranks */}
+      {/* Ranks */}
       {!compact && (
         <td style={{
           padding: '10px 12px',
@@ -196,12 +196,12 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
           whiteSpace: 'nowrap',
         }}>
           {rank1QB != null && (
-            <span style={{ color: rank1QB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
+            <span style={{ color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)' }}>
               {rank1QB === 'UNR' ? '1QB UNR' : `1QB #${rank1QB}`}
             </span>
           )}
           {rankSF != null && (
-            <span style={{ color: rankSF === 'UNR' ? '#6b7280' : '#a78bfa', marginLeft: 8 }}>
+            <span style={{ color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)', marginLeft: 8 }}>
               {rankSF === 'UNR' ? 'SF UNR' : `SF #${rankSF}`}
             </span>
           )}
@@ -211,7 +211,6 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
   );
 });
 
-/** Mobile list row — single-column compact row for phones */
 const MobilePlayerRow = memo(({ player, perspective, onClick, isOdd }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const topStats = getTopStats(player, perspective);
@@ -225,46 +224,41 @@ const MobilePlayerRow = memo(({ player, perspective, onClick, isOdd }) => {
         alignItems: 'center',
         gap: 10,
         padding: '10px 12px',
-        background: isOdd ? '#1a1d2e' : '#151724',
+        background: isOdd ? 'var(--bg-secondary)' : 'var(--bg-primary)',
         cursor: 'pointer',
-        borderBottom: '1px solid #1e2133',
+        borderBottom: '1px solid var(--border-subtle)',
       }}
     >
-      {/* Rank */}
       <div style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: rank1QB === 'UNR' ? 600 : 800,
-        fontSize: rank1QB === 'UNR' ? 11 : 18,
-        color: rank1QB === 'UNR' ? '#6b7280' : '#f1f5f9',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: rank1QB === 'UNR' ? 500 : 700,
+        fontSize: rank1QB === 'UNR' ? 10 : 16,
+        color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
         width: 32,
         textAlign: 'center',
         flexShrink: 0,
-        letterSpacing: rank1QB === 'UNR' ? 1 : 0,
       }}>
-        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '—'}
+        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
       </div>
 
-      {/* Position badge */}
       <span style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         fontWeight: 700,
         fontSize: 10,
         color: posColor.text,
         background: posColor.bg,
         padding: '2px 6px',
         borderRadius: 3,
-        letterSpacing: 1,
         flexShrink: 0,
       }}>
         {player.position}
       </span>
 
-      {/* Name */}
       <span style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: 700,
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: 600,
         fontSize: 14,
-        color: '#f1f5f9',
+        color: 'var(--text-primary)',
         flex: 1,
         minWidth: 0,
         overflow: 'hidden',
@@ -274,33 +268,31 @@ const MobilePlayerRow = memo(({ player, perspective, onClick, isOdd }) => {
         {player.name}
       </span>
 
-      {/* Draft projection */}
       {player.draftRound && (
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 10,
           fontWeight: 700,
-          color: player.draftRound <= 1 ? '#f59e0b' : player.draftRound <= 2 ? '#22c55e' : '#60a5fa',
+          color: player.draftRound <= 1 ? 'var(--warning)' : player.draftRound <= 2 ? 'var(--success)' : 'var(--accent-text)',
           flexShrink: 0,
         }}>
           Rd{player.draftRound}
         </span>
       )}
 
-      {/* 1 key stat */}
       {topStats[0] && (
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 10,
-          color: '#9ca3af',
+          color: 'var(--text-secondary)',
           flexShrink: 0,
           whiteSpace: 'nowrap',
         }}>
-          <span style={{ color: '#6b7280', fontSize: 8, textTransform: 'uppercase' }}>
+          <span style={{ color: 'var(--text-tertiary)', fontSize: 8, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>
             {topStats[0].label}
           </span>{' '}
-          <span style={{ color: '#f1f5f9', fontWeight: 600 }}>
-            {topStats[0].value ?? '—'}
+          <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+            {topStats[0].value ?? '\u2014'}
           </span>
         </span>
       )}
@@ -324,27 +316,23 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compa
 
   return (
     <div className="player-table-root">
-      {/* Desktop/tablet table */}
       <div style={{ overflowX: 'auto' }}>
         <table style={{
           width: '100%',
           borderCollapse: 'collapse',
-          fontFamily: "'JetBrains Mono', monospace",
         }}>
           <thead>
-            <tr style={{
-              borderBottom: '2px solid #2a2d3e',
-            }}>
-              {(['#', 'Player', 'School', 'Draft', 'Key Stats'].concat(compact ? [] : ['Ranks (FantasyCalc)'])).map((h) => (
+            <tr style={{ borderBottom: '2px solid var(--border-primary)' }}>
+              {(['#', 'Player', 'School', 'Draft', 'Key Stats'].concat(compact ? [] : ['Ranks'])).map((h) => (
                 <th key={h} style={{
                   padding: '8px 12px',
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700,
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
                   fontSize: 11,
-                  color: '#6b7280',
+                  color: 'var(--text-tertiary)',
                   textAlign: 'left',
                   textTransform: 'uppercase',
-                  letterSpacing: 1,
+                  letterSpacing: 0.5,
                   whiteSpace: 'nowrap',
                 }}>
                   {h}
@@ -385,22 +373,21 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compa
         </table>
       </div>
 
-      {/* Mobile single-column list (shown at <=480px via CSS) */}
       <div className="player-mobile-list">
         {showTiers ? (
           tierGroups.map(({ tier, players: group }) => (
             <React.Fragment key={tier}>
               <div style={{
                 padding: '10px 12px 4px',
-                fontFamily: "'Barlow Condensed', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 700,
                 fontSize: 12,
-                color: tier === 'Elite' ? '#f59e0b' : tier === 'Day 1' ? '#22c55e' : tier === 'Day 2' ? '#60a5fa' : '#6b7280',
-                letterSpacing: 1.5,
+                color: TIER_COLORS[tier],
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
-                borderBottom: '1px solid #2a2d3e',
+                borderBottom: '1px solid var(--border-primary)',
               }}>
-                {tier} <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 400 }}>({group.length})</span>
+                {tier} <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 400 }}>({group.length})</span>
               </div>
               {renderRows(group)}
             </React.Fragment>

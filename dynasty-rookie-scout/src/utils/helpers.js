@@ -1,26 +1,33 @@
-// Position colors for card borders and badges
+// Position colors — using CSS variables for theme support
 export const positionColors = {
-  QB: { border: '#ef4444', bg: 'rgba(239,68,68,0.15)', text: '#ef4444' },
-  RB: { border: '#22d3ee', bg: 'rgba(34,211,238,0.15)', text: '#22d3ee' },
-  WR: { border: '#a78bfa', bg: 'rgba(167,139,250,0.15)', text: '#a78bfa' },
-  TE: { border: '#34d399', bg: 'rgba(52,211,153,0.15)', text: '#34d399' },
+  QB: { border: 'var(--pos-qb-border)', bg: 'var(--pos-qb-bg)', text: 'var(--pos-qb-text)' },
+  RB: { border: 'var(--pos-rb-border)', bg: 'var(--pos-rb-bg)', text: 'var(--pos-rb-text)' },
+  WR: { border: 'var(--pos-wr-border)', bg: 'var(--pos-wr-bg)', text: 'var(--pos-wr-text)' },
+  TE: { border: 'var(--pos-te-border)', bg: 'var(--pos-te-bg)', text: 'var(--pos-te-text)' },
+};
+
+// Static hex colors for chart fills (Recharts doesn't support CSS vars)
+export const positionChartColors = {
+  QB: '#dc2626',
+  RB: '#0891b2',
+  WR: '#7c3aed',
+  TE: '#059669',
 };
 
 export const getBreakoutIndicator = (breakoutAge) => {
-  if (!breakoutAge) return { label: 'N/A', color: '#6b7280', emoji: '' };
-  if (breakoutAge <= 20) return { label: 'Elite', color: '#f59e0b', emoji: '⚡' };
-  if (breakoutAge <= 21) return { label: 'Good', color: '#22c55e', emoji: '⚡' };
-  return { label: 'Late', color: '#6b7280', emoji: '' };
+  if (!breakoutAge) return { label: 'N/A', color: 'var(--text-tertiary)', emoji: '' };
+  if (breakoutAge <= 20) return { label: 'Elite', color: 'var(--warning)', emoji: '' };
+  if (breakoutAge <= 21) return { label: 'Good', color: 'var(--success)', emoji: '' };
+  return { label: 'Late', color: 'var(--text-tertiary)', emoji: '' };
 };
 
 export const getDraftCapitalInfo = (pick) => {
-  if (pick <= 10) return { label: 'Elite', color: '#f59e0b', emoji: '🏆' };
-  if (pick <= 32) return { label: 'Day 1', color: '#22c55e', emoji: '🏆' };
-  if (pick <= 64) return { label: 'Day 2', color: '#60a5fa', emoji: '' };
-  return { label: 'Day 3', color: '#6b7280', emoji: '' };
+  if (pick <= 10) return { label: 'Elite', color: 'var(--warning)', emoji: '' };
+  if (pick <= 32) return { label: 'Day 1', color: 'var(--success)', emoji: '' };
+  if (pick <= 64) return { label: 'Day 2', color: 'var(--accent-text)', emoji: '' };
+  return { label: 'Day 3', color: 'var(--text-tertiary)', emoji: '' };
 };
 
-/** Human-readable draft label showing round and overall pick */
 export const getDraftRangeLabel = (round, pick) => {
   if (!round && !pick) return null;
   if (round && pick) return `Rd ${round} (#${pick})`;
@@ -30,7 +37,6 @@ export const getDraftRangeLabel = (round, pick) => {
 
 export const hasInjuryRisk = (player) => player.injuries && player.injuries.length > 0;
 
-/** Tier label for section dividers — based on draft capital */
 export const getTierForPlayer = (player) => {
   const pick = player.draftPick;
   if (!pick) return 'Undrafted / TBD';
@@ -43,7 +49,6 @@ export const getTierForPlayer = (player) => {
 export const getTopStats = (player, perspective = 'overall') => {
   const { position, stats } = player;
 
-  // WR with receiving perspective data — show perspective stats
   if (position === 'WR') {
     const pData = player.receivingByPerspective?.[perspective];
     if (pData) {
@@ -60,7 +65,6 @@ export const getTopStats = (player, perspective = 'overall') => {
         { label: 'TGT/RR', value: pData.tgtPerRR != null ? `${pData.tgtPerRR}%` : 'N/A' },
       ];
     }
-    // WR fallback (no perspective data)
     return [
       { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
       { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
@@ -68,7 +72,6 @@ export const getTopStats = (player, perspective = 'overall') => {
     ];
   }
 
-  // QB — CFBD / static stats
   if (position === 'QB') {
     return [
       { label: 'COMP %', value: stats?.completionPct != null ? `${stats.completionPct}%` : 'N/A' },
@@ -77,7 +80,6 @@ export const getTopStats = (player, perspective = 'overall') => {
     ];
   }
 
-  // RB — CFBD / static stats
   if (position === 'RB') {
     return [
       { label: 'Rush YDs', value: stats?.rushingYards?.toLocaleString() },
@@ -86,7 +88,6 @@ export const getTopStats = (player, perspective = 'overall') => {
     ];
   }
 
-  // TE — same metrics as WR
   if (position === 'TE') {
     return [
       { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
@@ -102,11 +103,9 @@ export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective =
   const sorted = [...players];
   const getRank = (p) => { const r = p.rank?.[leagueType]; return (r == null || r === 'UNR') ? 999 : r; };
   const getAdp = (p) => p.dynastyADP?.[leagueType] ?? 999;
-  // Perspective-based getters (only meaningful for WRs with perspective data)
   const getYprr = (p) => p.receivingByPerspective?.[perspective]?.yprr ?? p.yprr ?? 0;
   const getRecGrade = (p) => p.receivingByPerspective?.[perspective]?.recGrade ?? 0;
   const getTgtPerRR = (p) => p.receivingByPerspective?.[perspective]?.tgtPerRR ?? 0;
-  // Stable tiebreaker: when primary sort values are equal, fall back to rank then id
   const tiebreak = (a, b) => (getRank(a) - getRank(b)) || (a.id - b.id);
   const stableSort = (compareFn) => sorted.sort((a, b) => compareFn(a, b) || tiebreak(a, b));
   switch (sortBy) {
@@ -136,7 +135,7 @@ export const filterPlayers = (players, filters) => {
     if (filters.position && filters.position !== 'ALL' && player.position !== filters.position) return false;
     if (filters.draftDay) {
       const round = player.draftRound;
-      if (!round) return false; // No draft data — exclude from day filter
+      if (!round) return false;
       if (filters.draftDay === '1' && round !== 1) return false;
       if (filters.draftDay === '2' && (round < 2 || round > 3)) return false;
       if (filters.draftDay === '3' && round <= 3) return false;

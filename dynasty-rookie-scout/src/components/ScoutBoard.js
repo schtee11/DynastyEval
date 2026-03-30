@@ -42,7 +42,6 @@ const ScoutBoard = () => {
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
   const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
 
-  // Show tier dividers only when sorted by draft capital
   const showTiers = sortBy === 'draftCapital';
 
   const [windowWidth, setWindowWidth] = useState(
@@ -62,6 +61,8 @@ const ScoutBoard = () => {
   return (
     <div className="scout-board-root" style={{
       padding: '20px 24px 20px 12px',
+      maxWidth: 1400,
+      margin: '0 auto',
       marginRight: panelMargin,
       transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
     }}>
@@ -81,9 +82,9 @@ const ScoutBoard = () => {
         marginBottom: 12,
       }}>
         <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 12,
-          color: '#6b7280',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          color: 'var(--text-tertiary)',
           display: 'flex',
           alignItems: 'center',
           gap: 8,
@@ -91,28 +92,14 @@ const ScoutBoard = () => {
           {sorted.length} prospect{sorted.length !== 1 ? 's' : ''}
           {isUsingLiveData() && (
             <span style={{
-              background: 'rgba(34,197,94,0.15)',
-              color: '#22c55e',
+              background: 'var(--success-light)',
+              color: 'var(--success)',
               padding: '2px 8px',
-              borderRadius: 4,
+              borderRadius: 'var(--radius-sm)',
               fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 1,
+              fontWeight: 600,
             }}>
-              LIVE — 2026 CLASS
-            </span>
-          )}
-          {!isUsingLiveData() && (
-            <span style={{
-              background: 'rgba(245,158,11,0.15)',
-              color: '#f59e0b',
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 1,
-            }}>
-              2026 CLASS
+              LIVE
             </span>
           )}
         </span>
@@ -121,39 +108,38 @@ const ScoutBoard = () => {
         <div style={{
           display: 'flex',
           gap: 0,
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontWeight: 700,
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 600,
           fontSize: 12,
-          letterSpacing: 0.5,
         }}>
           <button
             onClick={() => setViewMode('table')}
             style={{
               padding: '5px 14px',
-              border: '1px solid #2a2d3e',
-              borderRadius: '4px 0 0 4px',
-              background: viewMode === 'table' ? '#2a2d3e' : 'transparent',
-              color: viewMode === 'table' ? '#f1f5f9' : '#6b7280',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)',
+              background: viewMode === 'table' ? 'var(--accent-light)' : 'transparent',
+              color: viewMode === 'table' ? 'var(--accent-text)' : 'var(--text-tertiary)',
               cursor: 'pointer',
               transition: 'all 0.15s',
             }}
           >
-            TABLE
+            Table
           </button>
           <button
             onClick={() => setViewMode('cards')}
             style={{
               padding: '5px 14px',
-              border: '1px solid #2a2d3e',
+              border: '1px solid var(--border-primary)',
               borderLeft: 'none',
-              borderRadius: '0 4px 4px 0',
-              background: viewMode === 'cards' ? '#2a2d3e' : 'transparent',
-              color: viewMode === 'cards' ? '#f1f5f9' : '#6b7280',
+              borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+              background: viewMode === 'cards' ? 'var(--accent-light)' : 'transparent',
+              color: viewMode === 'cards' ? 'var(--accent-text)' : 'var(--text-tertiary)',
               cursor: 'pointer',
               transition: 'all 0.15s',
             }}
           >
-            CARDS
+            Cards
           </button>
         </div>
       </div>
@@ -162,9 +148,9 @@ const ScoutBoard = () => {
         <div style={{
           textAlign: 'center',
           padding: 60,
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 18,
-          color: '#6b7280',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 15,
+          color: 'var(--text-tertiary)',
         }}>
           Loading prospects...
         </div>
@@ -174,26 +160,25 @@ const ScoutBoard = () => {
         <div style={{
           textAlign: 'center',
           padding: 40,
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: "'Inter', sans-serif",
         }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
-          <div style={{ color: '#ef4444', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+          <div style={{ color: 'var(--danger)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
             Failed to load prospects
           </div>
-          <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 16, maxWidth: 500, margin: '0 auto 16px' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16, maxWidth: 500, margin: '0 auto 16px' }}>
             {error}
           </div>
           <button
             onClick={() => window.location.reload()}
             style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
               fontSize: 13,
               padding: '8px 20px',
-              border: '1px solid #f59e0b',
-              borderRadius: 4,
-              background: 'rgba(245,158,11,0.15)',
-              color: '#f59e0b',
+              border: '1px solid var(--accent)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--accent-light)',
+              color: 'var(--accent-text)',
               cursor: 'pointer',
             }}
           >
@@ -202,7 +187,6 @@ const ScoutBoard = () => {
         </div>
       )}
 
-      {/* Table View (default) */}
       {!loading && viewMode === 'table' && sorted.length > 0 && (
         <PlayerTableView
           players={sorted}
@@ -213,12 +197,11 @@ const ScoutBoard = () => {
         />
       )}
 
-      {/* Card View (legacy) */}
       {!loading && viewMode === 'cards' && sorted.length > 0 && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: 16,
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: 12,
         }}>
           {sorted.map(player => (
             <PlayerCard
@@ -235,9 +218,9 @@ const ScoutBoard = () => {
         <div style={{
           textAlign: 'center',
           padding: 60,
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 18,
-          color: '#6b7280',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 15,
+          color: 'var(--text-tertiary)',
         }}>
           No prospects match your filters
         </div>

@@ -11,86 +11,85 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
     <div
       onClick={() => onClick(player)}
       style={{
-        background: '#1a1d2e',
-        borderRadius: 8,
-        borderLeft: `4px solid ${posColor.border}`,
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-primary)',
+        borderRadius: 'var(--radius-md)',
+        borderLeft: `3px solid ${posColor.border}`,
         padding: 16,
         cursor: 'pointer',
         transition: 'all 0.2s',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: 180,
+        minHeight: 170,
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+        e.currentTarget.style.borderColor = 'var(--border-secondary)';
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
         e.currentTarget.style.boxShadow = 'none';
+        e.currentTarget.style.borderColor = 'var(--border-primary)';
       }}
     >
-      {/* Injury warning banner */}
+      {/* Injury badge */}
       {injured && (
         <div style={{
           position: 'absolute',
-          top: 0,
-          right: 0,
-          background: '#ef4444',
+          top: 8,
+          right: 8,
+          background: 'var(--danger)',
           color: '#fff',
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: "'Inter', sans-serif",
           fontSize: 10,
           fontWeight: 700,
-          padding: '3px 10px',
-          borderBottomLeftRadius: 6,
-          letterSpacing: 1,
-          animation: 'pulse 2s infinite',
+          padding: '2px 8px',
+          borderRadius: 'var(--radius-sm)',
+          letterSpacing: 0.5,
         }}>
-          🚨 INJURY RISK
+          INJ
         </div>
       )}
 
-      {/* Header row */}
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
           <div style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             fontWeight: 700,
-            fontSize: 18,
-            color: '#f1f5f9',
-            lineHeight: 1.1,
+            fontSize: 16,
+            color: 'var(--text-primary)',
+            lineHeight: 1.2,
           }}>
             {player.name}
           </div>
           <div style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            color: '#9ca3af',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 12,
+            color: 'var(--text-tertiary)',
             marginTop: 2,
           }}>
             {player.college || 'TBD'}
           </div>
         </div>
         <span style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 11,
           color: posColor.text,
           background: posColor.bg,
           padding: '2px 8px',
-          borderRadius: 4,
-          letterSpacing: 1,
+          borderRadius: 'var(--radius-sm)',
         }}>
           {player.position}
         </span>
       </div>
 
-      {/* Draft pick + capital */}
+      {/* Draft */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
-        marginBottom: 10,
+        gap: 6,
+        marginBottom: 12,
       }}>
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
@@ -99,14 +98,15 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
           color: capital.color,
         }}>
           {player.draftTeam
-            ? `${capital.emoji} R${player.draftRound} Pick #${player.draftPick}`
+            ? `R${player.draftRound} #${player.draftPick}`
             : getDraftRangeLabel(player.draftRound, player.draftPick) || 'Draft TBD'}
         </span>
         <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: "'Inter', sans-serif",
           fontSize: 10,
+          fontWeight: 600,
           color: capital.color,
-          background: `${capital.color}22`,
+          background: 'var(--bg-tertiary)',
           padding: '1px 6px',
           borderRadius: 3,
         }}>
@@ -114,13 +114,13 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
         </span>
         {player.draftIsProjected && (
           <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "'Inter', sans-serif",
             fontSize: 9,
-            color: '#9ca3af',
-            background: '#2a2d3e',
+            fontWeight: 600,
+            color: 'var(--text-tertiary)',
+            background: 'var(--bg-tertiary)',
             padding: '1px 5px',
             borderRadius: 3,
-            letterSpacing: 0.5,
           }}>
             PROJ
           </span>
@@ -136,8 +136,8 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
       }}>
         {topStats.map((stat, i) => (
           <div key={i} style={{
-            background: '#0f1117',
-            borderRadius: 4,
+            background: 'var(--bg-tertiary)',
+            borderRadius: 'var(--radius-sm)',
             padding: '6px 8px',
             textAlign: 'center',
           }}>
@@ -145,16 +145,17 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: 13,
               fontWeight: 700,
-              color: '#f1f5f9',
+              color: 'var(--text-primary)',
             }}>
               {stat.value}
             </div>
             <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'Inter', sans-serif",
               fontSize: 9,
-              color: '#6b7280',
+              fontWeight: 500,
+              color: 'var(--text-tertiary)',
               textTransform: 'uppercase',
-              letterSpacing: 0.5,
+              letterSpacing: 0.3,
             }}>
               {stat.label}
             </div>
@@ -162,26 +163,25 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
         ))}
       </div>
 
-      {/* Bottom row: ranks */}
+      {/* Ranks */}
       <div style={{
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        borderTop: '1px solid #2a2d3e',
+        borderTop: '1px solid var(--border-subtle)',
         paddingTop: 8,
       }}>
-        {/* 1QB vs SF ranks */}
         {player.rank && (
           <div style={{
             display: 'flex',
-            gap: 8,
+            gap: 10,
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 11,
           }}>
-            <span style={{ color: player.rank.oneQB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
+            <span style={{ color: player.rank.oneQB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)' }}>
               1QB: {player.rank.oneQB === 'UNR' ? 'UNR' : `#${player.rank.oneQB}`}
             </span>
-            <span style={{ color: player.rank.superflex === 'UNR' ? '#6b7280' : '#a78bfa' }}>
+            <span style={{ color: player.rank.superflex === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)' }}>
               SF: {player.rank.superflex === 'UNR' ? 'UNR' : `#${player.rank.superflex}`}
             </span>
           </div>
