@@ -16,7 +16,6 @@ import { fetchAllPlayerStats, isCFBDAvailable } from './cfbdApi';
 
 let cfbdStatsMap = null;
 let cfbdLoadPromise = null;
-let cfbdLoadFailed = false;
 
 /**
  * Pre-load all CFBD stats. Call once before attaching stats to players.
@@ -28,7 +27,6 @@ export const preloadCFBDStats = async (year = 2025) => {
 
   if (!isCFBDAvailable()) {
     console.info('[CFBDTransformer] No CFBD API key — using static data only');
-    cfbdLoadFailed = true;
     return null;
   }
 
@@ -40,7 +38,6 @@ export const preloadCFBDStats = async (year = 2025) => {
     })
     .catch((err) => {
       console.warn('[CFBDTransformer] CFBD fetch failed, falling back to static:', err.message);
-      cfbdLoadFailed = true;
       return null;
     });
 
