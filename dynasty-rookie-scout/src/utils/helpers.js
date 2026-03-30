@@ -174,6 +174,28 @@ export const getPercentileColor = (pct) => {
  * Returns array of { label, getValue(player, perspective) } objects.
  * Used by PercentileBar to compute where a player sits in the class.
  */
+/**
+ * Compute a headline score (0-99) summarizing a prospect's value.
+ * Weighted average of stat percentiles + draft capital bonus.
+ */
+export const computeHeadlineScore = (player, allPlayers) => {
+  const peers = allPlayers.filter(p => p.position === player.position);
+  const accessors = getStatAccessors(player.position);
+  const percentiles = accessors.map(acc => {
+    const val = acc.getValue(player);
+    const allVals = peers.map(p => acc.getValue(p));
+    return computePercentile(val, allVals);
+  }).filter(p => p != null);
+
+  if (percentiles.length === 0) return null;
+
+  let score = Math.round(percentiles.reduce((a, b) => a + b, 0) / percentiles.length);
+  if (player.draftPick && player.draftPick <= 10) score = Math.min(99, score + 5);
+  else if (player.draftPick && player.draftPick <= 32) score = Math.min(99, score + 3);
+
+  return score;
+};
+
 export const getStatAccessors = (position, perspective = 'overall') => {
   if (position === 'QB') {
     return [

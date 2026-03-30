@@ -121,14 +121,14 @@ const SectionLabel = ({ children }) => (
 
 const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
 
-const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose }) => {
+const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose, isDesktopPanel = false }) => {
   const { theme } = useTheme();
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
   const [slideIn, setSlideIn] = useState(false);
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
-  const isDesktop = winWidth >= 1025;
+  const isDesktop = isDesktopPanel || winWidth >= 1025;
   const isTabletLandscape = winWidth >= 1025 && winWidth <= 1400;
 
   const posColor = positionColors[player.position] || positionColors.WR;
@@ -241,39 +241,9 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
   const labelColor = theme === 'dark' ? '#94a3b8' : '#64748b';
   const tickColor = theme === 'dark' ? '#64748b' : '#94a3b8';
 
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: isDesktop ? 'none' : 'var(--bg-overlay)',
-        zIndex: 200,
-        transition: 'background 0.3s ease',
-        pointerEvents: isDesktop ? 'none' : 'auto',
-      }}
-      onClick={isDesktop ? undefined : onClose}
-    >
-      <div
-        className="detail-modal-panel"
-        onClick={e => e.stopPropagation()}
-        style={{
-          pointerEvents: 'auto',
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: isDesktop ? (isTabletLandscape ? 420 : 560) : '100%',
-          maxWidth: '100vw',
-          background: 'var(--bg-modal)',
-          borderLeft: isDesktop ? `1px solid var(--border-primary)` : 'none',
-          borderRadius: isDesktop ? 0 : 12,
-          overflowY: 'auto',
-          transform: slideIn ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: isDesktop ? 'var(--shadow-panel)' : 'none',
-        }}
-      >
-        {/* Header */}
+  const panelContent = (
+    <>
+      {/* Header */}
         <div style={{
           background: 'var(--bg-secondary)',
           padding: isDesktop ? (isTabletLandscape ? '16px 18px' : '20px 24px') : '24px 28px',
@@ -752,6 +722,58 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
             )}
           </div>
         </div>
+    </>
+  );
+
+  // Desktop grid child: sticky sidebar
+  if (isDesktopPanel) {
+    return (
+      <div
+        className="detail-modal-panel"
+        style={{
+          position: 'sticky',
+          top: 'var(--header-height)',
+          height: 'calc(100vh - var(--header-height))',
+          overflowY: 'auto',
+          background: 'var(--bg-modal)',
+          borderLeft: '1px solid var(--border-primary)',
+        }}
+      >
+        {panelContent}
+      </div>
+    );
+  }
+
+  // Mobile/tablet: fixed overlay with backdrop
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'var(--bg-overlay)',
+        zIndex: 200,
+        transition: 'background 0.3s ease',
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="detail-modal-panel"
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          maxWidth: '100vw',
+          background: 'var(--bg-modal)',
+          borderRadius: 12,
+          overflowY: 'auto',
+          transform: slideIn ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        {panelContent}
       </div>
     </div>
   );
