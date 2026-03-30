@@ -1,16 +1,59 @@
-// Attaches college stats from collegeStats2025.js (generated from PFF CSVs)
-// directly onto player objects. No API calls, no async, no enrichment pipeline.
+// Attaches college stats to player objects.
+//
+// Data sources (in priority order):
+//   1. CFBD API (live) — basic counting stats + PPA
+//   2. Static PFF CSV data — PFF-proprietary metrics + fallback counting stats
+//   3. Prospect advancedStats (hand-curated) — highest priority overrides
+//
+// The CFBD API provides live data for passing/rushing/receiving counting stats
+// and PPA. PFF-only metrics (grades, BTT/TWP rates, elusive rating, YPRR,
+// contested catch rates, slot/wide rates, etc.) always come from the static data.
 
 import { getStaticCollegeStats as _rawLookup } from './collegeStats2025';
+import { fetchAllPlayerStats, isCFBDAvailable } from './cfbdApi';
 
-// Fuzzy wrapper: handles Jr/Sr/II/III suffix mismatches between Sleeper and CSV
+// ── CFBD data cache (loaded once, shared across all players) ────────────────
+
+let cfbdStatsMap = null;
+let cfbdLoadPromise = null;
+let cfbdLoadFailed = false;
+
+/**
+ * Pre-load all CFBD stats. Call once before attaching stats to players.
+ * Safe to call multiple times — only fetches once.
+ */
+export const preloadCFBDStats = async (year = 2025) => {
+  if (cfbdStatsMap) return cfbdStatsMap;
+  if (cfbdLoadPromise) return cfbdLoadPromise;
+
+  if (!isCFBDAvailable()) {
+    console.info('[CFBDTransformer] No CFBD API key — using static data only');
+    cfbdLoadFailed = true;
+    return null;
+  }
+
+  cfbdLoadPromise = fetchAllPlayerStats(year)
+    .then((data) => {
+      cfbdStatsMap = data;
+      console.info(`[CFBDTransformer] CFBD data loaded: ${Object.keys(data || {}).length} players`);
+      return data;
+    })
+    .catch((err) => {
+      console.warn('[CFBDTransformer] CFBD fetch failed, falling back to static:', err.message);
+      cfbdLoadFailed = true;
+      return null;
+    });
+
+  return cfbdLoadPromise;
+};
+
+// ── Static data lookup (unchanged from before) ─────────────────────────────
+
 const getStaticCollegeStats = (name) => {
   const exact = _rawLookup(name);
   if (exact) return exact;
-  // Strip suffix and retry (e.g. "Omar Cooper Jr." → "Omar Cooper")
   const stripped = name.replace(/\s+(jr\.?|sr\.?|ii|iii|iv|v)\s*$/i, '').trim();
   if (stripped !== name) return _rawLookup(stripped);
-  // No suffix in input — try adding common ones
   for (const suf of [' Jr.', ' III', ' II', ' Sr.']) {
     const result = _rawLookup(name + suf);
     if (result) return result;
@@ -18,7 +61,33 @@ const getStaticCollegeStats = (name) => {
   return null;
 };
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── Name normalisation ──────────────────────────────────────────────────────
+
+const norm = (n) =>
+  (n || '')
+    .toLowerCase()
+    .replace(/[^a-z ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const normFuzzy = (n) =>
+  norm(n)
+    .replace(/\b(jr|sr|ii|iii|iv)\s*$/g, '')
+    .trim();
+
+/**
+ * Look up a player in the CFBD stats map with fuzzy matching.
+ */
+const getCFBDStats = (name) => {
+  if (!cfbdStatsMap) return null;
+  const key = norm(name);
+  if (cfbdStatsMap[key]) return cfbdStatsMap[key];
+  const fuzzy = normFuzzy(name);
+  if (fuzzy !== key && cfbdStatsMap[fuzzy]) return cfbdStatsMap[fuzzy];
+  return null;
+};
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
 const v = (obj, ...keys) => {
   if (!obj) return 0;
@@ -31,98 +100,124 @@ const v = (obj, ...keys) => {
 const pct = (num, denom) =>
   denom > 0 ? +((num / denom) * 100).toFixed(1) : null;
 
-// ── position-specific stat builders ──────────────────────────────────────────
+// ── Position-specific stat builders ─────────────────────────────────────────
+// These use whichever source has the data (CFBD live preferred, static fallback)
 
-const buildQBStats = (sd) => ({
-  passingYards: v(sd.passing, 'YDS'),
-  passingTDs: v(sd.passing, 'TD'),
-  interceptions: v(sd.passing, 'INT'),
-  completionPct: v(sd.passing, 'PCT') || pct(v(sd.passing, 'COMP'), v(sd.passing, 'ATT')),
-  rushingYards: v(sd.rushing, 'YDS'),
-  rushingTDs: v(sd.rushing, 'TD'),
-});
-
-const buildRBStats = (sd) => {
-  const car = v(sd.rushing, 'CAR');
-  const yds = v(sd.rushing, 'YDS');
+const buildQBStats = (live, sd) => {
+  const pass = live?.passing || sd?.passing;
+  const rush = live?.rushing || sd?.rushing;
   return {
-    rushingYards: yds,
-    rushingTDs: v(sd.rushing, 'TD'),
-    yardsPerCarry: car > 0 ? +(yds / car).toFixed(1) : 0,
-    receptions: v(sd.receiving, 'REC'),
-    receivingYards: v(sd.receiving, 'YDS'),
-    receivingTDs: v(sd.receiving, 'TD'),
+    passingYards: v(pass, 'YDS'),
+    passingTDs: v(pass, 'TD'),
+    interceptions: v(pass, 'INT'),
+    completionPct: v(pass, 'PCT') || pct(v(pass, 'COMP'), v(pass, 'ATT')),
+    rushingYards: v(rush, 'YDS'),
+    rushingTDs: v(rush, 'TD'),
   };
 };
 
-const buildRecStats = (sd) => ({
-  receptions: v(sd.receiving, 'REC'),
-  receivingYards: v(sd.receiving, 'YDS'),
-  receivingTDs: v(sd.receiving, 'TD'),
-  targets: v(sd.receiving, 'TARGETS'),
-});
+const buildRBStats = (live, sd) => {
+  const rush = live?.rushing || sd?.rushing;
+  const recv = live?.receiving || sd?.receiving;
+  const car = v(rush, 'CAR');
+  const yds = v(rush, 'YDS');
+  return {
+    rushingYards: yds,
+    rushingTDs: v(rush, 'TD'),
+    yardsPerCarry: car > 0 ? +(yds / car).toFixed(1) : 0,
+    receptions: v(recv, 'REC'),
+    receivingYards: v(recv, 'YDS'),
+    receivingTDs: v(recv, 'TD'),
+  };
+};
 
-// ── main function ────────────────────────────────────────────────────────────
+const buildRecStats = (live, sd) => {
+  const recv = live?.receiving || sd?.receiving;
+  return {
+    receptions: v(recv, 'REC'),
+    receivingYards: v(recv, 'YDS'),
+    receivingTDs: v(recv, 'TD'),
+    targets: v(recv, 'TARGETS'),
+  };
+};
+
+// ── Main function ───────────────────────────────────────────────────────────
 
 /**
- * Attach static college stats to a player object.
- * Called once per player at init time — no async, no API calls.
- * Returns the extra fields to spread onto the player.
+ * Attach college stats to a player object.
+ * Merges CFBD live data (counting stats + PPA) with PFF static data
+ * (proprietary metrics). Called once per player at init time.
+ *
+ * NOTE: Call preloadCFBDStats() before using this function to enable
+ * live data. If not called or if CFBD is unavailable, falls back to
+ * static data only (same behaviour as before).
  */
 export const attachCollegeStats = (playerName, position, prospect) => {
+  const live = getCFBDStats(playerName)
+    || (prospect?.name && prospect.name !== playerName ? getCFBDStats(prospect.name) : null);
+
   const sd = getStaticCollegeStats(playerName)
     || (prospect?.name && prospect.name !== playerName ? getStaticCollegeStats(prospect.name) : null);
-  if (!sd) return {};
 
-  // Position-specific basic stats
+  if (!live && !sd) return {};
+
+  // Position-specific basic stats (CFBD live preferred, static fallback)
   let stats;
   switch (position) {
-    case 'QB': stats = buildQBStats(sd); break;
-    case 'RB': stats = buildRBStats(sd); break;
+    case 'QB': stats = buildQBStats(live, sd); break;
+    case 'RB': stats = buildRBStats(live, sd); break;
     case 'WR':
-    case 'TE': stats = buildRecStats(sd); break;
+    case 'TE': stats = buildRecStats(live, sd); break;
     default:   stats = {};
   }
 
   // Target share (WR / TE / RB)
-  const targets = v(sd.receiving, 'TARGETS');
-  const teamTgts = sd.teamTargetsTotal;
+  const recSource = live?.receiving || sd?.receiving;
+  const targets = v(recSource, 'TARGETS');
+  const teamTgts = sd?.teamTargetsTotal; // team totals still from CSV
   let targetShare = pct(targets, teamTgts);
 
-  // YPRR + route-based metrics
-  const yprr = sd.pffYprr ?? null;
-  const routesRun = sd.routesRun ?? null;
+  // PPA from CFBD (not available in PFF CSVs)
+  const ppa = live?.ppa?.avgPPA ?? sd?.ppa ?? null;
+
+  // PFF-only metrics (always from static CSV data)
+  const yprr = sd?.pffYprr ?? null;
+  const routesRun = sd?.routesRun ?? null;
   const tgtPerRR = routesRun > 0 && targets > 0 ? pct(targets, routesRun) : null;
   const firstDownTDPerRR = routesRun > 0
-    ? +(((sd.firstDowns || 0) + v(sd.receiving, 'TD')) / routesRun).toFixed(2)
+    ? +(((sd?.firstDowns || 0) + v(recSource, 'TD')) / routesRun).toFixed(2)
     : null;
 
   // Prospect advancedStats take priority (hand-curated)
   const adv = prospect?.advancedStats;
   if (adv?.targetShare != null) targetShare = adv.targetShare;
 
+  // Determine data source label
+  const dataSource = live ? 'cfbd' : 'static';
+
   return {
     stats,
     targetShare,
+    ppa,
     yprr: adv?.yprr ?? yprr,
     routesRun,
     tgtPerRR,
     firstDownTDPerRR,
-    recGrade: sd.recGrade ?? null,
-    // Receiving metrics (WR / TE)
-    yardsAfterCatch: sd.yardsAfterCatch ?? null,
-    yardsAfterCatchPerRec: sd.yardsAfterCatchPerRec ?? null,
-    slotRate: sd.slotRate ?? null,
-    wideRate: sd.wideRate ?? null,
-    inlineRate: sd.inlineRate ?? null,
-    contestedCatchRate: sd.contestedCatchRate ?? null,
-    contestedReceptions: sd.contestedReceptions ?? null,
-    // Rushing metrics (RB)
-    yardsAfterContact: sd.yardsAfterContact ?? null,
-    avoidedTackles: sd.avoidedTackles ?? null,
-    ycoPerAttempt: sd.ycoPerAttempt ?? null,
-    explosiveRuns: sd.explosiveRuns ?? null,
-    gamesPlayed: sd.gamesPlayed ?? null,
-    _dataSource: 'static',
+    recGrade: sd?.recGrade ?? null,
+    // Receiving metrics (WR / TE) — PFF-only
+    yardsAfterCatch: sd?.yardsAfterCatch ?? null,
+    yardsAfterCatchPerRec: sd?.yardsAfterCatchPerRec ?? null,
+    slotRate: sd?.slotRate ?? null,
+    wideRate: sd?.wideRate ?? null,
+    inlineRate: sd?.inlineRate ?? null,
+    contestedCatchRate: sd?.contestedCatchRate ?? null,
+    contestedReceptions: sd?.contestedReceptions ?? null,
+    // Rushing metrics (RB) — PFF-only
+    yardsAfterContact: sd?.yardsAfterContact ?? null,
+    avoidedTackles: sd?.avoidedTackles ?? null,
+    ycoPerAttempt: sd?.ycoPerAttempt ?? null,
+    explosiveRuns: sd?.explosiveRuns ?? null,
+    gamesPlayed: sd?.gamesPlayed ?? null,
+    _dataSource: dataSource,
   };
 };

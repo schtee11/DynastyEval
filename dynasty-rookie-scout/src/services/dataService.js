@@ -4,7 +4,7 @@
 // 3. All college stats attached from collegeStats2025.js (built from PFF CSVs)
 
 import { buildRookiePlayersFromSleeper } from './sleeperApi';
-import { attachCollegeStats } from './cfbdTransformer';
+import { attachCollegeStats, preloadCFBDStats } from './cfbdTransformer';
 import { getProspects, getProspectById as getRawProspectById } from './rookieProspects2026';
 import { applyFantasyCalcRankings } from './fantasyCalcRankings';
 import { getDraftPicks, getNameAliases } from './draftData';
@@ -13,7 +13,7 @@ import { getDraftPicks, getNameAliases } from './draftData';
 let playersCache = null;
 
 // Exposed to UI for data source status banner
-let dataSourceStatus = { sleeper: null, source: 'loading' };
+let dataSourceStatus = { sleeper: null, cfbd: null, source: 'loading' };
 
 export const getDataSourceStatus = () => dataSourceStatus;
 
@@ -100,6 +100,12 @@ export const getPlayers = async () => {
   if (playersCache) return playersCache;
 
   try {
+    // Step 0: Pre-load CFBD live stats (runs in parallel with Sleeper fetch)
+    const cfbdPromise = preloadCFBDStats(2025).catch((err) => {
+      console.warn('[DataService] CFBD preload failed:', err.message);
+      return null;
+    });
+
     // Step 1: Build rookie list from Sleeper (source of truth)
     let players;
     try {
@@ -122,7 +128,13 @@ export const getPlayers = async () => {
       dataSourceStatus.source = 'sleeper';
     }
 
-    // Step 1b: Overlay latest draft projections from draftData.js
+    // Step 1b: Wait for CFBD data to be ready before attaching stats
+    const cfbdData = await cfbdPromise;
+    dataSourceStatus.cfbd = cfbdData
+      ? { ok: true, count: Object.keys(cfbdData).length }
+      : { ok: false, reason: 'Unavailable or no API key' };
+
+    // Step 1c: Overlay latest draft projections from draftData.js
     players = applyDraftData(players);
 
     // Step 2: Apply live FantasyCalc dynasty rookie rankings

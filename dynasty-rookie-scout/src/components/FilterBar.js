@@ -32,13 +32,9 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
   const positions = ['ALL', 'QB', 'RB', 'WR', 'TE'];
   const perspectives = [
     { value: 'overall', label: 'Overall' },
-    { value: 'lateDown', label: 'Late Down' },
     { value: 'deepBall', label: 'Deep Ball' },
-    { value: 'screen', label: 'Screen' },
-    { value: 'redZone', label: 'Red-Zone' },
-    { value: 'press', label: 'vs. Press' },
-    { value: 'zone', label: 'vs. Zone' },
-    { value: 'single', label: 'vs. Single' },
+    { value: 'redZone', label: 'Red Zone' },
+    { value: 'lateDown', label: 'Late Down' },
   ];
   const draftDays = [
     { value: '', label: 'All Rounds' },

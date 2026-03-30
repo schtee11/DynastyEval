@@ -45,16 +45,31 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
   );
 };
 
-/**
- * Compute rank-based percentile for a value within a list of values.
- * Returns the % of values this one is greater than or equal to (0–100).
- */
+const SectionLabel = ({ children }) => (
+  <div style={{
+    fontFamily: "'Barlow Condensed', sans-serif",
+    fontWeight: 700,
+    fontSize: 11,
+    color: '#6b7280',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginTop: 14,
+    marginBottom: 4,
+    paddingBottom: 4,
+    borderBottom: '1px solid #2a2d3e',
+  }}>
+    {children}
+  </div>
+);
+
 const computePercentile = (playerValue, allValues) => {
   const valid = allValues.filter(v => v != null && !isNaN(v) && v > 0);
   if (valid.length === 0 || playerValue == null || isNaN(playerValue)) return 0;
   const below = valid.filter(v => v < playerValue).length;
   return Math.round((below / valid.length) * 100);
 };
+
+const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
 
 const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose }) => {
   const [summary, setSummary] = useState(null);
@@ -83,12 +98,10 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
     }
   };
 
-  // Trigger slide-in animation on mount
   useEffect(() => {
     requestAnimationFrame(() => setSlideIn(true));
   }, []);
 
-  // Reset AI summary when player changes
   useEffect(() => {
     setSummary(null);
     setLoadingSummary(false);
@@ -104,7 +117,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
   const getRadarData = () => {
     const s = player.stats || {};
     const pos = player.position;
-    // Get same-position peers for percentile calculations
     const peers = allPlayers.filter(p => p.position === pos);
 
     if (pos === 'QB') {
@@ -127,7 +139,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
       ];
     }
 
-    // WR — receiving perspective data
     if (pos === 'WR') {
       const pData = player.receivingByPerspective?.[modalPerspective];
       if (pData) {
@@ -136,31 +147,25 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
           { stat: 'Tgt/RR', value: computePercentile(pData.tgtPerRR, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.tgtPerRR)), fullMark: 100 },
           { stat: '1D+TD/RR', value: computePercentile(pData.firstDownTDPerRR, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.firstDownTDPerRR)), fullMark: 100 },
           { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
-          { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
           { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
           { stat: 'Rec YDs', value: computePercentile(pData.recYds || s.receivingYards, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.recYds || p.stats?.receivingYards)), fullMark: 100 },
         ];
       }
-      // WR fallback (no perspective data)
       return [
         { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
-        { stat: 'Tgt/RR', value: computePercentile(player.tgtPerRR, peers.map(p => p.tgtPerRR)), fullMark: 100 },
-        { stat: '1D+TD/RR', value: computePercentile(player.firstDownTDPerRR, peers.map(p => p.firstDownTDPerRR)), fullMark: 100 },
+        { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
         { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
         { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
-        { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
         { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       ];
     }
 
-    // TE — same advanced metrics as WR
+    // TE
     return [
       { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
-      { stat: 'Tgt/RR', value: computePercentile(player.tgtPerRR, peers.map(p => p.tgtPerRR)), fullMark: 100 },
-      { stat: '1D+TD/RR', value: computePercentile(player.firstDownTDPerRR, peers.map(p => p.firstDownTDPerRR)), fullMark: 100 },
+      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
       { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
       { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
-      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
       { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
     ];
   };
@@ -172,6 +177,11 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
   ] : [];
 
   const rankDelta = player.rank && !isUnranked ? (player.rank.oneQB - player.rank.superflex) : 0;
+
+  // Filter perspective tabs to simplified set
+  const availablePerspectives = player.receivingByPerspective
+    ? SIMPLIFIED_PERSPECTIVES.filter(k => player.receivingByPerspective[k])
+    : [];
 
   return (
     <div
@@ -227,7 +237,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               textAlign: 'center',
               letterSpacing: 1,
             }}>
-              🚨 INJURY HISTORY — {player.injuries.map(i => i.type).join(', ')} 🚨
+              INJURY HISTORY — {player.injuries.map(i => i.type).join(', ')}
             </div>
           )}
 
@@ -313,69 +323,64 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 color: '#f59e0b',
                 letterSpacing: 1,
                 textTransform: 'uppercase',
-                marginBottom: 12,
-              }}>{player.position === 'WR' && player.receivingByPerspective ? 'Receiving Breakdown' : 'Full Stat Breakdown'}</h3>
+                marginBottom: 8,
+              }}>Stats</h3>
 
-              {/* QB stats — from CFBD API */}
+              {/* QB stats */}
               {player.position === 'QB' && (
                 <>
+                  <SectionLabel>Passing</SectionLabel>
                   <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" />
                   <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} />
                   <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} />
                   <StatRow label="Interceptions" value={player.stats?.interceptions} />
+                  <SectionLabel>Rushing</SectionLabel>
                   <StatRow label="Rushing Yards" value={player.stats?.rushingYards} />
                   <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} />
                 </>
               )}
 
-              {/* RB stats — from CFBD API */}
+              {/* RB stats — trimmed from 10 to 7 */}
               {player.position === 'RB' && (
                 <>
+                  <SectionLabel>Production</SectionLabel>
                   <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} />
                   <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} />
                   <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} />
-                  <StatRow label="Yards After Contact" value={player.yardsAfterContact} />
-                  <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} />
-                  <StatRow label="Missed Tackles Forced" value={player.avoidedTackles} benchmark={40} />
-                  <StatRow label="10+ Yard Runs" value={player.explosiveRuns} benchmark={25} />
                   <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards} />
-                  <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
+                  <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} />
+                  <StatRow label="Missed Tackles Forced" value={player.avoidedTackles} benchmark={40} />
                 </>
               )}
 
-              {/* TE stats */}
+              {/* TE stats — trimmed from 17 to 9 */}
               {player.position === 'TE' && (
                 <>
-                  <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
-                  <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} />
-                  <StatRow label="Routes Run" value={player.routesRun} />
-                  <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} />
-                  <StatRow label="1D+TD/RR" value={player.firstDownTDPerRR} />
-                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                  <SectionLabel>Production</SectionLabel>
                   <StatRow label="Receptions" value={player.stats?.receptions} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
                   <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
-                  <StatRow label="Targets" value={player.stats?.targets} />
-                  <StatRow label="YAC" value={player.yardsAfterCatch} />
+                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                  <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
+                  <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} />
+                  <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} />
                   <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
-                  <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
-                  <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
-                  <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
-                  <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
-                  <StatRow label="Contested Receptions" value={player.contestedReceptions} />
+                  <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />
                 </>
               )}
 
-              {/* WR — perspective-based receiving data */}
+              {/* WR — perspective-based */}
               {player.position === 'WR' && (() => {
                 const pData = player.receivingByPerspective?.[modalPerspective];
                 const val = (key) => pData?.[key] ?? null;
                 return (
                   <>
-                    {player.receivingByPerspective && (
+                    {availablePerspectives.length > 0 && (
                       <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
-                        {Object.keys(player.receivingByPerspective).map(key => (
+                        {availablePerspectives.map(key => (
                           <button
                             key={key}
                             onClick={() => setModalPerspective(key)}
@@ -400,68 +405,60 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                     )}
                     {pData ? (
                       <>
-                        <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                         {modalPerspective === 'deepBall' ? (
                           <>
+                            <SectionLabel>Deep Ball</SectionLabel>
+                            <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                             <StatRow label="Targets" value={val('targets')} />
                             <StatRow label="Receptions" value={val('receptions')} />
-                            <StatRow label="% Career Rec Yards" value={val('pctCareerRecYds')} unit="%" />
-                            <StatRow label="% Career Rec TDs" value={val('pctCareerRecTDs')} unit="%" />
                             <StatRow label="ADoT" value={val('adot')} />
-                            <StatRow label="Contested Catch Rate" value={val('contestedCatchRate')} unit="%" />
+                            <StatRow label="Contested Catch %" value={val('contestedCatchRate')} unit="%" />
+                            <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                           </>
                         ) : modalPerspective === 'overall' ? (
                           <>
-                            <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                            <StatRow label="Routes Run" value={val('routesRun')} />
-                            <StatRow label="Targets" value={val('targets')} />
+                            <SectionLabel>Production</SectionLabel>
                             <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
                             <StatRow label="Receiving TDs" value={val('recTDs')} />
+                            <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                            <SectionLabel>Efficiency</SectionLabel>
+                            <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                             <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
                             <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
-                            <StatRow label="YAC" value={player.yardsAfterCatch} />
                             <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
-                            <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
-                            <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
-                            <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
-                            <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
-                            <StatRow label="Contested Receptions" value={player.contestedReceptions} />
+                            <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />
+                            <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                           </>
                         ) : (
                           <>
-                            <StatRow label="Routes Run" value={val('routesRun')} />
+                            <SectionLabel>{perspectiveLabels[modalPerspective] || modalPerspective}</SectionLabel>
+                            <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                             <StatRow label="Targets" value={val('targets')} />
-                            <StatRow label="% Career Rec Yards" value={val('pctCareerRecYds')} unit="%" />
-                            <StatRow label="% Career Rec TDs" value={val('pctCareerRecTDs')} unit="%" />
                             <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
                             <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
+                            <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                           </>
                         )}
-                        <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                       </>
                     ) : (
                       <>
-                        {/* WR fallback — CFBD stats */}
-                        <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
-                        <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
-                        <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                        <StatRow label="Receptions" value={player.stats?.receptions} />
+                        {/* WR fallback — no perspective data */}
+                        <SectionLabel>Production</SectionLabel>
                         <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
                         <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
-                        <StatRow label="Targets" value={player.stats?.targets} />
-                        <StatRow label="YAC" value={player.yardsAfterCatch} />
+                        <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                        <SectionLabel>Efficiency</SectionLabel>
+                        <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
+                        <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
                         <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
-                        <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
-                        <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
-                        <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
-                        <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
-                        <StatRow label="Contested Receptions" value={player.contestedReceptions} />
+                        <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />
                       </>
                     )}
                   </>
                 );
               })()}
 
+              {/* Breakout age — shown for non-perspective WRs and all other positions */}
               {!(player.position === 'WR' && player.receivingByPerspective) && (
               <div style={{ marginTop: 16 }}>
                     <StatRow label="Breakout Age" value={player.breakoutAge || 'N/A'} />
@@ -475,7 +472,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                       color: breakout.color,
                       fontWeight: 700,
                     }}>
-                      {breakout.emoji} {breakout.label} Breakout Profile
+                      {breakout.label} Breakout Profile
                     </div>
               </div>
               )}
@@ -591,7 +588,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 color: '#9ca3af',
                 marginTop: 4,
               }}>
-                📊 Rank Delta: {rankDelta > 0 ? `+${rankDelta} spots higher in SF` : rankDelta < 0 ? `${Math.abs(rankDelta)} spots higher in 1QB` : 'Same rank'}
+                Rank Delta: {rankDelta > 0 ? `+${rankDelta} spots higher in SF` : rankDelta < 0 ? `${Math.abs(rankDelta)} spots higher in 1QB` : 'Same rank'}
                 {player.position === 'QB' && rankDelta > 0 && (
                   <span style={{ color: '#f59e0b' }}> — QB premium in Superflex</span>
                 )}
@@ -617,7 +614,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 letterSpacing: 1,
                 textTransform: 'uppercase',
                 marginBottom: 12,
-              }}>🚨 Injury Timeline</h3>
+              }}>Injury Timeline</h3>
               {player.injuries.map((injury, i) => (
                 <div key={i} style={{
                   display: 'flex',
