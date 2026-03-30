@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk } from '../utils/helpers';
+import { positionColors, positionChartColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/anthropicApi';
 import { perspectiveLabels } from '../services/receivingData';
+import { useTheme } from '../ThemeContext';
 
 const StatRow = ({ label, value, benchmark, unit = '' }) => {
   const displayValue = value == null || value === '' ? 'N/A' : value;
@@ -14,20 +15,20 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '6px 0',
-      borderBottom: '1px solid #1e2133',
+      padding: '7px 0',
+      borderBottom: '1px solid var(--border-subtle)',
     }}>
       <span style={{
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily: "'Inter', sans-serif",
         fontSize: 12,
-        color: '#9ca3af',
+        color: 'var(--text-secondary)',
       }}>{label}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 700,
-          color: isNA ? '#6b7280' : isAbove ? '#22c55e' : '#f1f5f9',
+          color: isNA ? 'var(--text-tertiary)' : isAbove ? 'var(--success)' : 'var(--text-primary)',
         }}>
           {isNA ? 'N/A' : `${displayValue}${unit}`}
         </span>
@@ -35,7 +36,7 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 10,
-            color: '#6b7280',
+            color: 'var(--text-tertiary)',
           }}>
             (avg: {benchmark}{unit})
           </span>
@@ -47,16 +48,16 @@ const StatRow = ({ label, value, benchmark, unit = '' }) => {
 
 const SectionLabel = ({ children }) => (
   <div style={{
-    fontFamily: "'Barlow Condensed', sans-serif",
-    fontWeight: 700,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 600,
     fontSize: 11,
-    color: '#6b7280',
-    letterSpacing: 1.5,
+    color: 'var(--text-tertiary)',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginTop: 14,
     marginBottom: 4,
     paddingBottom: 4,
-    borderBottom: '1px solid #2a2d3e',
+    borderBottom: '1px solid var(--border-primary)',
   }}>
     {children}
   </div>
@@ -72,6 +73,7 @@ const computePercentile = (playerValue, allValues) => {
 const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
 
 const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose }) => {
+  const { theme } = useTheme();
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
@@ -81,6 +83,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
   const isTabletLandscape = winWidth >= 1025 && winWidth <= 1400;
 
   const posColor = positionColors[player.position] || positionColors.WR;
+  const chartColor = positionChartColors[player.position] || positionChartColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
@@ -92,7 +95,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
       setSummary(result);
     } catch (err) {
       console.error('[PlayerDetailModal] AI summary failed:', err);
-      setSummary('Failed to generate scouting summary. Check the browser console for details.');
+      setSummary('Failed to generate scouting summary.');
     } finally {
       setLoadingSummary(false);
     }
@@ -160,7 +163,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
       ];
     }
 
-    // TE
     return [
       { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
       { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
@@ -178,17 +180,21 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
 
   const rankDelta = player.rank && !isUnranked ? (player.rank.oneQB - player.rank.superflex) : 0;
 
-  // Filter perspective tabs to simplified set
   const availablePerspectives = player.receivingByPerspective
     ? SIMPLIFIED_PERSPECTIVES.filter(k => player.receivingByPerspective[k])
     : [];
+
+  // Chart theme colors
+  const gridColor = theme === 'dark' ? '#1e293b' : '#e2e8f0';
+  const labelColor = theme === 'dark' ? '#94a3b8' : '#64748b';
+  const tickColor = theme === 'dark' ? '#64748b' : '#94a3b8';
 
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        background: isDesktop ? 'none' : 'rgba(0,0,0,0.8)',
+        background: isDesktop ? 'none' : 'var(--bg-overlay)',
         zIndex: 200,
         transition: 'background 0.3s ease',
         pointerEvents: isDesktop ? 'none' : 'auto',
@@ -206,20 +212,20 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
           bottom: 0,
           width: isDesktop ? (isTabletLandscape ? 420 : 560) : '100%',
           maxWidth: '100vw',
-          background: '#0f1117',
-          borderLeft: isDesktop ? `2px solid ${posColor.border}44` : 'none',
+          background: 'var(--bg-modal)',
+          borderLeft: isDesktop ? `1px solid var(--border-primary)` : 'none',
           borderRadius: isDesktop ? 0 : 12,
           overflowY: 'auto',
           transform: slideIn ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: isDesktop ? '-8px 0 30px rgba(0,0,0,0.5)' : 'none',
+          boxShadow: isDesktop ? 'var(--shadow-panel)' : 'none',
         }}
       >
         {/* Header */}
         <div style={{
-          background: `linear-gradient(135deg, ${posColor.border}22, #1a1d2e)`,
+          background: 'var(--bg-secondary)',
           padding: isDesktop ? (isTabletLandscape ? '16px 18px' : '20px 24px') : '24px 28px',
-          borderBottom: '1px solid #2a2d3e',
+          borderBottom: '1px solid var(--border-primary)',
           position: 'relative',
         }}>
           {injured && (
@@ -228,16 +234,16 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               top: 0,
               left: 0,
               right: 0,
-              background: '#ef4444',
+              background: 'var(--danger)',
               color: '#fff',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 12,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 11,
               fontWeight: 700,
-              padding: '6px 16px',
+              padding: '5px 16px',
               textAlign: 'center',
-              letterSpacing: 1,
+              letterSpacing: 0.5,
             }}>
-              INJURY HISTORY — {player.injuries.map(i => i.type).join(', ')}
+              INJURY HISTORY \u2014 {player.injuries.map(i => i.type).join(', ')}
             </div>
           )}
 
@@ -246,32 +252,32 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               <h2 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 800,
-                fontSize: isDesktop ? 26 : 32,
-                color: '#f1f5f9',
+                fontSize: isDesktop ? 24 : 28,
+                color: 'var(--text-primary)',
                 margin: 0,
               }}>
                 {player.name}
               </h2>
               <span style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: 12,
                 color: posColor.text,
                 background: posColor.bg,
-                padding: '3px 10px',
-                borderRadius: 6,
+                padding: '2px 8px',
+                borderRadius: 'var(--radius-sm)',
               }}>
                 {player.position}
               </span>
               {player.draftPick && (
                 <span style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 12,
-                  fontWeight: 700,
+                  fontSize: 11,
+                  fontWeight: 600,
                   color: capital.color,
-                  background: `${capital.color}18`,
-                  padding: '3px 10px',
-                  borderRadius: 6,
+                  background: 'var(--bg-tertiary)',
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-sm)',
                 }}>
                   {player.draftTeam
                     ? `R${player.draftRound} #${player.draftPick} ${player.draftTeam}`
@@ -280,11 +286,11 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               )}
             </div>
             <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'Inter', sans-serif",
               fontSize: 12,
-              color: '#9ca3af',
+              color: 'var(--text-secondary)',
             }}>
-              {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' · ') || 'TBD'}
+              {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' \u00B7 ') || 'TBD'}
             </div>
           </div>
 
@@ -294,39 +300,38 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               position: 'absolute',
               top: injured ? 36 : 12,
               right: 12,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid #2a2d3e',
-              borderRadius: 6,
-              color: '#9ca3af',
-              fontSize: 18,
+              background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-secondary)',
+              fontSize: 16,
               cursor: 'pointer',
               lineHeight: 1,
               padding: '4px 10px',
               transition: 'color 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.color = '#f1f5f9'}
-            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
           >
-            ×
+            \u00D7
           </button>
         </div>
 
         {/* Body */}
         <div style={{ padding: isDesktop ? 20 : 28 }}>
           <div className="detail-modal-body-grid" style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr' : '1fr 1fr', gap: 24, marginBottom: 24 }}>
-            {/* Left: Stats */}
+            {/* Stats */}
             <div>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 8,
               }}>Stats</h3>
 
-              {/* QB stats */}
               {player.position === 'QB' && (
                 <>
                   <SectionLabel>Passing</SectionLabel>
@@ -340,7 +345,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 </>
               )}
 
-              {/* RB stats — trimmed from 10 to 7 */}
               {player.position === 'RB' && (
                 <>
                   <SectionLabel>Production</SectionLabel>
@@ -355,7 +359,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 </>
               )}
 
-              {/* TE stats — trimmed from 17 to 9 */}
               {player.position === 'TE' && (
                 <>
                   <SectionLabel>Production</SectionLabel>
@@ -372,7 +375,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 </>
               )}
 
-              {/* WR — perspective-based */}
               {player.position === 'WR' && (() => {
                 const pData = player.receivingByPerspective?.[modalPerspective];
                 const val = (key) => pData?.[key] ?? null;
@@ -385,16 +387,16 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                             key={key}
                             onClick={() => setModalPerspective(key)}
                             style={{
-                              fontFamily: "'JetBrains Mono', monospace",
+                              fontFamily: "'Inter', sans-serif",
                               fontSize: 11,
-                              fontWeight: modalPerspective === key ? 700 : 400,
+                              fontWeight: modalPerspective === key ? 600 : 400,
                               padding: '4px 10px',
                               border: '1px solid',
-                              borderColor: modalPerspective === key ? '#f59e0b' : '#2a2d3e',
-                              borderRadius: 4,
+                              borderColor: modalPerspective === key ? 'var(--accent)' : 'var(--border-primary)',
+                              borderRadius: 'var(--radius-sm)',
                               cursor: 'pointer',
-                              background: modalPerspective === key ? 'rgba(245,158,11,0.15)' : 'transparent',
-                              color: modalPerspective === key ? '#f59e0b' : '#9ca3af',
+                              background: modalPerspective === key ? 'var(--accent-light)' : 'transparent',
+                              color: modalPerspective === key ? 'var(--accent-text)' : 'var(--text-secondary)',
                               transition: 'all 0.15s',
                             }}
                           >
@@ -442,7 +444,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                       </>
                     ) : (
                       <>
-                        {/* WR fallback — no perspective data */}
                         <SectionLabel>Production</SectionLabel>
                         <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
                         <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
@@ -458,7 +459,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 );
               })()}
 
-              {/* Breakout age — shown for non-perspective WRs and all other positions */}
               {!(player.position === 'WR' && player.receivingByPerspective) && (
               <div style={{ marginTop: 16 }}>
                     <StatRow label="Breakout Age" value={player.breakoutAge || 'N/A'} />
@@ -467,10 +467,10 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                       alignItems: 'center',
                       gap: 6,
                       marginTop: 4,
-                      fontFamily: "'JetBrains Mono', monospace",
+                      fontFamily: "'Inter', sans-serif",
                       fontSize: 12,
                       color: breakout.color,
-                      fontWeight: 700,
+                      fontWeight: 600,
                     }}>
                       {breakout.label} Breakout Profile
                     </div>
@@ -478,20 +478,20 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               )}
             </div>
 
-            {/* Right: Radar chart */}
+            {/* Radar chart */}
             <div>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 12,
               }}>Player Profile</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <RadarChart data={getRadarData()}>
-                  <PolarGrid stroke="#2a2d3e" />
+                  <PolarGrid stroke={gridColor} />
                   <PolarAngleAxis
                     dataKey="stat"
                     tick={({ x, y, payload, index }) => {
@@ -499,119 +499,94 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                       const pct = Math.round(radarData[index]?.value || 0);
                       return (
                         <g>
-                          <text
-                            x={x}
-                            y={y}
-                            textAnchor="middle"
-                            fill="#9ca3af"
-                            fontSize={11}
-                            fontFamily="'JetBrains Mono', monospace"
-                          >
+                          <text x={x} y={y} textAnchor="middle" fill={labelColor} fontSize={11} fontFamily="'Inter', sans-serif">
                             {payload.value}
                           </text>
                           <text
-                            x={x}
-                            y={y + 13}
-                            textAnchor="middle"
-                            fill={pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#6b7280'}
-                            fontSize={10}
-                            fontWeight={700}
-                            fontFamily="'JetBrains Mono', monospace"
+                            x={x} y={y + 13} textAnchor="middle"
+                            fill={pct >= 75 ? '#16a34a' : pct >= 50 ? '#d97706' : tickColor}
+                            fontSize={10} fontWeight={700} fontFamily="'JetBrains Mono', monospace"
                           >
-                            {pct}th %ile
+                            {pct}th
                           </text>
                         </g>
                       );
                     }}
                   />
                   <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-                  <Radar
-                    name={player.name}
-                    dataKey="value"
-                    stroke={posColor.border}
-                    fill={posColor.border}
-                    fillOpacity={0.25}
-                    strokeWidth={2}
-                  />
+                  <Radar name={player.name} dataKey="value" stroke={chartColor} fill={chartColor} fillOpacity={0.2} strokeWidth={2} />
                 </RadarChart>
               </ResponsiveContainer>
 
-              {/* Unranked notice */}
               {isUnranked && (
                 <div style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'Inter', sans-serif",
                   fontSize: 12,
-                  color: '#6b7280',
-                  background: '#1a1d2e',
-                  borderRadius: 6,
+                  color: 'var(--text-tertiary)',
+                  background: 'var(--bg-tertiary)',
+                  borderRadius: 'var(--radius-sm)',
                   padding: '10px 14px',
                   marginTop: 16,
                   textAlign: 'center',
                 }}>
-                  UNR — Not ranked on FantasyCalc
+                  UNR \u2014 Not ranked on FantasyCalc
                 </div>
               )}
 
-              {/* 1QB vs SF comparison */}
               {rankComparisonData.length > 0 && (<>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginTop: 16,
                 marginBottom: 8,
-              }}>1QB vs Superflex Value</h3>
+              }}>1QB vs Superflex</h3>
               <ResponsiveContainer width="100%" height={120}>
                 <BarChart data={rankComparisonData} layout="vertical">
-                  <XAxis type="number" domain={[0, 40]} tick={{ fill: '#6b7280', fontSize: 10 }} reversed />
-                  <YAxis
-                    type="category"
-                    dataKey="format"
-                    tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}
-                    width={40}
-                  />
+                  <XAxis type="number" domain={[0, 40]} tick={{ fill: tickColor, fontSize: 10 }} reversed />
+                  <YAxis type="category" dataKey="format" tick={{ fill: labelColor, fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }} width={40} />
                   <Tooltip
-                    contentStyle={{ background: '#1a1d2e', border: '1px solid #2a2d3e', borderRadius: 6 }}
-                    labelStyle={{ color: '#f1f5f9', fontFamily: "'Barlow Condensed', sans-serif" }}
-                    itemStyle={{ color: '#9ca3af', fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}
+                    contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 6 }}
+                    labelStyle={{ color: 'var(--text-primary)' }}
+                    itemStyle={{ color: 'var(--text-secondary)', fontSize: 12 }}
                   />
-                  <Bar dataKey="rank" fill="#60a5fa" name="Rank" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="adp" fill="#a78bfa" name="ADP" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="rank" fill="#3b82f6" name="Rank" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="adp" fill="#7c3aed" name="ADP" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               <div style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 11,
-                color: '#9ca3af',
+                color: 'var(--text-tertiary)',
                 marginTop: 4,
               }}>
                 Rank Delta: {rankDelta > 0 ? `+${rankDelta} spots higher in SF` : rankDelta < 0 ? `${Math.abs(rankDelta)} spots higher in 1QB` : 'Same rank'}
                 {player.position === 'QB' && rankDelta > 0 && (
-                  <span style={{ color: '#f59e0b' }}> — QB premium in Superflex</span>
+                  <span style={{ color: 'var(--warning)' }}> \u2014 QB premium</span>
                 )}
               </div>
               </>)}
             </div>
           </div>
 
-          {/* Injury Timeline */}
+          {/* Injuries */}
           {injured && (
             <div style={{
-              background: 'rgba(239,68,68,0.08)',
-              border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: 8,
+              background: 'var(--danger-light)',
+              border: '1px solid var(--danger)',
+              borderRadius: 'var(--radius-md)',
               padding: 16,
               marginBottom: 24,
             }}>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#ef4444',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--danger)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 12,
               }}>Injury Timeline</h3>
@@ -621,30 +596,21 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                   alignItems: 'center',
                   gap: 12,
                   padding: '8px 0',
-                  borderBottom: i < player.injuries.length - 1 ? '1px solid rgba(239,68,68,0.15)' : 'none',
+                  borderBottom: i < player.injuries.length - 1 ? '1px solid var(--border-subtle)' : 'none',
                 }}>
                   <div style={{
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    background: injury.severity === 'severe' ? '#ef4444' : '#f59e0b',
+                    background: injury.severity === 'severe' ? 'var(--danger)' : 'var(--warning)',
                     flexShrink: 0,
                   }} />
                   <div>
-                    <div style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: '#f1f5f9',
-                    }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                       {injury.type}
                     </div>
-                    <div style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 11,
-                      color: '#9ca3af',
-                    }}>
-                      {injury.date} · {injury.severity} · {injury.gamesOut} games missed
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: 'var(--text-secondary)' }}>
+                      {injury.date} \u00B7 {injury.severity} \u00B7 {injury.gamesOut} games missed
                     </div>
                   </div>
                 </div>
@@ -658,23 +624,23 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 8,
               }}>Player Comps</h3>
               <div style={{ display: 'flex', gap: 8 }}>
                 {player.playerComps.map((comp, i) => (
                   <span key={i} style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontWeight: 600,
-                    fontSize: 14,
-                    color: '#e2e8f0',
-                    background: '#1e2133',
-                    border: '1px solid #2a2d3e',
+                    fontSize: 13,
+                    color: 'var(--text-primary)',
+                    background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-primary)',
                     padding: '6px 14px',
-                    borderRadius: 6,
+                    borderRadius: 'var(--radius-sm)',
                   }}>
                     {comp}
                   </span>
@@ -683,12 +649,12 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
             </div>
           )}
 
-          {/* AI Scouting Summary */}
+          {/* AI Summary */}
           <div style={{
-            background: '#151825',
-            borderRadius: 8,
+            background: 'var(--bg-secondary)',
+            borderRadius: 'var(--radius-md)',
             padding: 20,
-            border: '1px solid #2a2d3e',
+            border: '1px solid var(--border-primary)',
           }}>
             <div style={{
               display: 'flex',
@@ -699,9 +665,9 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 margin: 0,
               }}>AI Scouting Report</h3>
@@ -710,17 +676,15 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                   onClick={handleGenerateSummary}
                   disabled={loadingSummary}
                   style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    letterSpacing: 1,
-                    textTransform: 'uppercase',
-                    padding: '8px 16px',
-                    border: '1px solid #f59e0b',
-                    borderRadius: 6,
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    fontSize: 12,
+                    padding: '7px 14px',
+                    border: '1px solid var(--accent)',
+                    borderRadius: 'var(--radius-sm)',
                     cursor: loadingSummary ? 'wait' : 'pointer',
-                    background: loadingSummary ? '#2a2d3e' : 'rgba(245,158,11,0.15)',
-                    color: '#f59e0b',
+                    background: loadingSummary ? 'var(--bg-tertiary)' : 'var(--accent-light)',
+                    color: 'var(--accent-text)',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -730,23 +694,22 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
             </div>
             {summary ? (
               <p style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 13,
                 lineHeight: 1.7,
-                color: '#d1d5db',
+                color: 'var(--text-secondary)',
                 margin: 0,
               }}>
                 {summary}
               </p>
             ) : (
               <p style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 12,
-                color: '#6b7280',
+                color: 'var(--text-tertiary)',
                 margin: 0,
               }}>
-                Click "Generate Report" to get an AI-powered scouting analysis.
-                {!process.env.REACT_APP_ANTHROPIC_API_KEY && ' (Using fallback — set REACT_APP_ANTHROPIC_API_KEY for Claude-powered reports)'}
+                Click "Generate Report" for an AI scouting analysis.
               </p>
             )}
           </div>

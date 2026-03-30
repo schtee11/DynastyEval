@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
+import { ThemeProvider } from './ThemeContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -11,9 +12,9 @@ const LoadingFallback = () => (
   <div style={{
     textAlign: 'center',
     padding: 60,
-    fontFamily: "'Barlow Condensed', sans-serif",
-    fontSize: 18,
-    color: '#6b7280',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    color: 'var(--text-tertiary)',
   }}>
     Loading...
   </div>
@@ -23,18 +24,20 @@ function App() {
   const [activeTab, setActiveTab] = useState('scout');
 
   return (
-    <div className="app-root">
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main>
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingFallback />}>
-            {activeTab === 'scout' && <ScoutBoard />}
-            {activeTab === 'myboard' && <MyBoard />}
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-      <Footer />
-    </div>
+    <ThemeProvider>
+      <div className="app-root">
+        <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+        <main>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
+              {activeTab === 'scout' && <ScoutBoard />}
+              {activeTab === 'myboard' && <MyBoard />}
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+        <Footer />
+      </div>
+    </ThemeProvider>
   );
 }
 

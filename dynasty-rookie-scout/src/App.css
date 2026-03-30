@@ -1,4 +1,112 @@
-/* Dynasty Rookie Scout — War Room Theme */
+/* Dynasty Rookie Scout — Modern Clean Theme */
+
+/* ═══ CSS Custom Properties (Theme Variables) ═══ */
+
+:root {
+  /* Light theme (default) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f5f9;
+  --bg-input: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --bg-header: #ffffff;
+  --bg-modal: #ffffff;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+  --text-inverse: #ffffff;
+
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --border-subtle: #f1f5f9;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: rgba(37, 99, 235, 0.08);
+  --accent-text: #2563eb;
+
+  --success: #16a34a;
+  --success-light: rgba(22, 163, 74, 0.08);
+  --warning: #d97706;
+  --warning-light: rgba(217, 119, 6, 0.08);
+  --danger: #dc2626;
+  --danger-light: rgba(220, 38, 38, 0.06);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-panel: -4px 0 20px rgba(0, 0, 0, 0.08);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Position colors */
+  --pos-qb-bg: rgba(220, 38, 38, 0.08);
+  --pos-qb-text: #dc2626;
+  --pos-qb-border: #dc2626;
+  --pos-rb-bg: rgba(8, 145, 178, 0.08);
+  --pos-rb-text: #0891b2;
+  --pos-rb-border: #0891b2;
+  --pos-wr-bg: rgba(124, 58, 237, 0.08);
+  --pos-wr-text: #7c3aed;
+  --pos-wr-border: #7c3aed;
+  --pos-te-bg: rgba(5, 150, 105, 0.08);
+  --pos-te-text: #059669;
+  --pos-te-border: #059669;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0c0e14;
+  --bg-secondary: #12151e;
+  --bg-tertiary: #1a1e2c;
+  --bg-card: #151822;
+  --bg-hover: #1e2230;
+  --bg-input: #1a1e2c;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --bg-header: #12151e;
+  --bg-modal: #12151e;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-inverse: #0f172a;
+
+  --border-primary: #1e293b;
+  --border-secondary: #334155;
+  --border-subtle: #1e293b;
+
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-light: rgba(59, 130, 246, 0.12);
+  --accent-text: #60a5fa;
+
+  --success: #22c55e;
+  --success-light: rgba(34, 197, 94, 0.12);
+  --warning: #f59e0b;
+  --warning-light: rgba(245, 158, 11, 0.12);
+  --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-panel: -4px 0 20px rgba(0, 0, 0, 0.4);
+
+  --pos-qb-bg: rgba(220, 38, 38, 0.15);
+  --pos-qb-text: #f87171;
+  --pos-rb-bg: rgba(8, 145, 178, 0.15);
+  --pos-rb-text: #22d3ee;
+  --pos-wr-bg: rgba(124, 58, 237, 0.15);
+  --pos-wr-text: #a78bfa;
+  --pos-te-bg: rgba(5, 150, 105, 0.15);
+  --pos-te-text: #34d399;
+}
+
+/* ═══ Global Reset & Base ═══ */
 
 * {
   margin: 0;
@@ -7,14 +115,14 @@
 }
 
 body {
-  background: #0f1117;
-  color: #e2e8f0;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-/* Prevent Safari/iOS from auto-linking detected data (dates, addresses, etc.) */
 a[x-apple-data-detectors] {
   color: inherit !important;
   text-decoration: none !important;
@@ -26,68 +134,66 @@ a[x-apple-data-detectors] {
 
 .app-root {
   min-height: 100vh;
-  background: #0f1117;
+  background: var(--bg-primary);
+  transition: background 0.2s ease;
 }
 
-/* Scrollbar styling */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f1117;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2d3e;
-  border-radius: 4px;
+  background: var(--border-secondary);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3d4e;
+  background: var(--text-tertiary);
 }
 
-/* Injury pulse animation */
+/* Animations */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  50% { opacity: 0.6; }
 }
 
-/* Selection styling */
+/* Selection */
 ::selection {
-  background: rgba(245, 158, 11, 0.3);
-  color: #f1f5f9;
+  background: var(--accent-light);
+  color: var(--text-primary);
 }
 
-/* Focus styles */
-button:focus-visible {
-  outline: 2px solid #f59e0b;
-  outline-offset: 2px;
+[data-theme="dark"] ::selection {
+  background: rgba(59, 130, 246, 0.3);
 }
 
+/* Focus */
+button:focus-visible,
 select:focus-visible {
-  outline: 2px solid #f59e0b;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* ======= iPad LANDSCAPE / TABLET RESPONSIVE STYLES (1025px–1400px) ======= */
+/* ═══ Responsive: Tablet Landscape (1025px–1400px) ═══ */
 
 @media (min-width: 1025px) and (max-width: 1400px) {
-  /* Header — slightly tighter */
   .header-root {
     padding: 0 16px !important;
     height: 56px !important;
   }
   .header-logo {
-    font-size: 20px !important;
-    letter-spacing: 1.5px !important;
+    font-size: 18px !important;
   }
   .header-nav-btn {
     font-size: 13px !important;
-    padding: 7px 14px !important;
+    padding: 6px 14px !important;
   }
 
-  /* FilterBar — compact */
   .filter-bar-root {
     padding: 10px 12px !important;
     gap: 8px !important;
@@ -104,12 +210,10 @@ select:focus-visible {
     padding: 5px 10px !important;
   }
 
-  /* ScoutBoard — tighter padding */
   .scout-board-root {
     padding: 16px 10px !important;
   }
 
-  /* Table — hide Ranks column, tighten all cells */
   .player-table-root table th:last-child,
   .player-table-root table td:last-child {
     display: none !important;
@@ -117,21 +221,18 @@ select:focus-visible {
   .player-table-root table th,
   .player-table-root table td {
     padding: 8px 6px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
-  /* Rank column — narrower */
   .player-table-root table th:first-child,
   .player-table-root table td:first-child {
     width: 40px !important;
     padding: 8px 4px !important;
   }
-  /* School column — allow truncation */
   .player-table-root table td:nth-child(3) {
     max-width: 110px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* Key Stats — tighter gap, smaller labels */
   .key-stats-row {
     gap: 8px !important;
   }
@@ -139,7 +240,6 @@ select:focus-visible {
     padding: 8px 4px !important;
   }
 
-  /* Detail modal panel */
   .detail-modal-panel {
     width: 420px !important;
   }
@@ -147,7 +247,6 @@ select:focus-visible {
     grid-template-columns: 1fr !important;
   }
 
-  /* MyBoard */
   .myboard-root {
     padding: 16px 12px !important;
   }
@@ -156,24 +255,21 @@ select:focus-visible {
   }
 }
 
-/* ======= iPad PORTRAIT / TABLET RESPONSIVE STYLES (769px–1024px) ======= */
+/* ═══ Responsive: Tablet Portrait (769px–1024px) ═══ */
 
 @media (min-width: 769px) and (max-width: 1024px) {
-  /* Header — slightly tighter */
   .header-root {
     padding: 0 16px !important;
     height: 56px !important;
   }
   .header-logo {
-    font-size: 20px !important;
-    letter-spacing: 1.5px !important;
+    font-size: 18px !important;
   }
   .header-nav-btn {
     font-size: 13px !important;
-    padding: 7px 16px !important;
+    padding: 6px 16px !important;
   }
 
-  /* FilterBar — compact wrap-friendly layout */
   .filter-bar-root {
     padding: 10px 12px !important;
     gap: 8px !important;
@@ -190,13 +286,11 @@ select:focus-visible {
     padding: 5px 10px !important;
   }
 
-  /* ScoutBoard — tighter padding */
   .scout-board-root {
     padding: 16px 12px !important;
     margin-right: 0 !important;
   }
 
-  /* Table — hide Ranks column, tighten cells for iPad */
   .player-table-root table th:last-child,
   .player-table-root table td:last-child {
     display: none !important;
@@ -204,7 +298,7 @@ select:focus-visible {
   .player-table-root table th,
   .player-table-root table td {
     padding: 8px 6px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
   .player-table-root table th:first-child,
   .player-table-root table td:first-child {
@@ -223,7 +317,6 @@ select:focus-visible {
     padding: 8px 4px !important;
   }
 
-  /* Detail modal — full screen on portrait iPad */
   .detail-modal-panel {
     width: 100% !important;
     border-radius: 0 !important;
@@ -233,7 +326,6 @@ select:focus-visible {
     grid-template-columns: 1fr !important;
   }
 
-  /* MyBoard — tighter padding */
   .myboard-root {
     padding: 16px 12px !important;
   }
@@ -242,30 +334,24 @@ select:focus-visible {
   }
 }
 
-/* ======= MOBILE RESPONSIVE STYLES (≤768px) ======= */
+/* ═══ Responsive: Mobile (≤768px) ═══ */
 
-/* Header — mobile */
 @media (max-width: 768px) {
   .header-root {
     padding: 0 12px !important;
     height: 52px !important;
   }
   .header-logo {
-    font-size: 18px !important;
-    letter-spacing: 1px !important;
+    font-size: 16px !important;
   }
   .header-class-badge {
     display: none !important;
   }
   .header-nav-btn {
     font-size: 12px !important;
-    padding: 6px 12px !important;
-    letter-spacing: 1px !important;
+    padding: 5px 12px !important;
   }
-}
 
-/* FilterBar — mobile compact row */
-@media (max-width: 768px) {
   .filter-bar-root {
     padding: 8px 10px !important;
     gap: 8px !important;
@@ -287,32 +373,11 @@ select:focus-visible {
   .filter-bar-root .injury-toggle {
     font-size: 11px !important;
   }
-}
 
-/* ScoutBoard padding — mobile */
-@media (max-width: 768px) {
   .scout-board-root {
     padding: 12px 8px !important;
   }
-}
 
-/* Table view — mobile list rows at 480px */
-@media (max-width: 480px) {
-  .player-table-root table {
-    display: none !important;
-  }
-  .player-mobile-list {
-    display: block !important;
-  }
-}
-@media (min-width: 481px) {
-  .player-mobile-list {
-    display: none !important;
-  }
-}
-
-/* PlayerDetailModal — full-screen on mobile */
-@media (max-width: 768px) {
   .detail-modal-panel {
     width: 100% !important;
     border-radius: 0 !important;
@@ -321,10 +386,7 @@ select:focus-visible {
   .detail-modal-body-grid {
     grid-template-columns: 1fr !important;
   }
-}
 
-/* MyBoard — mobile */
-@media (max-width: 768px) {
   .myboard-root {
     padding: 12px 8px !important;
   }
@@ -342,15 +404,27 @@ select:focus-visible {
   .myboard-row-stats {
     display: none !important;
   }
-}
 
-/* Footer — mobile */
-@media (max-width: 768px) {
   .footer-root .footer-inner {
     flex-direction: column !important;
     text-align: center !important;
   }
   .footer-root .footer-right {
     text-align: center !important;
+  }
+}
+
+/* Mobile list toggle */
+@media (max-width: 480px) {
+  .player-table-root table {
+    display: none !important;
+  }
+  .player-mobile-list {
+    display: block !important;
+  }
+}
+@media (min-width: 481px) {
+  .player-mobile-list {
+    display: none !important;
   }
 }
