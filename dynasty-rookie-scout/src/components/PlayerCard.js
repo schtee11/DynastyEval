@@ -2,6 +2,8 @@ import React, { memo, useMemo } from 'react';
 import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator } from '../utils/helpers';
 import PercentileBar from './PercentileBar';
 import DraftBadge from './DraftBadge';
+import PlayerCompChip from './PlayerCompChip';
+import ValueDelta from './ValueDelta';
 
 const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers = [] }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
@@ -12,13 +14,6 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
 
   const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
   const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
-
-  // Signal dots
-  const signals = [];
-  if (player.breakoutAge && player.breakoutAge <= 20) signals.push({ color: 'var(--success)', title: 'Elite breakout age' });
-  if (player.draftPick && player.draftPick <= 32) signals.push({ color: 'var(--warning)', title: 'Day 1 capital' });
-  if (injured) signals.push({ color: 'var(--danger)', title: 'Injury history' });
-  if (rank1QB != null && rank1QB !== 'UNR' && rank1QB <= 12) signals.push({ color: 'var(--accent)', title: 'Top 12 rank' });
 
   return (
     <div
@@ -46,72 +41,74 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
       {/* Position color bar */}
       <div style={{ height: 3, background: posColor.border }} />
 
-      <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* Injury badge */}
+      {injured && (
+        <div style={{
+          position: 'absolute', top: 7, right: 8,
+          background: 'var(--danger)', color: '#fff',
+          fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 700,
+          padding: '2px 6px', borderRadius: 'var(--radius-sm)',
+        }}>
+          INJ
+        </div>
+      )}
+
+      <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Header: rank + name + pos badge */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-          {/* Rank */}
-          <div style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontWeight: 800,
-            fontSize: rank1QB === 'UNR' ? 11 : 22,
-            color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
-            lineHeight: 1,
-            minWidth: 28,
-          }}>
-            {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
+          {/* Rank + value delta */}
+          <div style={{ textAlign: 'center', minWidth: 26 }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontWeight: 800,
+              fontSize: rank1QB === 'UNR' ? 10 : 20,
+              color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              lineHeight: 1,
+            }}>
+              {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
+            </div>
+            <ValueDelta rank={rank1QB} adp={player.dynastyADP?.oneQB} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 800,
-              fontSize: 18,
-              color: 'var(--text-primary)',
-              lineHeight: 1.1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontWeight: 800, fontSize: 17,
+              color: 'var(--text-primary)', lineHeight: 1.1,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {player.name}
             </div>
             <div style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              marginTop: 2,
+              fontFamily: "'Inter', sans-serif", fontSize: 11,
+              color: 'var(--text-secondary)', marginTop: 1,
             }}>
               {[player.college, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' \u00B7 ') || 'TBD'}
             </div>
+            {/* Player comp */}
+            {player.playerComps && player.playerComps.length > 0 && (
+              <div style={{ marginTop: 3 }}>
+                <PlayerCompChip comps={player.playerComps} max={2} />
+              </div>
+            )}
           </div>
           <span style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 700,
-            fontSize: 11,
-            color: posColor.text,
-            background: posColor.bg,
-            padding: '3px 8px',
-            borderRadius: 'var(--radius-sm)',
-            flexShrink: 0,
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
+            color: posColor.text, background: posColor.bg,
+            padding: '2px 7px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
           }}>
             {player.position}
           </span>
         </div>
 
         {/* Draft badge */}
-        <div style={{ marginBottom: 12 }}>
-          <DraftBadge
-            round={player.draftRound}
-            pick={player.draftPick}
-            team={player.draftTeam}
-            isProjected={player.draftIsProjected}
-          />
+        <div style={{ marginBottom: 10 }}>
+          <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
         </div>
 
         {/* Stat percentile bars */}
         <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 5,
-          padding: '10px 0',
+          display: 'flex', flexDirection: 'column', gap: 4,
+          padding: '8px 0',
           borderTop: '1px solid var(--border-subtle)',
           borderBottom: '1px solid var(--border-subtle)',
           flex: 1,
@@ -120,57 +117,50 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
             const val = acc.getValue(player);
             const allVals = peers.map(p => acc.getValue(p));
             const fmt = typeof val === 'number' && val < 10 ? v => v.toFixed(2) : v => typeof v === 'number' && v >= 1000 ? v.toLocaleString() : v;
-            return (
-              <PercentileBar
-                key={i}
-                label={acc.label}
-                value={val}
-                allValues={allVals}
-                format={fmt}
-                showPct
-              />
-            );
+            return <PercentileBar key={i} label={acc.label} value={val} allValues={allVals} format={fmt} showPct />;
           })}
         </div>
 
-        {/* Footer: signal dots + SF rank */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingTop: 8,
-        }}>
-          {/* Signal dots */}
-          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            {signals.map((s, i) => (
-              <div key={i} title={s.title} style={{
-                width: 7,
-                height: 7,
-                borderRadius: '50%',
-                background: s.color,
-              }} />
-            ))}
-            {breakout.label !== 'N/A' && breakout.label !== 'Late' && (
+        {/* Footer — two rows */}
+        <div style={{ paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {/* Row 1: Breakout age + games played */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
+            {player.breakoutAge && breakout.label !== 'N/A' ? (
               <span style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 9,
-                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontSize: 9.5, fontWeight: 600,
                 color: breakout.color,
-                marginLeft: 2,
+                background: 'var(--bg-tertiary)',
+                padding: '1px 7px', borderRadius: 10,
               }}>
-                {breakout.label} breakout
+                {breakout.label} {player.breakoutAge}
+              </span>
+            ) : <span />}
+            {player.gamesPlayed && (
+              <span style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'var(--text-tertiary)',
+              }}>
+                {player.gamesPlayed} GP
               </span>
             )}
           </div>
-          {/* SF rank */}
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 10,
-            fontWeight: 600,
-            color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
-          }}>
-            SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
-          </span>
+          {/* Row 2: Ranks */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
+              color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
+            }}>
+              1QB {rank1QB === 'UNR' ? 'UNR' : `#${rank1QB}`}
+            </span>
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 8, color: 'var(--text-tertiary)',
+            }}>\u00B7</span>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
+              color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
+            }}>
+              SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
+            </span>
+          </div>
         </div>
       </div>
     </div>

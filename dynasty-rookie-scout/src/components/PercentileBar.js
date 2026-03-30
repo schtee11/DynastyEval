@@ -2,15 +2,15 @@ import React, { memo } from 'react';
 import { computePercentile, getPercentileColor } from '../utils/helpers';
 
 /**
- * Inline percentile bar — shows where a stat falls relative to peers.
+ * Inline percentile bar showing where a stat falls vs peers.
  *
  * Props:
  *   - label: stat label (e.g. "YPRR")
  *   - value: raw numeric value
  *   - allValues: array of peer values (for percentile calc)
- *   - format: optional formatter (e.g. v => v.toFixed(2))
- *   - compact: hide label (for tight spaces)
- *   - showPct: show percentile badge (default false — use in cards/modal)
+ *   - format: optional formatter
+ *   - compact: hide label (tight spaces)
+ *   - showPct: show percentile badge (cards/modal)
  */
 const PercentileBar = memo(({ label, value, allValues, format, compact = false, showPct = false }) => {
   const pct = computePercentile(value, allValues);
@@ -29,12 +29,12 @@ const PercentileBar = memo(({ label, value, allValues, format, compact = false, 
       {!compact && label && (
         <span style={{
           fontFamily: "'Inter', sans-serif",
-          fontSize: 8.5,
+          fontSize: 9,
           fontWeight: 600,
           color: 'var(--text-tertiary)',
           textTransform: 'uppercase',
           letterSpacing: 0.2,
-          width: 44,
+          width: 46,
           flexShrink: 0,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -47,9 +47,9 @@ const PercentileBar = memo(({ label, value, allValues, format, compact = false, 
       {/* Bar track */}
       <div style={{
         flex: 1,
-        height: 4,
+        height: 5,
         background: 'var(--bar-track)',
-        borderRadius: 2,
+        borderRadius: 3,
         overflow: 'hidden',
         minWidth: 36,
       }}>
@@ -57,14 +57,14 @@ const PercentileBar = memo(({ label, value, allValues, format, compact = false, 
           <div style={{
             width: `${Math.max(pct, 3)}%`,
             height: '100%',
-            background: color,
-            borderRadius: 2,
+            background: `linear-gradient(90deg, ${color}, ${color}dd)`,
+            borderRadius: 3,
             transition: 'width 0.3s ease',
           }} />
         )}
       </div>
 
-      {/* Value */}
+      {/* Value + optional percentile */}
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 10.5,
@@ -76,22 +76,18 @@ const PercentileBar = memo(({ label, value, allValues, format, compact = false, 
         whiteSpace: 'nowrap',
       }}>
         {displayValue}
+        {showPct && pct != null && (
+          <span style={{
+            fontSize: 8,
+            fontWeight: 700,
+            color: color,
+            verticalAlign: 'super',
+            marginLeft: 1,
+          }}>
+            {pct}
+          </span>
+        )}
       </span>
-
-      {/* Percentile badge — only when showPct is true */}
-      {showPct && pct != null && (
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 8.5,
-          fontWeight: 700,
-          color: color,
-          minWidth: 22,
-          textAlign: 'right',
-          flexShrink: 0,
-        }}>
-          {pct}th
-        </span>
-      )}
     </div>
   );
 });

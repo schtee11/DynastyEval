@@ -2,7 +2,7 @@ import React from 'react';
 import { positionColors } from '../utils/helpers';
 
 const Divider = () => (
-  <div style={{
+  <div className="filter-divider" style={{
     width: 1,
     height: 24,
     background: 'var(--border-primary)',
@@ -11,6 +11,13 @@ const Divider = () => (
 );
 
 const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPerspective }) => {
+  // Count active (non-default) filters
+  const activeCount = [
+    filters.position !== 'ALL',
+    filters.draftDay !== '',
+    filters.hideInjured,
+    filters.nameSearch,
+  ].filter(Boolean).length;
   const positions = ['ALL', 'QB', 'RB', 'WR', 'TE'];
   const perspectives = [
     { value: 'overall', label: 'Overall' },
@@ -74,6 +81,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
       alignItems: 'center',
       flexWrap: 'wrap',
       gap: 12,
+      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
       transition: 'background 0.2s ease, border-color 0.2s ease',
     }}>
       {/* Position filter */}
@@ -183,6 +191,30 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         />
         Hide Injured
       </label>
+
+      {/* Active filter count + clear */}
+      {activeCount > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
+            color: 'var(--accent-text)', background: 'var(--accent-light)',
+            padding: '2px 8px', borderRadius: 10,
+          }}>
+            {activeCount} active
+          </span>
+          <button
+            onClick={() => setFilters({ position: 'ALL', draftDay: '', hideInjured: false, breakoutMax: null, nameSearch: '' })}
+            style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 500,
+              color: 'var(--text-tertiary)', background: 'none', border: 'none',
+              cursor: 'pointer', padding: 0, textDecoration: 'underline',
+              textUnderlineOffset: 2,
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       {/* Spacer */}
       <div style={{ flex: 1 }} />

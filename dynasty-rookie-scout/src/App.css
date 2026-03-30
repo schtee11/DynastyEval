@@ -51,6 +51,12 @@
   --bar-avg: #d97706;
   --bar-poor: #cbd5e1;
 
+  /* Tier tinting (RGB for alpha composition) */
+  --tier-elite-tint: rgba(217, 119, 6, 0.04);
+  --tier-day1-tint: rgba(22, 163, 74, 0.03);
+  --tier-day2-tint: rgba(37, 99, 235, 0.02);
+  --tier-day3-tint: transparent;
+
   /* Position colors */
   --pos-qb-bg: rgba(220, 38, 38, 0.08);
   --pos-qb-text: #dc2626;
@@ -108,6 +114,11 @@
   --bar-good: #3b82f6;
   --bar-avg: #f59e0b;
   --bar-poor: #334155;
+
+  --tier-elite-tint: rgba(245, 158, 11, 0.06);
+  --tier-day1-tint: rgba(34, 197, 94, 0.04);
+  --tier-day2-tint: rgba(59, 130, 246, 0.03);
+  --tier-day3-tint: transparent;
 
   --pos-qb-bg: rgba(220, 38, 38, 0.15);
   --pos-qb-text: #f87171;
@@ -385,6 +396,9 @@ select:focus-visible {
   }
   .filter-bar-root .injury-toggle {
     font-size: 11px !important;
+  }
+  .filter-bar-root .filter-divider {
+    display: none !important;
   }
 
   .scout-board-root {
