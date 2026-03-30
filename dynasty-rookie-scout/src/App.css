@@ -44,6 +44,13 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
+  /* Percentile bar */
+  --bar-track: #e8ecf1;
+  --bar-elite: #16a34a;
+  --bar-good: #2563eb;
+  --bar-avg: #d97706;
+  --bar-poor: #cbd5e1;
+
   /* Position colors */
   --pos-qb-bg: rgba(220, 38, 38, 0.08);
   --pos-qb-text: #dc2626;
@@ -95,6 +102,12 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
   --shadow-panel: -4px 0 20px rgba(0, 0, 0, 0.4);
+
+  --bar-track: #1e293b;
+  --bar-elite: #22c55e;
+  --bar-good: #3b82f6;
+  --bar-avg: #f59e0b;
+  --bar-poor: #334155;
 
   --pos-qb-bg: rgba(220, 38, 38, 0.15);
   --pos-qb-text: #f87171;

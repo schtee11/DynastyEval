@@ -132,6 +132,7 @@ export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective =
 
 export const filterPlayers = (players, filters) => {
   return players.filter(player => {
+    if (filters.nameSearch && !player.name.toLowerCase().includes(filters.nameSearch.toLowerCase())) return false;
     if (filters.position && filters.position !== 'ALL' && player.position !== filters.position) return false;
     if (filters.draftDay) {
       const round = player.draftRound;
@@ -144,4 +145,64 @@ export const filterPlayers = (players, filters) => {
     if (filters.breakoutMax && player.breakoutAge && player.breakoutAge > filters.breakoutMax) return false;
     return true;
   });
+};
+
+// ── Percentile utilities ────────────────────────────────────────────────────
+
+/**
+ * Compute rank-based percentile for a value within a list of values.
+ * Returns 0–100 (what % of values this one is >= to).
+ */
+export const computePercentile = (playerValue, allValues) => {
+  const valid = allValues.filter(v => v != null && !isNaN(v) && v > 0);
+  if (valid.length === 0 || playerValue == null || isNaN(playerValue)) return null;
+  const below = valid.filter(v => v < playerValue).length;
+  return Math.round((below / valid.length) * 100);
+};
+
+/** Return a hex color for a percentile value (for charts/bars). */
+export const getPercentileColor = (pct) => {
+  if (pct == null) return '#94a3b8';
+  if (pct >= 75) return '#16a34a';
+  if (pct >= 50) return '#2563eb';
+  if (pct >= 25) return '#d97706';
+  return '#94a3b8';
+};
+
+/**
+ * Get the raw numeric stat accessors for a position.
+ * Returns array of { label, getValue(player, perspective) } objects.
+ * Used by PercentileBar to compute where a player sits in the class.
+ */
+export const getStatAccessors = (position, perspective = 'overall') => {
+  if (position === 'QB') {
+    return [
+      { label: 'COMP %', getValue: p => p.stats?.completionPct },
+      { label: 'PASS YDS', getValue: p => p.stats?.passingYards },
+      { label: 'RUSH YDS', getValue: p => p.stats?.rushingYards },
+    ];
+  }
+  if (position === 'RB') {
+    return [
+      { label: 'RUSH YDS', getValue: p => p.stats?.rushingYards },
+      { label: 'YPC', getValue: p => p.stats?.yardsPerCarry },
+      { label: 'RUSH TDS', getValue: p => p.stats?.rushingTDs },
+    ];
+  }
+  if (position === 'WR') {
+    const pData = (p) => p.receivingByPerspective?.[perspective];
+    return [
+      { label: 'YPRR', getValue: p => pData(p)?.yprr ?? p.yprr },
+      { label: '1D+TD/RR', getValue: p => pData(p)?.firstDownTDPerRR ?? p.firstDownTDPerRR },
+      { label: 'TGT/RR', getValue: p => pData(p)?.tgtPerRR ?? p.tgtPerRR },
+    ];
+  }
+  if (position === 'TE') {
+    return [
+      { label: 'YPRR', getValue: p => p.yprr },
+      { label: 'TGT SHARE', getValue: p => p.targetShare },
+      { label: 'REC YDS', getValue: p => p.stats?.receivingYards },
+    ];
+  }
+  return [];
 };
