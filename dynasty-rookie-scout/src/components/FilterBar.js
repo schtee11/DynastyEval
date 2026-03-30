@@ -1,4 +1,14 @@
 import React from 'react';
+import { positionColors } from '../utils/helpers';
+
+const Divider = () => (
+  <div style={{
+    width: 1,
+    height: 24,
+    background: 'var(--border-primary)',
+    flexShrink: 0,
+  }} />
+);
 
 const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPerspective }) => {
   const positions = ['ALL', 'QB', 'RB', 'WR', 'TE'];
@@ -17,16 +27,51 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
 
   const isWR = filters.position === 'WR';
 
+  // Use position-specific color when a position is selected
+  const getButtonStyle = (pos, isActive) => {
+    if (!isActive) {
+      return {
+        borderColor: 'var(--border-primary)',
+        background: 'transparent',
+        color: 'var(--text-secondary)',
+      };
+    }
+    if (pos === 'ALL') {
+      return {
+        borderColor: 'var(--accent)',
+        background: 'var(--accent-light)',
+        color: 'var(--accent-text)',
+      };
+    }
+    const pc = positionColors[pos];
+    return {
+      borderColor: pc.border,
+      background: pc.bg,
+      color: pc.text,
+    };
+  };
+
+  const selectStyle = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    background: 'var(--bg-input)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border-primary)',
+    borderRadius: 'var(--radius-sm)',
+    padding: '5px 10px',
+    cursor: 'pointer',
+    outline: 'none',
+  };
+
   return (
     <div className="filter-bar-root" style={{
       background: 'var(--bg-secondary)',
       border: '1px solid var(--border-primary)',
       borderRadius: 'var(--radius-md)',
       padding: '10px 16px',
-      marginBottom: 16,
+      marginBottom: 12,
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
       flexWrap: 'wrap',
       gap: 12,
       transition: 'background 0.2s ease, border-color 0.2s ease',
@@ -40,31 +85,36 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
           color: 'var(--text-tertiary)',
           letterSpacing: 0.5,
           textTransform: 'uppercase',
-          marginRight: 6,
+          marginRight: 4,
         }}>Pos</span>
-        {positions.map(pos => (
-          <button
-            key={pos}
-            className="pos-btn"
-            onClick={() => setFilters(f => ({ ...f, position: pos }))}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 600,
-              fontSize: 12,
-              padding: '5px 12px',
-              border: '1px solid',
-              borderColor: filters.position === pos ? 'var(--accent)' : 'var(--border-primary)',
-              borderRadius: 'var(--radius-sm)',
-              cursor: 'pointer',
-              background: filters.position === pos ? 'var(--accent-light)' : 'transparent',
-              color: filters.position === pos ? 'var(--accent-text)' : 'var(--text-secondary)',
-              transition: 'all 0.15s',
-            }}
-          >
-            {pos}
-          </button>
-        ))}
+        {positions.map(pos => {
+          const active = filters.position === pos;
+          const s = getButtonStyle(pos, active);
+          return (
+            <button
+              key={pos}
+              className="pos-btn"
+              onClick={() => setFilters(f => ({ ...f, position: pos }))}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: 12,
+                padding: '5px 12px',
+                border: `1px solid ${s.borderColor}`,
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                background: s.background,
+                color: s.color,
+                transition: 'all 0.15s',
+              }}
+            >
+              {pos}
+            </button>
+          );
+        })}
       </div>
+
+      <Divider />
 
       {/* Draft day */}
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -79,17 +129,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         <select
           value={filters.draftDay || ''}
           onChange={e => setFilters(f => ({ ...f, draftDay: e.target.value }))}
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 12,
-            background: 'var(--bg-input)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '5px 10px',
-            cursor: 'pointer',
-            outline: 'none',
-          }}
+          style={selectStyle}
         >
           {draftDays.map(d => (
             <option key={d.value} value={d.value}>{d.label}</option>
@@ -99,36 +139,31 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
 
       {/* Perspective — WR only */}
       {isWR && (
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span className="filter-label" style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 11,
-            fontWeight: 600,
-            color: 'var(--text-tertiary)',
-            letterSpacing: 0.5,
-            textTransform: 'uppercase',
-          }}>View</span>
-          <select
-            value={perspective}
-            onChange={e => setPerspective(e.target.value)}
-            style={{
+        <>
+          <Divider />
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span className="filter-label" style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: 12,
-              background: 'var(--bg-input)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '5px 10px',
-              cursor: 'pointer',
-              outline: 'none',
-            }}
-          >
-            {perspectives.map(p => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-        </div>
+              fontSize: 11,
+              fontWeight: 600,
+              color: 'var(--text-tertiary)',
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+            }}>View</span>
+            <select
+              value={perspective}
+              onChange={e => setPerspective(e.target.value)}
+              style={selectStyle}
+            >
+              {perspectives.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        </>
       )}
+
+      <Divider />
 
       {/* Hide Injured */}
       <label className="injury-toggle" style={{
@@ -149,6 +184,9 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         Hide Injured
       </label>
 
+      {/* Spacer */}
+      <div style={{ flex: 1 }} />
+
       {/* Sort */}
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         <span className="filter-label" style={{
@@ -162,17 +200,7 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value)}
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 12,
-            background: 'var(--bg-input)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '5px 10px',
-            cursor: 'pointer',
-            outline: 'none',
-          }}
+          style={selectStyle}
         >
           <option value="rank">Overall Rank</option>
           <option value="adp">ADP</option>
