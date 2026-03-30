@@ -127,6 +127,7 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
                 value={val}
                 allValues={allVals}
                 format={fmt}
+                showPct
               />
             );
           })}

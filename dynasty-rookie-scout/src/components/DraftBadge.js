@@ -59,21 +59,21 @@ const DraftBadge = memo(({ round, pick, team, isProjected }) => {
       {/* Round */}
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 700,
         color: s.text,
         background: s.bg,
-        padding: '3px 6px',
+        padding: '2px 5px',
       }}>
         R{round}
       </span>
       {/* Pick */}
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 10,
+        fontSize: 9.5,
         fontWeight: 500,
         color: 'var(--text-secondary)',
-        padding: '3px 6px',
+        padding: '2px 5px',
         borderLeft: `1px solid ${s.border}`,
         borderLeftStyle: isProjected ? 'dashed' : 'solid',
       }}>
@@ -83,10 +83,10 @@ const DraftBadge = memo(({ round, pick, team, isProjected }) => {
       {team && (
         <span style={{
           fontFamily: "'Inter', sans-serif",
-          fontSize: 9,
+          fontSize: 8.5,
           fontWeight: 600,
           color: 'var(--text-tertiary)',
-          padding: '3px 5px',
+          padding: '2px 4px',
           borderLeft: `1px solid ${s.border}`,
           borderLeftStyle: isProjected ? 'dashed' : 'solid',
           textTransform: 'uppercase',

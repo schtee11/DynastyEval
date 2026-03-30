@@ -78,16 +78,16 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
     >
       {/* Rank */}
       <td style={{
-        padding: '10px 8px',
+        padding: '6px 6px',
         textAlign: 'center',
-        width: 48,
+        width: 40,
         verticalAlign: 'middle',
       }}>
         {rank1QB === 'UNR' ? (
           <span style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 500,
-            fontSize: 10,
+            fontSize: 9,
             color: 'var(--text-tertiary)',
             letterSpacing: 0.5,
           }}>UNR</span>
@@ -96,14 +96,14 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: 26,
-            height: 26,
+            width: 22,
+            height: 22,
             borderRadius: '50%',
             background: 'var(--accent)',
             color: '#fff',
             fontFamily: "'JetBrains Mono', monospace",
             fontWeight: 700,
-            fontSize: 12,
+            fontSize: 11,
           }}>
             {rank1QB}
           </span>
@@ -111,7 +111,7 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontWeight: 600,
-            fontSize: 15,
+            fontSize: 14,
             color: 'var(--text-primary)',
           }}>
             {rank1QB ?? '\u2014'}
@@ -120,15 +120,15 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
       </td>
 
       {/* Player name + position */}
-      <td style={{ padding: '10px 12px', verticalAlign: 'middle' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 700,
-            fontSize: 10,
+            fontSize: 9,
             color: posColor.text,
             background: posColor.bg,
-            padding: '2px 6px',
+            padding: '2px 5px',
             borderRadius: 3,
             flexShrink: 0,
           }}>
@@ -136,8 +136,8 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
           </span>
           <span style={{
             fontFamily: "'Inter', sans-serif",
-            fontWeight: 700,
-            fontSize: 15,
+            fontWeight: 600,
+            fontSize: 13.5,
             color: 'var(--text-primary)',
             whiteSpace: 'nowrap',
           }}>
@@ -146,11 +146,11 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
           {injured && (
             <span style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: 9,
+              fontSize: 8,
               fontWeight: 700,
               color: '#fff',
               background: 'var(--danger)',
-              padding: '1px 5px',
+              padding: '1px 4px',
               borderRadius: 3,
               flexShrink: 0,
             }}>
@@ -162,7 +162,7 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
 
       {/* School */}
       <td style={{
-        padding: '10px 12px',
+        padding: '6px 8px',
         fontFamily: "'Inter', sans-serif",
         fontSize: 12,
         color: 'var(--text-secondary)',
@@ -174,7 +174,7 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
 
       {/* Draft */}
       <td style={{
-        padding: '10px 8px',
+        padding: '6px 6px',
         verticalAlign: 'middle',
       }}>
         <DraftBadge
@@ -187,11 +187,12 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
 
       {/* Key Stats — percentile bars */}
       <td style={{
-        padding: '8px 12px',
+        padding: '5px 8px',
         verticalAlign: 'middle',
-        minWidth: 240,
+        minWidth: 200,
+        maxWidth: 280,
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {accessors.map((acc, i) => {
             const val = acc.getValue(player);
             const allVals = peers.map(p => acc.getValue(p));
@@ -203,37 +204,35 @@ const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => 
                 value={val}
                 allValues={allVals}
                 format={fmt}
-                compact={false}
               />
             );
           })}
         </div>
       </td>
 
-      {/* Ranks */}
+      {/* Ranks — single line */}
       <td style={{
-        padding: '10px 8px',
+        padding: '6px 8px',
         verticalAlign: 'middle',
         whiteSpace: 'nowrap',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            fontWeight: 600,
-            color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
-          }}>
-            1QB {rank1QB === 'UNR' ? 'UNR' : `#${rank1QB}`}
-          </span>
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            fontWeight: 600,
-            color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
-          }}>
-            SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
-          </span>
-        </div>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          fontWeight: 600,
+          color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
+        }}>
+          {rank1QB === 'UNR' ? 'UNR' : `#${rank1QB}`}
+        </span>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          fontWeight: 600,
+          color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
+          marginLeft: 6,
+        }}>
+          SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
+        </span>
       </td>
     </tr>
   );
