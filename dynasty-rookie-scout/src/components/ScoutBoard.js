@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import PlayerCard from './PlayerCard';
-import PlayerTableView from './PlayerTableView';
+import PlayerListView from './PlayerListView';
 import FilterBar from './FilterBar';
 import SearchInput from './SearchInput';
 import { getPlayers, isUsingLiveData } from '../services/dataService';
@@ -55,197 +55,189 @@ const ScoutBoard = () => {
   }, []);
 
   const isDesktop = windowWidth >= 1025;
-  const isTabletLandscape = windowWidth >= 1025 && windowWidth <= 1400;
   const panelOpen = !!selectedPlayer && isDesktop;
-  const panelMargin = panelOpen ? (isTabletLandscape ? 430 : 570) : 0;
+
+  // CSS Grid split-view: 1fr when no panel, 1fr + panel when open
+  const gridColumns = panelOpen ? `1fr var(--panel-width)` : '1fr';
 
   return (
-    <div className="scout-board-root" style={{
-      padding: '20px 24px 20px 16px',
-      maxWidth: 1400,
-      margin: '0 auto',
-      marginRight: panelMargin,
-      transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-    }}>
-      <FilterBar
-        filters={filters}
-        setFilters={setFilters}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        perspective={perspective}
-        setPerspective={setPerspective}
-      />
-
-      {/* Search + count + view toggle bar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-        gap: 16,
-        flexWrap: 'wrap',
-      }}>
-        <SearchInput
-          value={filters.nameSearch}
-          onChange={(v) => setFilters(f => ({ ...f, nameSearch: v }))}
+    <div
+      className="scout-board-root"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: gridColumns,
+        minHeight: 'calc(100vh - var(--header-height))',
+        transition: 'grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+    >
+      {/* ── LIST AREA (always visible, fills available space) ── */}
+      <div className="scout-board-content" style={{ padding: '16px 24px', overflow: 'hidden' }}>
+        <FilterBar
+          filters={filters}
+          setFilters={setFilters}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          perspective={perspective}
+          setPerspective={setPerspective}
         />
 
-        <span style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 13,
-          color: 'var(--text-tertiary)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          flex: 1,
-          justifyContent: 'center',
-        }}>
-          <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospect{sorted.length !== 1 ? 's' : ''}
-          {isUsingLiveData() && (
-            <span style={{
-              background: 'var(--success-light)',
-              color: 'var(--success)',
-              padding: '2px 8px',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 10,
-              fontWeight: 600,
-            }}>
-              LIVE
-            </span>
-          )}
-        </span>
-
+        {/* Search + count + view toggle */}
         <div style={{
           display: 'flex',
-          gap: 0,
-          fontFamily: "'Inter', sans-serif",
-          fontWeight: 600,
-          fontSize: 12,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 10,
+          gap: 16,
+          flexWrap: 'wrap',
         }}>
-          {['table', 'cards'].map((mode) => (
+          <SearchInput
+            value={filters.nameSearch}
+            onChange={(v) => setFilters(f => ({ ...f, nameSearch: v }))}
+          />
+
+          <span style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13,
+            color: 'var(--text-tertiary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            flex: 1,
+            justifyContent: 'center',
+          }}>
+            <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospect{sorted.length !== 1 ? 's' : ''}
+            {isUsingLiveData() && (
+              <span style={{
+                background: 'var(--success-light)',
+                color: 'var(--success)',
+                padding: '2px 8px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: 10,
+                fontWeight: 600,
+              }}>
+                LIVE
+              </span>
+            )}
+          </span>
+
+          <div style={{
+            display: 'flex',
+            gap: 0,
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            fontSize: 12,
+          }}>
+            {['table', 'cards'].map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                style={{
+                  padding: '5px 14px',
+                  border: '1px solid var(--border-primary)',
+                  borderLeft: mode === 'cards' ? 'none' : undefined,
+                  borderRadius: mode === 'table' ? 'var(--radius-sm) 0 0 var(--radius-sm)' : '0 var(--radius-sm) var(--radius-sm) 0',
+                  background: viewMode === mode ? 'var(--accent)' : 'transparent',
+                  color: viewMode === mode ? '#fff' : 'var(--text-tertiary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {mode === 'table' ? 'List' : 'Cards'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading skeleton */}
+        {loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 16 }}>
+            {[...Array(8)].map((_, i) => (
+              <div key={i} style={{
+                height: 52,
+                background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-sm)',
+                animation: 'pulse 1.5s infinite',
+              }} />
+            ))}
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div style={{ textAlign: 'center', padding: 40, fontFamily: "'Inter', sans-serif" }}>
+            <div style={{ color: 'var(--danger)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+              Failed to load prospects
+            </div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16 }}>{error}</div>
             <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
+              onClick={() => window.location.reload()}
               style={{
-                padding: '5px 14px',
-                border: '1px solid var(--border-primary)',
-                borderLeft: mode === 'cards' ? 'none' : undefined,
-                borderRadius: mode === 'table' ? 'var(--radius-sm) 0 0 var(--radius-sm)' : '0 var(--radius-sm) var(--radius-sm) 0',
-                background: viewMode === mode ? 'var(--accent)' : 'transparent',
-                color: viewMode === mode ? '#fff' : 'var(--text-tertiary)',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                textTransform: 'capitalize',
+                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13,
+                padding: '8px 20px', border: '1px solid var(--accent)',
+                borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)',
+                color: 'var(--accent-text)', cursor: 'pointer',
               }}
             >
-              {mode}
+              Reload
             </button>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* List View */}
+        {!loading && viewMode === 'table' && sorted.length > 0 && (
+          <PlayerListView
+            players={sorted}
+            allPlayers={players}
+            perspective={perspective}
+            onPlayerClick={setSelectedPlayer}
+            showTiers={showTiers}
+          />
+        )}
+
+        {/* Card View */}
+        {!loading && viewMode === 'cards' && sorted.length > 0 && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: 12,
+          }}>
+            {sorted.map(player => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                perspective={perspective}
+                onClick={setSelectedPlayer}
+                allPlayers={players}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && sorted.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '60px 20px', fontFamily: "'Inter', sans-serif" }}>
+            <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginBottom: 12 }}>
+              No prospects match your filters
+            </div>
+            {filters.nameSearch && (
+              <button
+                onClick={() => setFilters(f => ({ ...f, nameSearch: '' }))}
+                style={{
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 12,
+                  padding: '6px 14px', border: '1px solid var(--border-primary)',
+                  borderRadius: 'var(--radius-sm)', background: 'transparent',
+                  color: 'var(--accent-text)', cursor: 'pointer',
+                }}
+              >
+                Clear search
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} style={{
-              height: 56,
-              background: 'var(--bg-secondary)',
-              borderRadius: 'var(--radius-sm)',
-              animation: 'pulse 1.5s infinite',
-            }} />
-          ))}
-        </div>
-      )}
-
-      {error && (
-        <div style={{
-          textAlign: 'center',
-          padding: 40,
-          fontFamily: "'Inter', sans-serif",
-        }}>
-          <div style={{ color: 'var(--danger)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
-            Failed to load prospects
-          </div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16 }}>
-            {error}
-          </div>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 600,
-              fontSize: 13,
-              padding: '8px 20px',
-              border: '1px solid var(--accent)',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--accent-light)',
-              color: 'var(--accent-text)',
-              cursor: 'pointer',
-            }}
-          >
-            Reload
-          </button>
-        </div>
-      )}
-
-      {!loading && viewMode === 'table' && sorted.length > 0 && (
-        <PlayerTableView
-          players={sorted}
-          allPlayers={players}
-          perspective={perspective}
-          onPlayerClick={setSelectedPlayer}
-          showTiers={showTiers}
-        />
-      )}
-
-      {!loading && viewMode === 'cards' && sorted.length > 0 && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 12,
-        }}>
-          {sorted.map(player => (
-            <PlayerCard
-              key={player.id}
-              player={player}
-              perspective={perspective}
-              onClick={setSelectedPlayer}
-              allPlayers={players}
-            />
-          ))}
-        </div>
-      )}
-
-      {!loading && sorted.length === 0 && (
-        <div style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          fontFamily: "'Inter', sans-serif",
-        }}>
-          <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginBottom: 12 }}>
-            No prospects match your filters
-          </div>
-          {filters.nameSearch && (
-            <button
-              onClick={() => setFilters(f => ({ ...f, nameSearch: '' }))}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-                fontSize: 12,
-                padding: '6px 14px',
-                border: '1px solid var(--border-primary)',
-                borderRadius: 'var(--radius-sm)',
-                background: 'transparent',
-                color: 'var(--accent-text)',
-                cursor: 'pointer',
-              }}
-            >
-              Clear search
-            </button>
-          )}
-        </div>
-      )}
-
+      {/* ── DETAIL PANEL (grid child on desktop, fixed overlay on mobile) ── */}
       {selectedPlayer && (
         <Suspense fallback={null}>
           <PlayerDetailModal
@@ -253,6 +245,7 @@ const ScoutBoard = () => {
             allPlayers={players}
             perspective={perspective}
             onClose={() => setSelectedPlayer(null)}
+            isDesktopPanel={isDesktop}
           />
         </Suspense>
       )}

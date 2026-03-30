@@ -51,11 +51,15 @@
   --bar-avg: #d97706;
   --bar-poor: #cbd5e1;
 
-  /* Tier tinting (RGB for alpha composition) */
+  /* Tier tinting */
   --tier-elite-tint: rgba(217, 119, 6, 0.04);
   --tier-day1-tint: rgba(22, 163, 74, 0.03);
   --tier-day2-tint: rgba(37, 99, 235, 0.02);
   --tier-day3-tint: transparent;
+
+  /* Layout */
+  --header-height: 56px;
+  --panel-width: 560px;
 
   /* Position colors */
   --pos-qb-bg: rgba(220, 38, 38, 0.08);
@@ -163,218 +167,95 @@ a[x-apple-data-detectors] {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-secondary); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-secondary);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
-}
-
-/* Animations */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
 
-/* Selection */
-::selection {
-  background: var(--accent-light);
-  color: var(--text-primary);
-}
+::selection { background: var(--accent-light); color: var(--text-primary); }
+[data-theme="dark"] ::selection { background: rgba(59, 130, 246, 0.3); }
 
-[data-theme="dark"] ::selection {
-  background: rgba(59, 130, 246, 0.3);
-}
-
-/* Focus */
-button:focus-visible,
-select:focus-visible {
+button:focus-visible, select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ═══ Layout: Sticky list header ═══ */
+
+.player-list-header {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 10;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
+  transition: background 0.2s ease;
 }
 
 /* ═══ Responsive: Tablet Landscape (1025px–1400px) ═══ */
 
 @media (min-width: 1025px) and (max-width: 1400px) {
-  .header-root {
-    padding: 0 16px !important;
-    height: 56px !important;
-  }
-  .header-logo {
-    font-size: 18px !important;
-  }
-  .header-nav-btn {
-    font-size: 13px !important;
-    padding: 6px 14px !important;
-  }
+  :root { --panel-width: 420px; }
 
-  .filter-bar-root {
-    padding: 10px 12px !important;
-    gap: 8px !important;
-  }
-  .filter-bar-root .filter-label {
-    font-size: 10px !important;
-  }
-  .filter-bar-root .pos-btn {
-    padding: 5px 12px !important;
-    font-size: 12px !important;
-  }
-  .filter-bar-root select {
-    font-size: 11px !important;
-    padding: 5px 10px !important;
-  }
+  .header-root { padding: 0 16px !important; height: 56px !important; }
+  .header-logo { font-size: 18px !important; }
+  .header-nav-btn { font-size: 13px !important; padding: 6px 14px !important; }
 
-  .scout-board-root {
-    padding: 16px 10px !important;
-  }
+  .filter-bar-root { padding: 10px 12px !important; gap: 8px !important; }
+  .filter-bar-root .filter-label { font-size: 10px !important; }
+  .filter-bar-root .pos-btn { padding: 5px 12px !important; font-size: 12px !important; }
+  .filter-bar-root select { font-size: 11px !important; padding: 5px 10px !important; }
 
-  .player-table-root table th:last-child,
-  .player-table-root table td:last-child {
-    display: none !important;
-  }
-  .player-table-root table th,
-  .player-table-root table td {
-    padding: 8px 6px !important;
-    font-size: 12px !important;
-  }
-  .player-table-root table th:first-child,
-  .player-table-root table td:first-child {
-    width: 40px !important;
-    padding: 8px 4px !important;
-  }
-  .player-table-root table td:nth-child(3) {
-    max-width: 110px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .key-stats-row {
-    gap: 8px !important;
-  }
-  .key-stats-cell {
-    padding: 8px 4px !important;
-  }
+  .scout-board-content { padding: 16px 12px !important; }
 
-  .detail-modal-panel {
-    width: 420px !important;
-  }
-  .detail-modal-body-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .player-row-card .row-stats { width: 160px !important; }
+  .player-row-card .row-ranks { width: 60px !important; }
 
-  .myboard-root {
-    padding: 16px 12px !important;
-  }
-  .myboard-row-stats {
-    gap: 10px !important;
-  }
+  .detail-modal-body-grid { grid-template-columns: 1fr !important; }
+
+  .myboard-root { padding: 16px 12px !important; }
+  .myboard-row-stats { gap: 10px !important; }
 }
 
 /* ═══ Responsive: Tablet Portrait (769px–1024px) ═══ */
 
 @media (min-width: 769px) and (max-width: 1024px) {
-  .header-root {
-    padding: 0 16px !important;
-    height: 56px !important;
-  }
-  .header-logo {
-    font-size: 18px !important;
-  }
-  .header-nav-btn {
-    font-size: 13px !important;
-    padding: 6px 16px !important;
-  }
+  .header-root { padding: 0 16px !important; height: 56px !important; }
+  .header-logo { font-size: 18px !important; }
+  .header-nav-btn { font-size: 13px !important; padding: 6px 16px !important; }
 
-  .filter-bar-root {
-    padding: 10px 12px !important;
-    gap: 8px !important;
-  }
-  .filter-bar-root .filter-label {
-    font-size: 10px !important;
-  }
-  .filter-bar-root .pos-btn {
-    padding: 5px 12px !important;
-    font-size: 12px !important;
-  }
-  .filter-bar-root select {
-    font-size: 11px !important;
-    padding: 5px 10px !important;
-  }
+  .filter-bar-root { padding: 10px 12px !important; gap: 8px !important; }
+  .filter-bar-root .filter-label { font-size: 10px !important; }
+  .filter-bar-root .pos-btn { padding: 5px 12px !important; font-size: 12px !important; }
+  .filter-bar-root select { font-size: 11px !important; padding: 5px 10px !important; }
 
-  .scout-board-root {
-    padding: 16px 12px !important;
-    margin-right: 0 !important;
-  }
+  .scout-board-content { padding: 16px 12px !important; }
 
-  .player-table-root table th:last-child,
-  .player-table-root table td:last-child {
-    display: none !important;
-  }
-  .player-table-root table th,
-  .player-table-root table td {
-    padding: 8px 6px !important;
-    font-size: 12px !important;
-  }
-  .player-table-root table th:first-child,
-  .player-table-root table td:first-child {
-    width: 36px !important;
-    padding: 8px 4px !important;
-  }
-  .player-table-root table td:nth-child(3) {
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .key-stats-row {
-    gap: 6px !important;
-  }
-  .key-stats-cell {
-    padding: 8px 4px !important;
-  }
+  .player-row-card .row-stats { width: 140px !important; }
+  .player-row-card .row-ranks { width: 50px !important; }
 
   .detail-modal-panel {
     width: 100% !important;
     border-radius: 0 !important;
     border-left: none !important;
   }
-  .detail-modal-body-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .detail-modal-body-grid { grid-template-columns: 1fr !important; }
 
-  .myboard-root {
-    padding: 16px 12px !important;
-  }
-  .myboard-row-stats {
-    gap: 10px !important;
-  }
+  .myboard-root { padding: 16px 12px !important; }
+  .myboard-row-stats { gap: 10px !important; }
 }
 
 /* ═══ Responsive: Mobile (≤768px) ═══ */
 
 @media (max-width: 768px) {
-  .header-root {
-    padding: 0 12px !important;
-    height: 52px !important;
-  }
-  .header-logo {
-    font-size: 16px !important;
-  }
-  .header-class-badge {
-    display: none !important;
-  }
-  .header-nav-btn {
-    font-size: 12px !important;
-    padding: 5px 12px !important;
-  }
+  .header-root { padding: 0 12px !important; height: 52px !important; }
+  .header-logo { font-size: 16px !important; }
+  .header-class-badge { display: none !important; }
+  .header-nav-btn { font-size: 12px !important; padding: 5px 12px !important; }
 
   .filter-bar-root {
     padding: 8px 10px !important;
@@ -383,75 +264,30 @@ select:focus-visible {
     top: 52px;
     z-index: 90;
   }
-  .filter-bar-root .filter-label {
-    display: none !important;
-  }
-  .filter-bar-root .pos-btn {
-    padding: 5px 10px !important;
-    font-size: 12px !important;
-  }
-  .filter-bar-root select {
-    font-size: 11px !important;
-    padding: 5px 8px !important;
-  }
-  .filter-bar-root .injury-toggle {
-    font-size: 11px !important;
-  }
-  .filter-bar-root .filter-divider {
-    display: none !important;
-  }
+  .filter-bar-root .filter-label { display: none !important; }
+  .filter-bar-root .pos-btn { padding: 5px 10px !important; font-size: 12px !important; }
+  .filter-bar-root select { font-size: 11px !important; padding: 5px 8px !important; }
+  .filter-bar-root .injury-toggle { font-size: 11px !important; }
+  .filter-bar-root .filter-divider { display: none !important; }
 
-  .scout-board-root {
-    padding: 12px 8px !important;
-  }
+  .scout-board-content { padding: 12px 8px !important; }
+
+  .player-row-card .row-stats { display: none !important; }
+  .player-row-card .row-ranks { width: auto !important; }
 
   .detail-modal-panel {
     width: 100% !important;
     border-radius: 0 !important;
     border-left: none !important;
   }
-  .detail-modal-body-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .detail-modal-body-grid { grid-template-columns: 1fr !important; }
 
-  .myboard-root {
-    padding: 12px 8px !important;
-  }
-  .myboard-tab-bar {
-    flex-direction: column !important;
-    gap: 8px !important;
-  }
-  .myboard-tab-bar .myboard-tabs {
-    width: 100%;
-    display: flex;
-  }
-  .myboard-tab-bar .myboard-tabs button {
-    flex: 1;
-  }
-  .myboard-row-stats {
-    display: none !important;
-  }
+  .myboard-root { padding: 12px 8px !important; }
+  .myboard-tab-bar { flex-direction: column !important; gap: 8px !important; }
+  .myboard-tab-bar .myboard-tabs { width: 100%; display: flex; }
+  .myboard-tab-bar .myboard-tabs button { flex: 1; }
+  .myboard-row-stats { display: none !important; }
 
-  .footer-root .footer-inner {
-    flex-direction: column !important;
-    text-align: center !important;
-  }
-  .footer-root .footer-right {
-    text-align: center !important;
-  }
-}
-
-/* Mobile list toggle */
-@media (max-width: 480px) {
-  .player-table-root table {
-    display: none !important;
-  }
-  .player-mobile-list {
-    display: block !important;
-  }
-}
-@media (min-width: 481px) {
-  .player-mobile-list {
-    display: none !important;
-  }
+  .footer-root .footer-inner { flex-direction: column !important; text-align: center !important; }
+  .footer-root .footer-right { text-align: center !important; }
 }

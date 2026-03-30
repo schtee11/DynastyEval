@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator } from '../utils/helpers';
+import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator, computeHeadlineScore, getPercentileColor } from '../utils/helpers';
 import PercentileBar from './PercentileBar';
 import DraftBadge from './DraftBadge';
 import PlayerCompChip from './PlayerCompChip';
@@ -14,6 +14,8 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
 
   const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
   const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
+  const headlineScore = useMemo(() => computeHeadlineScore(player, allPlayers), [player, allPlayers]);
+  const scoreColor = getPercentileColor(headlineScore);
 
   return (
     <div
@@ -105,13 +107,47 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
           <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
         </div>
 
-        {/* Stat percentile bars */}
+        {/* Headline score + Stat percentile bars */}
         <div style={{
           display: 'flex', flexDirection: 'column', gap: 4,
           padding: '8px 0',
           borderTop: '1px solid var(--border-subtle)',
           borderBottom: '1px solid var(--border-subtle)',
           flex: 1,
+        }}>
+          {/* Headline score */}
+          {headlineScore != null && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 22, fontWeight: 800,
+                color: scoreColor, lineHeight: 1,
+              }}>
+                {headlineScore}
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  height: 4, borderRadius: 2,
+                  background: 'var(--bar-track)', overflow: 'hidden',
+                }}>
+                  <div style={{
+                    width: `${headlineScore}%`, height: '100%',
+                    background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}cc)`,
+                    borderRadius: 2,
+                  }} />
+                </div>
+                <span style={{
+                  fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 600,
+                  color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.3,
+                }}>
+                  Prospect Score
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: 4,
         }}>
           {accessors.map((acc, i) => {
             const val = acc.getValue(player);
