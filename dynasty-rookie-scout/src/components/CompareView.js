@@ -46,7 +46,6 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
       { label: 'Pass TDs', getValue: p => p.stats?.passingTDs },
       { label: 'Rush YDs', getValue: p => p.stats?.rushingYards },
       { label: 'Y/A', getValue: p => p.stats?.yardsPerAttempt },
-      { label: 'PFF Grade', getValue: p => p.stats?.pffPassGrade },
       { label: 'BTT Rate', getValue: p => p.stats?.bttRate, unit: '%' },
       { label: 'TWP Rate', getValue: p => p.stats?.twpRate, unit: '%', invert: true },
       { label: 'QB Rating', getValue: p => p.stats?.qbRating },
@@ -58,7 +57,6 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
       { label: 'Receptions', getValue: p => p.stats?.receptions },
       { label: 'Rec YDs', getValue: p => p.stats?.receivingYards },
       { label: 'Elusive Rating', getValue: p => p.stats?.elusiveRating },
-      { label: 'PFF Grade', getValue: p => p.stats?.pffGrade },
     ];
     if (position === 'WR') return [
       { label: 'YPRR', getValue: p => p.yprr || p.advancedStats?.yprr },
@@ -66,14 +64,13 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
       { label: 'Rec YDs', getValue: p => p.stats?.receivingYards },
       { label: 'YAC/Rec', getValue: p => p.yardsAfterCatchPerRec },
       { label: 'Contested %', getValue: p => p.contestedCatchRate, unit: '%' },
-      { label: 'Rec Grade', getValue: p => p.recGrade },
     ];
     if (position === 'TE') return [
       { label: 'YPRR', getValue: p => p.yprr || p.advancedStats?.yprr },
       { label: 'Rec YDs', getValue: p => p.stats?.receivingYards },
       { label: 'Rec TDs', getValue: p => p.stats?.receivingTDs },
       { label: 'Target Share', getValue: p => p.targetShare || p.advancedStats?.targetShare, unit: '%' },
-      { label: 'Rec Grade', getValue: p => p.recGrade },
+      { label: 'Contested %', getValue: p => p.contestedCatchRate, unit: '%' },
     ];
     return [];
   };

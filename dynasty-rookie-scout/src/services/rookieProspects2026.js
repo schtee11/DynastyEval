@@ -28,7 +28,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 1.45, targetShare: 16.7 },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
-    stats: { rushingYards: 1372, rushingTDs: 18, yardsPerCarry: 6.9, receptions: 27, receivingYards: 280, receivingTDs: 0, epa: 0.25, pffGrade: 93.1, pffRunGrade: 93.7, elusiveRating: 127.5 },
   },
   {
     id: 2,
@@ -49,7 +48,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
-    stats: { passingYards: 3536, passingTDs: 41, INT: 6, completionPct: 71.5, rushingYards: 210, rushingTDs: 3, yardsPerAttempt: 9.3, pffPassGrade: 90.7, pffOffGrade: 91.6, bttRate: 5.7, twpRate: 2.6, adot: 9.8, accuracy: 79.0, qbRating: 129.4, sacks: 25, scrambles: 34, gamesPlayed: 16, epa: 0.30 },
   },
   {
     id: 3,
@@ -151,7 +149,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Penn State", year: 2025 },
-    stats: { rushingYards: 547, rushingTDs: 13, yardsPerCarry: 4.4, receptions: 24, receivingYards: 219, receivingTDs: 0, epa: 0.18, pffGrade: 77.6, pffRunGrade: 76.9, elusiveRating: 47.3 },
   },
   {
     id: 8,
@@ -192,7 +189,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Arkansas", year: 2025 },
-    stats: { rushingYards: 1066, rushingTDs: 8, yardsPerCarry: 6.4, receptions: 28, receivingYards: 226, receivingTDs: 0, epa: 0.14, pffGrade: 78.3, pffRunGrade: 84.3, elusiveRating: 73.2 },
   },
   {
     id: 10,
@@ -212,7 +208,6 @@ const prospects2026Raw = [
     rank: { oneQB: 16, superflex: 3 },
     injuries: [],
     advancedStats: null,
-    stats: { passingYards: 3561, passingTDs: 28, INT: 5, completionPct: 64.6, rushingYards: 485, rushingTDs: 5, yardsPerAttempt: 7.5, pffPassGrade: 81.4, pffOffGrade: 83.1, bttRate: 6.0, twpRate: 3.0, adot: 8.6, accuracy: 75.3, qbRating: 102.5, sacks: 30, scrambles: 33, gamesPlayed: 15, epa: 0.27 },
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
   {
@@ -254,7 +249,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Washington", year: 2025 },
-    stats: { rushingYards: 758, rushingTDs: 15, yardsPerCarry: 4.8, receptions: 31, receivingYards: 346, receivingTDs: 0, epa: 0.15, pffGrade: 82.1, pffRunGrade: 83.8, elusiveRating: 85.7 },
   },
   {
     id: 13,
@@ -295,7 +289,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Notre Dame", year: 2025 },
-    stats: { rushingYards: 674, rushingTDs: 11, yardsPerCarry: 6.0, receptions: 6, receivingYards: 87, receivingTDs: 0, epa: 0.12, pffGrade: 78.6, pffRunGrade: 79.9, elusiveRating: 118.6 },
   },
   {
     id: 15,
@@ -316,7 +309,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Nebraska", year: 2025 },
-    stats: { rushingYards: 1450, rushingTDs: 12, yardsPerCarry: 5.8, receptions: 46, receivingYards: 370, receivingTDs: 0, epa: 0.16, pffGrade: 85.6, pffRunGrade: 88.1, elusiveRating: 88.3 },
   },
   {
     id: 16,
@@ -336,7 +328,6 @@ const prospects2026Raw = [
     injuries: [{ type: "Shoulder", date: "2025-11", severity: "Minor", gamesOut: 1 }],
     advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
-    stats: { passingYards: 1922, passingTDs: 12, INT: 5, completionPct: 67.4, rushingYards: 45, rushingTDs: 0, yardsPerAttempt: 6.7, pffPassGrade: 76.4, pffOffGrade: 77.1, bttRate: 4.5, twpRate: 3.0, adot: 7.0, accuracy: 77.4, qbRating: 92.7, sacks: 15, scrambles: 7, gamesPlayed: 9, epa: 0.25 },
   },
   {
     id: 17,
@@ -417,7 +408,6 @@ const prospects2026Raw = [
     injuries: [{ type: "Elbow (UCL)", date: "2025-01", severity: "Severe", gamesOut: 8 }],
     advancedStats: null,
     cfbdLookup: { team: "Miami", year: 2025 },
-    stats: { passingYards: 3813, passingTDs: 30, INT: 12, completionPct: 72.1, rushingYards: 195, rushingTDs: 2, yardsPerAttempt: 8.1, pffPassGrade: 75.6, pffOffGrade: 73.6, bttRate: 3.3, twpRate: 2.2, adot: 7.6, accuracy: 79.0, qbRating: 106.7, sacks: 16, scrambles: 32, gamesPlayed: 16, epa: 0.25 },
   },
   {
     id: 21,
@@ -438,7 +428,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
-    stats: { passingYards: 1100, passingTDs: 8, INT: 3, completionPct: 64.8, rushingYards: 180, rushingTDs: 2, yardsPerAttempt: 6.9, pffPassGrade: 66.1, pffOffGrade: 72.4, bttRate: 2.5, twpRate: 2.6, adot: 8.1, accuracy: 72.7, qbRating: 93.8, sacks: 6, scrambles: 20, gamesPlayed: 6, epa: 0.22 },
   },
   {
     id: 22,
@@ -458,7 +447,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Clemson", year: 2025 },
-    stats: { passingYards: 2946, passingTDs: 16, INT: 6, completionPct: 65.2, rushingYards: 120, rushingTDs: 1, yardsPerAttempt: 7.5, pffPassGrade: 77.4, pffOffGrade: 76.5, bttRate: 3.8, twpRate: 2.2, adot: 8.4, accuracy: 77.6, qbRating: 94.8, sacks: 17, scrambles: 16, gamesPlayed: 12, epa: 0.26 },
   },
   {
     id: 23,
@@ -479,7 +467,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Arkansas", year: 2025 },
-    stats: { passingYards: 2713, passingTDs: 19, INT: 11, completionPct: 60.2, rushingYards: 620, rushingTDs: 8, yardsPerAttempt: 8.2, pffPassGrade: 65.6, pffOffGrade: 82.5, bttRate: 3.2, twpRate: 5.3, adot: 9.5, accuracy: 71.3, qbRating: 91.9, sacks: 27, scrambles: 37, gamesPlayed: 12, epa: 0.22 },
   },
   {
     id: 24,
@@ -1241,7 +1228,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "North Texas", year: 2025 },
-    stats: { rushingYards: 1431, rushingTDs: 25, yardsPerCarry: 6.2, receptions: 32, receivingYards: 370, receivingTDs: 0, epa: 0.15, pffGrade: 92.6, pffRunGrade: 94.1, elusiveRating: 179.0 },
   },
   {
     id: 70,
@@ -1261,7 +1247,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Missouri", year: 2025 },
-    stats: { rushingYards: 1648, rushingTDs: 16, yardsPerCarry: 6.4, receptions: 6, receivingYards: 22, receivingTDs: 0, epa: 0.15, pffGrade: 91.9, pffRunGrade: 92.5, elusiveRating: 178.2 },
   },
   {
     id: 71,
@@ -1281,7 +1266,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Unlv", year: 2025 },
-    stats: { rushingYards: 1036, rushingTDs: 12, yardsPerCarry: 7.0, receptions: 39, receivingYards: 237, receivingTDs: 0, epa: 0.15, pffGrade: 90.7, pffRunGrade: 92.7, elusiveRating: 155.7 },
   },
   {
     id: 72,
@@ -1301,7 +1285,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "South Alabama", year: 2025 },
-    stats: { rushingYards: 1082, rushingTDs: 14, yardsPerCarry: 5.0, receptions: 14, receivingYards: 66, receivingTDs: 0, epa: 0.15, pffGrade: 90.3, pffRunGrade: 90.4, elusiveRating: 72.2 },
   },
   {
     id: 73,
@@ -1321,7 +1304,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Georgia", year: 2025 },
-    stats: { rushingYards: 947, rushingTDs: 6, yardsPerCarry: 5.5, receptions: 16, receivingYards: 116, receivingTDs: 0, epa: 0.15, pffGrade: 90.0, pffRunGrade: 90.8, elusiveRating: 74.6 },
   },
   {
     id: 74,
@@ -1341,7 +1323,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Penn State", year: 2025 },
-    stats: { rushingYards: 1303, rushingTDs: 15, yardsPerCarry: 6.2, receptions: 18, receivingYards: 68, receivingTDs: 0, epa: 0.15, pffGrade: 89.5, pffRunGrade: 91.3, elusiveRating: 102.6 },
   },
   {
     id: 75,
@@ -1361,7 +1342,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Duke", year: 2025 },
-    stats: { rushingYards: 1132, rushingTDs: 11, yardsPerCarry: 5.7, receptions: 37, receivingYards: 286, receivingTDs: 0, epa: 0.15, pffGrade: 89.5, pffRunGrade: 90.9, elusiveRating: 115.5 },
   },
   {
     id: 76,
@@ -1381,7 +1361,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Oregon", year: 2025 },
-    stats: { rushingYards: 665, rushingTDs: 15, yardsPerCarry: 5.9, receptions: 12, receivingYards: 62, receivingTDs: 0, epa: 0.15, pffGrade: 89.1, pffRunGrade: 91.4, elusiveRating: 53.2 },
   },
   {
     id: 77,
@@ -1401,7 +1380,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Rutgers", year: 2025 },
-    stats: { rushingYards: 1238, rushingTDs: 13, yardsPerCarry: 5.1, receptions: 18, receivingYards: 224, receivingTDs: 0, epa: 0.15, pffGrade: 89.0, pffRunGrade: 87.8, elusiveRating: 116.2 },
   },
   {
     id: 78,
@@ -1421,7 +1399,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Texas Tech", year: 2025 },
-    stats: { rushingYards: 859, rushingTDs: 6, yardsPerCarry: 5.5, receptions: 35, receivingYards: 388, receivingTDs: 0, epa: 0.15, pffGrade: 88.4, pffRunGrade: 87.9, elusiveRating: 139.9 },
   },
   {
     id: 79,
@@ -1441,7 +1418,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Michigan", year: 2025 },
-    stats: { rushingYards: 932, rushingTDs: 10, yardsPerCarry: 6.2, receptions: 9, receivingYards: 92, receivingTDs: 0, epa: 0.15, pffGrade: 87.8, pffRunGrade: 88.6, elusiveRating: 91.4 },
   },
   {
     id: 80,
@@ -1461,7 +1437,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Florida", year: 2025 },
-    stats: { rushingYards: 1168, rushingTDs: 8, yardsPerCarry: 5.3, receptions: 33, receivingYards: 210, receivingTDs: 0, epa: 0.15, pffGrade: 87.7, pffRunGrade: 89.5, elusiveRating: 103.8 },
   },
   {
     id: 81,
@@ -1481,7 +1456,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Louisiana-Monroe", year: 2025 },
-    stats: { rushingYards: 658, rushingTDs: 3, yardsPerCarry: 5.3, receptions: 14, receivingYards: 66, receivingTDs: 0, epa: 0.15, pffGrade: 87.6, pffRunGrade: 85.1, elusiveRating: 153.5 },
   },
   {
     id: 82,
@@ -1501,7 +1475,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Ohio State", year: 2025 },
-    stats: { rushingYards: 1085, rushingTDs: 6, yardsPerCarry: 6.1, receptions: 19, receivingYards: 200, receivingTDs: 0, epa: 0.15, pffGrade: 87.1, pffRunGrade: 86.4, elusiveRating: 78.5 },
   },
   {
     id: 83,
@@ -1521,7 +1494,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Ole Miss", year: 2025 },
-    stats: { rushingYards: 1564, rushingTDs: 24, yardsPerCarry: 5.1, receptions: 29, receivingYards: 177, receivingTDs: 0, epa: 0.15, pffGrade: 86.9, pffRunGrade: 91.6, elusiveRating: 97.9 },
   },
   {
     id: 84,
@@ -1541,7 +1513,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Louisville", year: 2025 },
-    stats: { rushingYards: 703, rushingTDs: 6, yardsPerCarry: 7.3, receptions: 12, receivingYards: 118, receivingTDs: 0, epa: 0.15, pffGrade: 86.8, pffRunGrade: 91.5, elusiveRating: 171.2 },
   },
   {
     id: 85,
@@ -1561,7 +1532,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Miami", year: 2025 },
-    stats: { rushingYards: 1184, rushingTDs: 12, yardsPerCarry: 5.5, receptions: 17, receivingYards: 140, receivingTDs: 0, epa: 0.15, pffGrade: 86.7, pffRunGrade: 92.0, elusiveRating: 102.8 },
   },
   {
     id: 86,
@@ -1581,7 +1551,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Tennessee", year: 2025 },
-    stats: { rushingYards: 1076, rushingTDs: 16, yardsPerCarry: 5.9, receptions: 15, receivingYards: 135, receivingTDs: 0, epa: 0.15, pffGrade: 86.7, pffRunGrade: 90.1, elusiveRating: 65.2 },
   },
   {
     id: 87,
@@ -1601,7 +1570,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Uconn", year: 2025 },
-    stats: { rushingYards: 1226, rushingTDs: 15, yardsPerCarry: 5.9, receptions: 19, receivingYards: 187, receivingTDs: 0, epa: 0.15, pffGrade: 86.4, pffRunGrade: 87.4, elusiveRating: 83.9 },
   },
   {
     id: 88,
@@ -1621,7 +1589,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Texas State", year: 2025 },
-    stats: { rushingYards: 671, rushingTDs: 3, yardsPerCarry: 6.7, receptions: 12, receivingYards: 115, receivingTDs: 0, epa: 0.15, pffGrade: 86.3, pffRunGrade: 88.9, elusiveRating: 151.7 },
   },
   {
     id: 89,
@@ -1641,7 +1608,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Byu", year: 2025 },
-    stats: { rushingYards: 1299, rushingTDs: 12, yardsPerCarry: 5.5, receptions: 36, receivingYards: 251, receivingTDs: 0, epa: 0.15, pffGrade: 86.2, pffRunGrade: 87.9, elusiveRating: 86.3 },
   },
   {
     id: 90,
@@ -1661,7 +1627,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Boise State", year: 2025 },
-    stats: { rushingYards: 812, rushingTDs: 8, yardsPerCarry: 5.0, receptions: 11, receivingYards: 72, receivingTDs: 0, epa: 0.15, pffGrade: 86.2, pffRunGrade: 88.9, elusiveRating: 98.1 },
   },
   {
     id: 91,
@@ -1681,7 +1646,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Georgia Southern", year: 2025 },
-    stats: { rushingYards: 1026, rushingTDs: 5, yardsPerCarry: 7.1, receptions: 20, receivingYards: 207, receivingTDs: 0, epa: 0.15, pffGrade: 86.1, pffRunGrade: 89.2, elusiveRating: 67.8 },
   },
   {
     id: 92,
@@ -1701,7 +1665,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Virginia Tech", year: 2025 },
-    stats: { rushingYards: 744, rushingTDs: 1, yardsPerCarry: 6.3, receptions: 11, receivingYards: 79, receivingTDs: 0, epa: 0.15, pffGrade: 86.0, pffRunGrade: 90.9, elusiveRating: 170.7 },
   },
   {
     id: 93,
@@ -1721,7 +1684,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Washington", year: 2025 },
-    stats: { rushingYards: 523, rushingTDs: 5, yardsPerCarry: 4.9, receptions: 17, receivingYards: 138, receivingTDs: 0, epa: 0.15, pffGrade: 85.9, pffRunGrade: 89.5, elusiveRating: 136.3 },
   },
   {
     id: 94,
@@ -1741,7 +1703,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Dominion", year: 2025 },
-    stats: { rushingYards: 777, rushingTDs: 6, yardsPerCarry: 7.5, receptions: 6, receivingYards: 20, receivingTDs: 0, epa: 0.15, pffGrade: 85.9, pffRunGrade: 86.8, elusiveRating: 81.7 },
   },
   {
     id: 95,
@@ -1761,7 +1722,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Jacksonville State", year: 2025 },
-    stats: { rushingYards: 1650, rushingTDs: 16, yardsPerCarry: 5.6, receptions: 30, receivingYards: 291, receivingTDs: 0, epa: 0.15, pffGrade: 85.8, pffRunGrade: 89.3, elusiveRating: 135.8 },
   },
   {
     id: 96,
@@ -1781,7 +1741,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "San Diego State", year: 2025 },
-    stats: { rushingYards: 1297, rushingTDs: 10, yardsPerCarry: 5.1, receptions: 6, receivingYards: 6, receivingTDs: 0, epa: 0.15, pffGrade: 85.1, pffRunGrade: 88.6, elusiveRating: 74.3 },
   },
   {
     id: 97,
@@ -1801,7 +1760,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Utsa", year: 2025 },
-    stats: { rushingYards: 862, rushingTDs: 6, yardsPerCarry: 6.9, receptions: 19, receivingYards: 132, receivingTDs: 0, epa: 0.15, pffGrade: 85.1, pffRunGrade: 89.0, elusiveRating: 92.3 },
   },
   {
     id: 98,
@@ -1821,7 +1779,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Cincinnati", year: 2025 },
-    stats: { rushingYards: 714, rushingTDs: 4, yardsPerCarry: 6.0, receptions: 18, receivingYards: 77, receivingTDs: 0, epa: 0.15, pffGrade: 85.0, pffRunGrade: 88.2, elusiveRating: 91.6 },
   },
   {
     id: 97,
@@ -1842,7 +1799,6 @@ const prospects2026Raw = [
     injuries: [{ type: "ACL/MCL", date: "2024-10", severity: "Severe", gamesOut: 6 }, { type: "Ankle", date: "2025-09", severity: "Moderate", gamesOut: 5 }],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Texas A&M", year: 2025 },
-    stats: { rushingYards: 404, rushingTDs: 6, yardsPerCarry: 5.2, receptions: 2, receivingYards: 3, receivingTDs: 0, epa: 0.10, pffGrade: 72.0, pffRunGrade: 74.0, elusiveRating: 65.8 },
   },
   {
     id: 98,
@@ -1863,7 +1819,6 @@ const prospects2026Raw = [
     injuries: [{ type: "ACL", date: "2022-04", severity: "Severe", gamesOut: 8 }],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Clemson", year: 2025 },
-    stats: { rushingYards: 814, rushingTDs: 10, yardsPerCarry: 4.8, receptions: 36, receivingYards: 254, receivingTDs: 3, epa: 0.12, pffGrade: 68.0, pffRunGrade: 70.0, elusiveRating: 75.0 },
   },
   {
     id: 99,
@@ -1883,7 +1838,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Houston", year: 2025 },
-    stats: { rushingYards: 800, rushingTDs: 6, yardsPerCarry: 4.5, receptions: 28, receivingYards: 220, receivingTDs: 3, epa: 0.10, pffGrade: 70.0, pffRunGrade: 72.0, elusiveRating: 68.0 },
   },
   {
     id: 101,
@@ -1904,7 +1858,6 @@ const prospects2026Raw = [
     injuries: [{ type: "Various", date: "2024-09", severity: "Moderate", gamesOut: 4 }],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Ohio State", year: 2025 },
-    stats: { rushingYards: 361, rushingTDs: 10, yardsPerCarry: 3.8, receptions: 15, receivingYards: 96, receivingTDs: 0, epa: 0.10, pffGrade: 71.5, pffRunGrade: 71.5, elusiveRating: 60.0 },
   },
   {
     id: 104,
@@ -1924,7 +1877,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Florida International", year: 2025 },
-    stats: { rushingYards: 1334, rushingTDs: 11, yardsPerCarry: 6.3, receptions: 15, receivingYards: 120, receivingTDs: 1, epa: 0.14, pffGrade: 81.4, pffRunGrade: 83.3, elusiveRating: 85.0 },
   },
   {
     id: 105,
@@ -1944,7 +1896,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "South Carolina", year: 2025 },
-    stats: { rushingYards: 470, rushingTDs: 3, yardsPerCarry: 4.9, receptions: 19, receivingYards: 118, receivingTDs: 0, epa: 0.10, pffGrade: 75.0, pffRunGrade: 78.0, elusiveRating: 72.0 },
   },
   {
     id: 106,
@@ -1964,7 +1915,6 @@ const prospects2026Raw = [
     injuries: [{ type: "Undisclosed", date: "2025-09", severity: "Moderate", gamesOut: 5 }],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Pittsburgh", year: 2025 },
-    stats: { rushingYards: 278, rushingTDs: 2, yardsPerCarry: 4.6, receptions: 23, receivingYards: 317, receivingTDs: 2, epa: 0.14, pffGrade: 82.0, pffRunGrade: 80.0, elusiveRating: 95.0 },
   },
   {
     id: 107,
@@ -1984,7 +1934,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Oregon State", year: 2025 },
-    stats: { rushingYards: 1090, rushingTDs: 9, yardsPerCarry: 4.7, receptions: 12, receivingYards: 80, receivingTDs: 0, epa: 0.11, pffGrade: 73.7, pffRunGrade: 76.1, elusiveRating: 75.0 },
   },
   {
     id: 108,
@@ -2004,7 +1953,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Mississippi State", year: 2025 },
-    stats: { rushingYards: 553, rushingTDs: 7, yardsPerCarry: 4.1, receptions: 15, receivingYards: 165, receivingTDs: 2, epa: 0.09, pffGrade: 70.0, pffRunGrade: 72.0, elusiveRating: 65.0 },
   },
   {
     id: 109,
@@ -2025,7 +1973,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Wake Forest", year: 2025 },
-    stats: { rushingYards: 907, rushingTDs: 10, yardsPerCarry: 5.1, receptions: 26, receivingYards: 130, receivingTDs: 0, epa: 0.14, pffGrade: 68.6, pffRunGrade: 76.8, elusiveRating: 90.0 },
   },
   {
     id: 110,
@@ -2046,7 +1993,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Virginia", year: 2025 },
-    stats: { rushingYards: 1062, rushingTDs: 14, yardsPerCarry: 4.8, receptions: 43, receivingYards: 253, receivingTDs: 1, epa: 0.13, pffGrade: 76.8, pffRunGrade: 79.2, elusiveRating: 78.0 },
   },
   {
     id: 111,
@@ -2066,7 +2012,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Texas State", year: 2025 },
-    stats: { rushingYards: 1128, rushingTDs: 12, yardsPerCarry: 5.4, receptions: 37, receivingYards: 312, receivingTDs: 2, epa: 0.13, pffGrade: 76.0, pffRunGrade: 78.0, elusiveRating: 80.0 },
   },
   {
     id: 112,
@@ -2086,7 +2031,6 @@ const prospects2026Raw = [
     injuries: [{ type: "Upper Body", date: "2025-08", severity: "Moderate", gamesOut: 3 }],
     advancedStats: { yprr: null, targetShare: null },
     cfbdLookup: { team: "Alabama", year: 2025 },
-    stats: { rushingYards: 504, rushingTDs: 3, yardsPerCarry: 3.9, receptions: 19, receivingYards: 109, receivingTDs: 0, epa: 0.10, pffGrade: 74.0, pffRunGrade: 76.0, elusiveRating: 72.0 },
   },
 
   {
@@ -2464,7 +2408,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
-    stats: { rushingYards: 1034, rushingTDs: 10, yardsPerCarry: 5.6, receptions: 5, receivingYards: 42, receivingTDs: 0, epa: 0.15, pffGrade: 83.7, pffRunGrade: 85.5, elusiveRating: 58.2 },
   },
   {
     id: 131,
@@ -2485,7 +2428,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Kentucky", year: 2025 },
-    stats: { rushingYards: 730, rushingTDs: 12, yardsPerCarry: 4.4, receptions: 18, receivingYards: 121, receivingTDs: 0, epa: 0.15, pffGrade: 70.1, pffRunGrade: 77.2, elusiveRating: 51.8 },
   },
   {
     id: 132,
@@ -2506,7 +2448,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Baylor", year: 2025 },
-    stats: { passingYards: 3683, passingTDs: 31, INT: 12, completionPct: 60.2, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 7.3, pffPassGrade: 67.2, pffOffGrade: 70.3, bttRate: 4.6, twpRate: 3.6, adot: 9.9, accuracy: 67.2, qbRating: 93.2, sacks: 21, scrambles: 16, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 133,
@@ -2548,7 +2489,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Illinois", year: 2025 },
-    stats: { passingYards: 2994, passingTDs: 22, INT: 5, completionPct: 66.8, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 8.2, pffPassGrade: 74.2, pffOffGrade: 78.0, bttRate: 3.1, twpRate: 3.1, adot: 9.3, accuracy: 75.1, qbRating: 106.4, sacks: 31, scrambles: 24, gamesPlayed: 13, epa: 0.15 },
   },
   {
     id: 135,
@@ -2673,7 +2613,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Kansas", year: 2025 },
-    stats: { passingYards: 2531, passingTDs: 22, INT: 7, completionPct: 61.7, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 7.9, pffPassGrade: 72.0, pffOffGrade: 77.1, bttRate: 5.4, twpRate: 3.9, adot: 10.1, accuracy: 72.3, qbRating: 100.1, sacks: 19, scrambles: 30, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 141,
@@ -2735,7 +2674,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Oregon", year: 2025 },
-    stats: { rushingYards: 829, rushingTDs: 6, yardsPerCarry: 6.4, receptions: 19, receivingYards: 98, receivingTDs: 1, epa: 0.15, pffGrade: 83.6, pffRunGrade: 88.5, elusiveRating: 64.1 },
   },
   {
     id: 144,
@@ -2776,7 +2714,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "UConn", year: 2025 },
-    stats: { passingYards: 3461, passingTDs: 28, INT: 1, completionPct: 69.1, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 8.4, pffPassGrade: 81.9, pffOffGrade: 87.0, bttRate: 3.2, twpRate: 1.7, adot: 7.6, accuracy: 78.2, qbRating: 116.0, sacks: 16, scrambles: 23, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 146,
@@ -2797,7 +2734,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
-    stats: { rushingYards: 1118, rushingTDs: 7, yardsPerCarry: 4.9, receptions: 17, receivingYards: 166, receivingTDs: 0, epa: 0.15, pffGrade: 80.9, pffRunGrade: 81.9, elusiveRating: 62.6 },
   },
   {
     id: 147,
@@ -2860,7 +2796,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "UTSA", year: 2025 },
-    stats: { rushingYards: 1051, rushingTDs: 9, yardsPerCarry: 6.9, receptions: 17, receivingYards: 112, receivingTDs: 2, epa: 0.15, pffGrade: 74.2, pffRunGrade: 77.7, elusiveRating: 93.0 },
   },
   {
     id: 150,
@@ -2902,7 +2837,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Vanderbilt", year: 2025 },
-    stats: { passingYards: 3527, passingTDs: 29, INT: 8, completionPct: 70.4, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 9.3, pffPassGrade: 90.7, pffOffGrade: 92.2, bttRate: 7.4, twpRate: 2.5, adot: 9.8, accuracy: 79.2, qbRating: 116.3, sacks: 21, scrambles: 51, gamesPlayed: 13, epa: 0.15 },
   },
   {
     id: 152,
@@ -2965,7 +2899,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Virginia Tech", year: 2025 },
-    stats: { rushingYards: 469, rushingTDs: 0, yardsPerCarry: 5.7, receptions: 4, receivingYards: 19, receivingTDs: 0, epa: 0.15, pffGrade: 73.9, pffRunGrade: 78.6, elusiveRating: 220.7 },
   },
   {
     id: 155,
@@ -3028,7 +2961,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Rutgers", year: 2025 },
-    stats: { passingYards: 3123, passingTDs: 20, INT: 7, completionPct: 61.9, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 8.4, pffPassGrade: 87.6, pffOffGrade: 88.8, bttRate: 6.6, twpRate: 2.4, adot: 11.2, accuracy: 70.8, qbRating: 99.0, sacks: 38, scrambles: 32, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 158,
@@ -3091,7 +3023,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Virginia Tech", year: 2025 },
-    stats: { passingYards: 1937, passingTDs: 17, INT: 9, completionPct: 55.8, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 6.1, pffPassGrade: 61.2, pffOffGrade: 69.9, bttRate: 4.5, twpRate: 4.7, adot: 9.4, accuracy: 67.4, qbRating: 80.1, sacks: 25, scrambles: 42, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 161,
@@ -3195,7 +3126,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Oklahoma", year: 2025 },
-    stats: { rushingYards: 68, rushingTDs: 0, yardsPerCarry: 3.2, receptions: 2, receivingYards: 10, receivingTDs: 0, epa: 0.15, pffGrade: 53.1, pffRunGrade: 62.1, elusiveRating: 39.3 },
   },
   {
     id: 166,
@@ -3360,7 +3290,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Georgia Tech", year: 2025 },
-    stats: { passingYards: 2936, passingTDs: 14, INT: 6, completionPct: 69.0, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 8.0, pffPassGrade: 80.9, pffOffGrade: 85.9, bttRate: 4.0, twpRate: 1.0, adot: 7.5, accuracy: 79.0, qbRating: 99.1, sacks: 10, scrambles: 18, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 174,
@@ -3381,7 +3310,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Toledo", year: 2025 },
-    stats: { rushingYards: 1015, rushingTDs: 12, yardsPerCarry: 5.6, receptions: 21, receivingYards: 212, receivingTDs: 2, epa: 0.15, pffGrade: 76.7, pffRunGrade: 80.4, elusiveRating: 39.4 },
   },
   {
     id: 175,
@@ -3465,7 +3393,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Texas Tech", year: 2025 },
-    stats: { passingYards: 2780, passingTDs: 22, INT: 6, completionPct: 65.4, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 8.3, pffPassGrade: 72.7, pffOffGrade: 72.0, bttRate: 6.3, twpRate: 4.5, adot: 8.0, accuracy: 75.2, qbRating: 105.6, sacks: 21, scrambles: 12, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 179,
@@ -3507,7 +3434,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Tennessee", year: 2025 },
-    stats: { passingYards: 3571, passingTDs: 24, INT: 10, completionPct: 67.0, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 8.8, pffPassGrade: 90.6, pffOffGrade: 90.5, bttRate: 4.8, twpRate: 1.9, adot: 9.5, accuracy: 77.1, qbRating: 104.0, sacks: 20, scrambles: 24, gamesPlayed: 13, epa: 0.15 },
   },
   {
     id: 181,
@@ -3548,7 +3474,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Iowa", year: 2025 },
-    stats: { passingYards: 1744, passingTDs: 10, INT: 7, completionPct: 63.5, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 6.6, pffPassGrade: 73.4, pffOffGrade: 83.3, bttRate: 2.9, twpRate: 2.5, adot: 7.6, accuracy: 76.7, qbRating: 84.2, sacks: 17, scrambles: 28, gamesPlayed: 13, epa: 0.15 },
   },
   {
     id: 183,
@@ -3569,7 +3494,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Georgia Tech", year: 2025 },
-    stats: { rushingYards: 537, rushingTDs: 5, yardsPerCarry: 4.3, receptions: 34, receivingYards: 266, receivingTDs: 0, epa: 0.15, pffGrade: 66.1, pffRunGrade: 69.8, elusiveRating: 44.2 },
   },
   {
     id: 184,
@@ -3695,7 +3619,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Louisville", year: 2025 },
-    stats: { passingYards: 2679, passingTDs: 16, INT: 7, completionPct: 63.7, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 7.0, pffPassGrade: 63.1, pffOffGrade: 68.2, bttRate: 3.7, twpRate: 4.3, adot: 7.9, accuracy: 72.1, qbRating: 90.6, sacks: 22, scrambles: 10, gamesPlayed: 12, epa: 0.15 },
   },
   {
     id: 190,
@@ -3839,7 +3762,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Charlotte", year: 2025 },
-    stats: { passingYards: 1415, passingTDs: 8, INT: 8, completionPct: 54.7, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 6.0, pffPassGrade: 61.8, pffOffGrade: 58.8, bttRate: 6.2, twpRate: 4.7, adot: 10.0, accuracy: 66.3, qbRating: 70.0, sacks: 22, scrambles: 10, gamesPlayed: 11, epa: 0.15 },
   },
   {
     id: 197,
@@ -3860,7 +3782,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Vanderbilt", year: 2025 },
-    stats: { rushingYards: 567, rushingTDs: 11, yardsPerCarry: 5.5, receptions: 19, receivingYards: 197, receivingTDs: 4, epa: 0.15, pffGrade: 74.2, pffRunGrade: 79.9, elusiveRating: 67.4 },
   },
   {
     id: 198,
@@ -3902,7 +3823,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Oregon State", year: 2025 },
-    stats: { passingYards: 1818, passingTDs: 9, INT: 8, completionPct: 58.2, rushingYards: 0, rushingTDs: 0, yardsPerAttempt: 6.5, pffPassGrade: 57.7, pffOffGrade: 59.8, bttRate: 2.1, twpRate: 4.6, adot: 9.1, accuracy: 67.8, qbRating: 76.5, sacks: 12, scrambles: 3, gamesPlayed: 10, epa: 0.15 },
   },
   {
     id: 200,
@@ -3965,7 +3885,6 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "UNLV", year: 2025 },
-    stats: { rushingYards: 384, rushingTDs: 1, yardsPerCarry: 6.0, receptions: 6, receivingYards: 51, receivingTDs: 0, epa: 0.15, pffGrade: 73.4, pffRunGrade: 77.6, elusiveRating: 101.3 },
   },
   {
     id: 203,
