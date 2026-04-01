@@ -196,6 +196,234 @@ export const computeHeadlineScore = (player, allPlayers) => {
   return score;
 };
 
+// ── Strengths / Concerns / Outlook generators ─────────────────────────────
+
+const strengthStatDefs = {
+  QB: [
+    { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
+    { label: 'Passing TDs', key: 'passingTDs', unit: '', getValue: p => p.stats?.passingTDs, desc: 'touchdown production' },
+    { label: 'Passing Yards', key: 'passingYards', unit: '', getValue: p => p.stats?.passingYards, desc: 'passing volume' },
+    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing production' },
+    { label: 'Rushing TDs', key: 'rushingTDs', unit: '', getValue: p => p.stats?.rushingTDs, desc: 'rushing touchdowns' },
+    { label: 'BTT Rate', key: 'bttRate', unit: '%', getValue: p => p.stats?.bttRate, desc: 'big-time throw rate' },
+    { label: 'Y/A', key: 'yardsPerAttempt', unit: '', getValue: p => p.stats?.yardsPerAttempt, desc: 'yards per attempt' },
+    { label: 'PFF Pass Grade', key: 'pffPassGrade', unit: '', getValue: p => p.stats?.pffPassGrade, desc: 'PFF passing grade' },
+    { label: 'QB Rating', key: 'qbRating', unit: '', getValue: p => p.stats?.qbRating, desc: 'passer rating' },
+  ],
+  RB: [
+    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing volume' },
+    { label: 'YPC', key: 'yardsPerCarry', unit: '', getValue: p => p.stats?.yardsPerCarry, desc: 'yards per carry' },
+    { label: 'Rushing TDs', key: 'rushingTDs', unit: '', getValue: p => p.stats?.rushingTDs, desc: 'touchdown production' },
+    { label: 'Receptions', key: 'receptions', unit: '', getValue: p => p.stats?.receptions, desc: 'receiving involvement' },
+    { label: 'Receiving Yards', key: 'receivingYards', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
+    { label: 'Elusive Rating', key: 'elusiveRating', unit: '', getValue: p => p.stats?.elusiveRating, desc: 'elusiveness' },
+    { label: 'PFF Grade', key: 'pffGrade', unit: '', getValue: p => p.stats?.pffGrade, desc: 'overall PFF grade' },
+  ],
+  WR: [
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
+    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target share' },
+    { label: 'YAC/Rec', key: 'yac', unit: '', getValue: p => p.yardsAfterCatchPerRec, desc: 'yards after catch' },
+    { label: 'Contested Catch %', key: 'contested', unit: '%', getValue: p => p.contestedCatchRate, desc: 'contested catch ability' },
+    { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
+  ],
+  TE: [
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
+    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target share' },
+    { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
+    { label: 'Receiving TDs', key: 'recTDs', unit: '', getValue: p => p.stats?.receivingTDs, desc: 'touchdown production' },
+  ],
+};
+
+const concernStatDefs = {
+  QB: [
+    { label: 'TWP Rate', key: 'twpRate', unit: '%', getValue: p => p.stats?.twpRate, desc: 'turnover-worthy play rate', invert: true },
+    { label: 'Sacks', key: 'sacks', unit: '', getValue: p => p.stats?.sacks, desc: 'sack tendency', invert: true },
+    { label: 'INTs', key: 'INT', unit: '', getValue: p => p.stats?.INT, desc: 'interception count', invert: true },
+    { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
+    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing production' },
+  ],
+  RB: [
+    { label: 'Receiving Yards', key: 'receivingYards', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
+    { label: 'YPC', key: 'yardsPerCarry', unit: '', getValue: p => p.stats?.yardsPerCarry, desc: 'yards per carry' },
+    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing volume' },
+  ],
+  WR: [
+    { label: 'Contested Catch %', key: 'contested', unit: '%', getValue: p => p.contestedCatchRate, desc: 'contested catch ability' },
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
+    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target volume' },
+  ],
+  TE: [
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
+    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target volume' },
+  ],
+};
+
+export const generateStrengths = (player, allPlayers) => {
+  const peers = allPlayers.filter(p => p.position === player.position);
+  const defs = strengthStatDefs[player.position] || [];
+  const strengths = [];
+
+  for (const def of defs) {
+    const val = def.getValue(player);
+    if (val == null || isNaN(val)) continue;
+    const allVals = peers.map(def.getValue).filter(v => v != null && !isNaN(v) && v > 0);
+    const pct = computePercentile(val, allVals);
+    if (pct != null && pct >= 75) {
+      const display = def.unit === '%' ? `${val}%` : typeof val === 'number' && val % 1 !== 0 ? val.toFixed(1) : val.toLocaleString();
+      strengths.push({
+        label: def.label,
+        percentile: pct,
+        text: `${pct >= 90 ? 'Elite' : 'Strong'} ${def.desc} (${display}) — ${ordinal(pct)} percentile among ${player.position}s`,
+      });
+    }
+  }
+
+  // Draft capital
+  const pick = player.draftPick;
+  if (pick && pick <= 10) {
+    strengths.unshift({ label: 'Draft Capital', percentile: 99, text: `Elite draft capital (Pick #${pick}) — strong NFL investment and opportunity` });
+  } else if (pick && pick <= 32) {
+    strengths.unshift({ label: 'Draft Capital', percentile: 85, text: `Day 1 draft capital (Pick #${pick}) — solid NFL investment` });
+  }
+
+  // Breakout age
+  const ba = player.breakoutAge;
+  if (ba && ba <= 19) {
+    strengths.push({ label: 'Breakout Age', percentile: 99, text: `Elite breakout age (${ba}) — historically correlates with NFL success` });
+  } else if (ba && ba <= 20) {
+    strengths.push({ label: 'Breakout Age', percentile: 85, text: `Young breakout age (${ba}) — positive developmental indicator` });
+  }
+
+  // Age advantage
+  if (player.age && player.age <= 20) {
+    strengths.push({ label: 'Age', percentile: 90, text: `Just ${player.age} years old — significant age advantage for dynasty` });
+  }
+
+  return strengths.sort((a, b) => b.percentile - a.percentile).slice(0, 4);
+};
+
+export const generateConcerns = (player, allPlayers) => {
+  const peers = allPlayers.filter(p => p.position === player.position);
+  const defs = concernStatDefs[player.position] || [];
+  const concerns = [];
+
+  for (const def of defs) {
+    const val = def.getValue(player);
+    if (val == null || isNaN(val)) continue;
+    const allVals = peers.map(def.getValue).filter(v => v != null && !isNaN(v) && v > 0);
+    const pct = computePercentile(val, allVals);
+    if (pct == null) continue;
+
+    // For inverted stats (high = bad), flag if ABOVE 75th percentile
+    if (def.invert && pct >= 75) {
+      const display = def.unit === '%' ? `${val}%` : val;
+      concerns.push({
+        label: def.label,
+        severity: pct >= 90 ? 'high' : 'medium',
+        text: `High ${def.desc} (${display}) — ${ordinal(pct)} percentile (worse than peers)`,
+      });
+    }
+    // For normal stats, flag if BELOW 30th percentile
+    if (!def.invert && pct <= 30) {
+      const display = def.unit === '%' ? `${val}%` : typeof val === 'number' && val % 1 !== 0 ? val.toFixed(1) : val;
+      concerns.push({
+        label: def.label,
+        severity: pct <= 15 ? 'high' : 'medium',
+        text: `Below-average ${def.desc} (${display}) — ${ordinal(pct)} percentile among ${player.position}s`,
+      });
+    }
+  }
+
+  // Injuries
+  if (player.injuries && player.injuries.length > 0) {
+    for (const inj of player.injuries) {
+      const sevLabel = inj.severity === 'Severe' ? 'Significant' : inj.severity;
+      concerns.unshift({
+        label: 'Injury',
+        severity: inj.severity === 'Severe' ? 'high' : 'medium',
+        text: `${sevLabel} ${inj.type} injury (${inj.date}) — monitor recovery and long-term impact`,
+      });
+    }
+  }
+
+  // Late breakout
+  if (player.breakoutAge && player.breakoutAge >= 22) {
+    concerns.push({
+      label: 'Breakout Age',
+      severity: 'medium',
+      text: `Late breakout age (${player.breakoutAge}) — historically correlates with lower NFL ceiling`,
+    });
+  }
+
+  // Day 3 capital
+  const pick = player.draftPick;
+  if (pick && pick > 100) {
+    concerns.push({
+      label: 'Draft Capital',
+      severity: 'medium',
+      text: `Day 3 draft capital (Pick #${pick}) — limited early NFL opportunity expected`,
+    });
+  }
+
+  // Older age
+  if (player.age && player.age >= 23) {
+    concerns.push({
+      label: 'Age',
+      severity: 'medium',
+      text: `Age ${player.age} — older for the class, less dynasty upside runway`,
+    });
+  }
+
+  return concerns.slice(0, 3);
+};
+
+export const generateOutlook = (player, allPlayers) => {
+  const pos = player.position;
+  const pick = player.draftPick;
+  const rank1QB = player.rank?.oneQB;
+  const ba = player.breakoutAge;
+
+  let outlook = '';
+
+  // Opening based on draft capital + position
+  if (pick && pick <= 10) {
+    outlook += `${player.name} is an elite-capital ${pos} prospect with top-10 draft pedigree. `;
+  } else if (pick && pick <= 32) {
+    outlook += `${player.name} is a Day 1 ${pos} with first-round draft capital. `;
+  } else if (pick && pick <= 64) {
+    outlook += `${player.name} is a Day 2 ${pos} who offers potential value. `;
+  } else {
+    outlook += `${player.name} is a developmental ${pos} prospect. `;
+  }
+
+  // Dynasty value context
+  if (rank1QB && rank1QB !== 'UNR' && rank1QB <= 5) {
+    outlook += `Ranked as a top-5 dynasty rookie (1QB #${rank1QB}), `;
+  } else if (rank1QB && rank1QB !== 'UNR' && rank1QB <= 15) {
+    outlook += `A solid top-15 dynasty rookie (1QB #${rank1QB}), `;
+  } else if (rank1QB && rank1QB !== 'UNR') {
+    outlook += `Currently ranked 1QB #${rank1QB}, `;
+  }
+
+  // Upside or ceiling note
+  if (ba && ba <= 20) {
+    outlook += `with an elite breakout profile and long-term ceiling. `;
+  } else if (ba && ba <= 21) {
+    outlook += `with a solid developmental trajectory. `;
+  } else {
+    outlook += `though the age profile limits the dynasty ceiling somewhat. `;
+  }
+
+  return outlook.trim();
+};
+
+const ordinal = (n) => {
+  if (n == null) return '';
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
 export const getStatAccessors = (position, perspective = 'overall') => {
   if (position === 'QB') {
     return [

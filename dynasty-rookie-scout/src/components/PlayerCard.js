@@ -1,11 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator, computeHeadlineScore, getPercentileColor } from '../utils/helpers';
+import { getArchetype, getStrengthTags } from '../utils/archetypes';
 import PercentileBar from './PercentileBar';
 import DraftBadge from './DraftBadge';
-import PlayerCompChip from './PlayerCompChip';
 import ValueDelta from './ValueDelta';
 
-const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers = [] }) => {
+const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers = [], isStudied = false }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const rank1QB = player.rank?.oneQB;
@@ -16,13 +16,15 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
   const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
   const headlineScore = useMemo(() => computeHeadlineScore(player, allPlayers), [player, allPlayers]);
   const scoreColor = getPercentileColor(headlineScore);
+  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
+  const strengthTags = useMemo(() => getStrengthTags(player, allPlayers), [player, allPlayers]);
 
   return (
     <div
-      onClick={() => onClick(player)}
+      onClick={() => onClick(player.id != null ? player.id : player)}
       style={{
         background: 'var(--bg-card)',
-        border: '1px solid var(--border-primary)',
+        border: `1px solid ${isStudied ? 'var(--success)' : 'var(--border-primary)'}`,
         borderRadius: 'var(--radius-md)',
         overflow: 'hidden',
         cursor: 'pointer',
@@ -52,6 +54,18 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
           padding: '2px 6px', borderRadius: 'var(--radius-sm)',
         }}>
           INJ
+        </div>
+      )}
+
+      {/* Studied indicator */}
+      {isStudied && (
+        <div style={{
+          position: 'absolute', top: 7, right: injured ? 38 : 8,
+          background: 'var(--success)', color: '#fff',
+          fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 700,
+          padding: '2px 6px', borderRadius: 'var(--radius-sm)',
+        }}>
+          &#10003;
         </div>
       )}
 
@@ -86,12 +100,14 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
             }}>
               {[player.college, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' \u00B7 ') || 'TBD'}
             </div>
-            {/* Player comp */}
-            {player.playerComps && player.playerComps.length > 0 && (
-              <div style={{ marginTop: 3 }}>
-                <PlayerCompChip comps={player.playerComps} max={2} />
-              </div>
-            )}
+            {/* Archetype label */}
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
+              color: posColor.text, marginTop: 3, letterSpacing: 0.3,
+              textTransform: 'uppercase',
+            }}>
+              {archetype}
+            </div>
           </div>
           <span style={{
             fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
@@ -103,9 +119,25 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
         </div>
 
         {/* Draft badge */}
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 6 }}>
           <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
         </div>
+
+        {/* Strength tags */}
+        {strengthTags.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+            {strengthTags.slice(0, 3).map((tag, i) => (
+              <span key={i} style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 600,
+                color: tag.tier === 'elite' ? 'var(--success)' : 'var(--accent-text)',
+                background: tag.tier === 'elite' ? 'var(--success-light)' : 'var(--accent-light)',
+                padding: '2px 7px', borderRadius: 10,
+              }}>
+                {tag.label}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Headline score + Stat percentile bars */}
         <div style={{
@@ -115,7 +147,6 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
           borderBottom: '1px solid var(--border-subtle)',
           flex: 1,
         }}>
-          {/* Headline score */}
           {headlineScore != null && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{
@@ -146,9 +177,7 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
             </div>
           )}
         </div>
-        <div style={{
-          display: 'flex', flexDirection: 'column', gap: 4,
-        }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {accessors.map((acc, i) => {
             const val = acc.getValue(player);
             const allVals = peers.map(p => acc.getValue(p));
@@ -157,15 +186,13 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
           })}
         </div>
 
-        {/* Footer — two rows */}
+        {/* Footer */}
         <div style={{ paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {/* Row 1: Breakout age + games played */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
             {player.breakoutAge && breakout.label !== 'N/A' ? (
               <span style={{
                 fontFamily: "'Inter', sans-serif", fontSize: 9.5, fontWeight: 600,
-                color: breakout.color,
-                background: 'var(--bg-tertiary)',
+                color: breakout.color, background: 'var(--bg-tertiary)',
                 padding: '1px 7px', borderRadius: 10,
               }}>
                 {breakout.label} {player.breakoutAge}
@@ -179,7 +206,6 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
               </span>
             )}
           </div>
-          {/* Row 2: Ranks */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
             <span style={{
               fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
@@ -189,7 +215,7 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
             </span>
             <span style={{
               fontFamily: "'Inter', sans-serif", fontSize: 8, color: 'var(--text-tertiary)',
-            }}>\u00B7</span>
+            }}>{'\u00B7'}</span>
             <span style={{
               fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
               color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
