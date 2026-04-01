@@ -5,21 +5,21 @@ const classifyQB = (player, peers) => {
   const s = player.stats || {};
   const rushYds = s.rushingYards || 0;
   const rushTDs = s.rushingTDs || 0;
-  const passGrade = s.pffPassGrade || 0;
   const compPct = s.completionPct || 0;
+  const accuracy = s.accuracy || 0;
   const adot = s.adot || 0;
   const bttRate = s.bttRate || 0;
 
   const isDualThreat = rushYds >= 400 || rushTDs >= 4;
   const isGunslinger = adot >= 9.5 && bttRate >= 4.5;
-  const isAccurate = compPct >= 68 && passGrade >= 80;
+  const isAccurate = compPct >= 68 && accuracy >= 76;
 
   if (isDualThreat && isAccurate) return 'Dual-Threat Playmaker';
   if (isDualThreat && isGunslinger) return 'Athletic Gunslinger';
   if (isDualThreat) return 'Mobile Quarterback';
   if (isGunslinger) return 'Aggressive Passer';
   if (isAccurate) return 'Precision Passer';
-  if (passGrade >= 75) return 'Pocket Passer';
+  if (compPct >= 64) return 'Pocket Passer';
   return 'Developmental QB';
 };
 

@@ -257,6 +257,83 @@ export const fetchAllPlayerStats = async (year = 2025) => {
 };
 
 /**
+ * Fetch career stats across multiple seasons and aggregate into totals.
+ * Reuses fetchAllPlayerStats per year (each individually cached).
+ * Sums counting stats; recalculates rate stats from components.
+ */
+export const fetchCareerStats = async (years = [2022, 2023, 2024, 2025]) => {
+  return cachedFetch(`career-${years.join('-')}`, async () => {
+    const yearResults = await Promise.all(years.map(y => fetchAllPlayerStats(y)));
+    const validResults = yearResults.filter(r => r != null);
+
+    if (validResults.length === 0) return null;
+
+    const career = {};
+
+    for (const yearData of validResults) {
+      for (const [name, stats] of Object.entries(yearData)) {
+        if (!career[name]) {
+          career[name] = {
+            team: stats.team,
+            passing: null,
+            rushing: null,
+            receiving: null,
+            ppa: null,
+          };
+        }
+
+        const c = career[name];
+
+        // Update team to most recent
+        if (stats.team) c.team = stats.team;
+
+        // Aggregate passing
+        if (stats.passing) {
+          if (!c.passing) c.passing = { YDS: 0, TD: 0, INT: 0, ATT: 0, COMP: 0 };
+          c.passing.YDS += stats.passing.YDS || 0;
+          c.passing.TD += stats.passing.TD || 0;
+          c.passing.INT += stats.passing.INT || 0;
+          c.passing.ATT += stats.passing.ATT || 0;
+          c.passing.COMP += stats.passing.COMP || 0;
+        }
+
+        // Aggregate rushing
+        if (stats.rushing) {
+          if (!c.rushing) c.rushing = { YDS: 0, TD: 0, CAR: 0 };
+          c.rushing.YDS += stats.rushing.YDS || 0;
+          c.rushing.TD += stats.rushing.TD || 0;
+          c.rushing.CAR += stats.rushing.CAR || 0;
+        }
+
+        // Aggregate receiving
+        if (stats.receiving) {
+          if (!c.receiving) c.receiving = { REC: 0, YDS: 0, TD: 0, TARGETS: 0 };
+          c.receiving.REC += stats.receiving.REC || 0;
+          c.receiving.YDS += stats.receiving.YDS || 0;
+          c.receiving.TD += stats.receiving.TD || 0;
+          c.receiving.TARGETS += stats.receiving.TARGETS || 0;
+        }
+
+        // PPA: use most recent year's average (not cumulative)
+        if (stats.ppa) {
+          c.ppa = stats.ppa;
+        }
+      }
+    }
+
+    // Recalculate rate stats from aggregated components
+    for (const c of Object.values(career)) {
+      if (c.passing && c.passing.ATT > 0) {
+        c.passing.PCT = +((c.passing.COMP / c.passing.ATT) * 100).toFixed(1);
+      }
+    }
+
+    console.info(`[CFBD] Career stats aggregated for ${Object.keys(career).length} players across ${validResults.length} seasons`);
+    return career;
+  });
+};
+
+/**
  * Check if the CFBD API is available (has API key configured).
  */
 export const isCFBDAvailable = () => !!getApiKey();

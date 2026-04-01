@@ -10,7 +10,7 @@
 // contested catch rates, slot/wide rates, etc.) always come from the static data.
 
 import { getStaticCollegeStats as _rawLookup } from './collegeStats2025';
-import { fetchAllPlayerStats, isCFBDAvailable } from './cfbdApi';
+import { fetchCareerStats, isCFBDAvailable } from './cfbdApi';
 
 // ── CFBD data cache (loaded once, shared across all players) ────────────────
 
@@ -30,10 +30,10 @@ export const preloadCFBDStats = async (year = 2025) => {
     return null;
   }
 
-  cfbdLoadPromise = fetchAllPlayerStats(year)
+  cfbdLoadPromise = fetchCareerStats([2022, 2023, 2024, 2025])
     .then((data) => {
       cfbdStatsMap = data;
-      console.info(`[CFBDTransformer] CFBD data loaded: ${Object.keys(data || {}).length} players`);
+      console.info(`[CFBDTransformer] CFBD career data loaded: ${Object.keys(data || {}).length} players`);
       return data;
     })
     .catch((err) => {
@@ -200,13 +200,9 @@ export const attachCollegeStats = (playerName, position, prospect) => {
     routesRun,
     tgtPerRR,
     firstDownTDPerRR,
-    recGrade: sd?.recGrade ?? null,
     // Receiving metrics (WR / TE) — PFF-only
     yardsAfterCatch: sd?.yardsAfterCatch ?? null,
     yardsAfterCatchPerRec: sd?.yardsAfterCatchPerRec ?? null,
-    slotRate: sd?.slotRate ?? null,
-    wideRate: sd?.wideRate ?? null,
-    inlineRate: sd?.inlineRate ?? null,
     contestedCatchRate: sd?.contestedCatchRate ?? null,
     contestedReceptions: sd?.contestedReceptions ?? null,
     // Rushing metrics (RB) — PFF-only

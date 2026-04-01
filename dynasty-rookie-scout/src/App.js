@@ -12,12 +12,20 @@ const CompareView = lazy(() => import('./components/CompareView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
 
 const STUDIED_KEY = 'drs_studied_players';
+const VIDEOS_KEY = 'drs_player_videos';
 
 const loadStudied = () => {
   try {
     const raw = localStorage.getItem(STUDIED_KEY);
     return raw ? new Set(JSON.parse(raw)) : new Set();
   } catch { return new Set(); }
+};
+
+const loadVideos = () => {
+  try {
+    const raw = localStorage.getItem(VIDEOS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
 };
 
 const LoadingFallback = () => (
@@ -40,6 +48,7 @@ function App() {
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [comparePlayerIds, setComparePlayerIds] = useState([]);
   const [studiedPlayers, setStudiedPlayers] = useState(loadStudied);
+  const [playerVideos, setPlayerVideos] = useState(loadVideos);
 
   // Load players once at app level
   useEffect(() => {
@@ -58,16 +67,39 @@ function App() {
     load();
   }, []);
 
-  // Persist studied set
+  // Persist studied set and videos
   useEffect(() => {
     localStorage.setItem(STUDIED_KEY, JSON.stringify([...studiedPlayers]));
   }, [studiedPlayers]);
+
+  useEffect(() => {
+    localStorage.setItem(VIDEOS_KEY, JSON.stringify(playerVideos));
+  }, [playerVideos]);
 
   const toggleStudied = useCallback((playerId) => {
     setStudiedPlayers(prev => {
       const next = new Set(prev);
       if (next.has(playerId)) next.delete(playerId);
       else next.add(playerId);
+      return next;
+    });
+  }, []);
+
+  const addVideo = useCallback((playerId, url) => {
+    setPlayerVideos(prev => {
+      const existing = prev[playerId] || [];
+      if (existing.includes(url)) return prev;
+      return { ...prev, [playerId]: [...existing, url] };
+    });
+  }, []);
+
+  const removeVideo = useCallback((playerId, url) => {
+    setPlayerVideos(prev => {
+      const existing = prev[playerId] || [];
+      const filtered = existing.filter(u => u !== url);
+      const next = { ...prev };
+      if (filtered.length === 0) delete next[playerId];
+      else next[playerId] = filtered;
       return next;
     });
   }, []);
@@ -121,6 +153,9 @@ function App() {
                   toggleStudied={toggleStudied}
                   onBack={navigateToHub}
                   onSelectPlayer={navigateToProfile}
+                  videos={playerVideos[selectedPlayerId] || []}
+                  onAddVideo={(url) => addVideo(selectedPlayerId, url)}
+                  onRemoveVideo={(url) => removeVideo(selectedPlayerId, url)}
                 />
               )}
               {activeTab === 'compare' && (

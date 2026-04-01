@@ -207,7 +207,6 @@ const strengthStatDefs = {
     { label: 'Rushing TDs', key: 'rushingTDs', unit: '', getValue: p => p.stats?.rushingTDs, desc: 'rushing touchdowns' },
     { label: 'BTT Rate', key: 'bttRate', unit: '%', getValue: p => p.stats?.bttRate, desc: 'big-time throw rate' },
     { label: 'Y/A', key: 'yardsPerAttempt', unit: '', getValue: p => p.stats?.yardsPerAttempt, desc: 'yards per attempt' },
-    { label: 'PFF Pass Grade', key: 'pffPassGrade', unit: '', getValue: p => p.stats?.pffPassGrade, desc: 'PFF passing grade' },
     { label: 'QB Rating', key: 'qbRating', unit: '', getValue: p => p.stats?.qbRating, desc: 'passer rating' },
   ],
   RB: [
@@ -217,7 +216,6 @@ const strengthStatDefs = {
     { label: 'Receptions', key: 'receptions', unit: '', getValue: p => p.stats?.receptions, desc: 'receiving involvement' },
     { label: 'Receiving Yards', key: 'receivingYards', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
     { label: 'Elusive Rating', key: 'elusiveRating', unit: '', getValue: p => p.stats?.elusiveRating, desc: 'elusiveness' },
-    { label: 'PFF Grade', key: 'pffGrade', unit: '', getValue: p => p.stats?.pffGrade, desc: 'overall PFF grade' },
   ],
   WR: [
     { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
