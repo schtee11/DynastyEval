@@ -17,10 +17,19 @@ const MoonIcon = () => (
   </svg>
 );
 
-const Header = ({ activeTab, setActiveTab }) => {
+const BackArrow = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+const Header = ({ activeTab, setActiveTab, selectedPlayer, onBackToHub }) => {
   const { theme, toggleTheme } = useTheme();
+  const isProfile = activeTab === 'profile' && selectedPlayer;
+
   const tabs = [
-    { id: 'scout', label: 'Scout Board' },
+    { id: 'hub', label: 'Prospects' },
+    { id: 'compare', label: 'Compare' },
     { id: 'myboard', label: 'My Board' },
   ];
 
@@ -42,28 +51,65 @@ const Header = ({ activeTab, setActiveTab }) => {
       transition: 'background 0.2s ease',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <h1 className="header-logo" style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontWeight: 800,
-          fontSize: 19,
-          letterSpacing: 1,
-          color: 'var(--accent-text)',
-          margin: 0,
-          textTransform: 'uppercase',
-        }}>
-          Dynasty Rookie Scout
-        </h1>
-        <span className="header-class-badge" style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 10,
-          fontWeight: 600,
-          color: 'var(--text-tertiary)',
-          background: 'var(--bg-tertiary)',
-          padding: '2px 7px',
-          borderRadius: 'var(--radius-sm)',
-        }}>
-          2026
-        </span>
+        {isProfile ? (
+          <button
+            onClick={onBackToHub}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              fontSize: 13,
+              color: 'var(--accent-text)',
+              padding: '4px 0',
+            }}
+          >
+            <BackArrow />
+            <span className="header-back-label">Prospects</span>
+          </button>
+        ) : (
+          <>
+            <h1 className="header-logo" style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 800,
+              fontSize: 19,
+              letterSpacing: 1,
+              color: 'var(--accent-text)',
+              margin: 0,
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+            }} onClick={() => setActiveTab('hub')}>
+              Dynasty Rookie Scout
+            </h1>
+            <span className="header-class-badge" style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 10,
+              fontWeight: 600,
+              color: 'var(--text-tertiary)',
+              background: 'var(--bg-tertiary)',
+              padding: '2px 7px',
+              borderRadius: 'var(--radius-sm)',
+            }}>
+              2026
+            </span>
+          </>
+        )}
+
+        {isProfile && (
+          <span style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 800,
+            fontSize: 18,
+            color: 'var(--text-primary)',
+            letterSpacing: 0.5,
+          }}>
+            {selectedPlayer.name}
+          </span>
+        )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -82,8 +128,10 @@ const Header = ({ activeTab, setActiveTab }) => {
                 borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
-                background: activeTab === tab.id ? 'var(--accent)' : 'transparent',
-                color: activeTab === tab.id ? 'var(--text-inverse)' : 'var(--text-secondary)',
+                background: (activeTab === tab.id || (activeTab === 'profile' && tab.id === 'hub'))
+                  ? 'var(--accent)' : 'transparent',
+                color: (activeTab === tab.id || (activeTab === 'profile' && tab.id === 'hub'))
+                  ? 'var(--text-inverse)' : 'var(--text-secondary)',
               }}
             >
               {tab.label}
