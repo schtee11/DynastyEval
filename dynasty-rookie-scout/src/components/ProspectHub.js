@@ -6,6 +6,60 @@ import SearchInput from './SearchInput';
 import { isUsingLiveData } from '../services/dataService';
 import { sortPlayers, filterPlayers, getTierForPlayer } from '../utils/helpers';
 
+const SkeletonCard = ({ delay = 0 }) => (
+  <div style={{
+    borderRadius: 'var(--radius-md)',
+    overflow: 'hidden',
+    border: '1px solid var(--border-primary)',
+  }}>
+    <div className="skeleton-shimmer" style={{ height: 3 }} />
+    <div style={{ padding: '14px 14px 12px' }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+        <div className="skeleton-shimmer" style={{ width: 28, height: 28, borderRadius: '50%' }} />
+        <div style={{ flex: 1 }}>
+          <div className="skeleton-shimmer" style={{ height: 14, width: '70%', borderRadius: 4, marginBottom: 6 }} />
+          <div className="skeleton-shimmer" style={{ height: 10, width: '50%', borderRadius: 4 }} />
+        </div>
+      </div>
+      <div className="skeleton-shimmer" style={{ height: 20, borderRadius: 4, marginBottom: 8 }} />
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+        <div className="skeleton-shimmer" style={{ height: 16, width: 60, borderRadius: 10 }} />
+        <div className="skeleton-shimmer" style={{ height: 16, width: 50, borderRadius: 10 }} />
+      </div>
+      <div className="skeleton-shimmer" style={{ height: 6, borderRadius: 3, marginBottom: 6 }} />
+      <div className="skeleton-shimmer" style={{ height: 6, borderRadius: 3, marginBottom: 6 }} />
+      <div className="skeleton-shimmer" style={{ height: 6, borderRadius: 3 }} />
+    </div>
+  </div>
+);
+
+const LoadingSkeleton = () => (
+  <div style={{ padding: '20px 0' }}>
+    {/* Spinner + text */}
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 12, marginBottom: 24,
+    }}>
+      <div className="loading-spinner" />
+      <span style={{
+        fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+        color: 'var(--text-secondary)',
+      }}>
+        Loading prospects...
+      </span>
+    </div>
+
+    {/* Skeleton cards */}
+    <div className="prospect-card-grid" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      gap: 12,
+    }}>
+      {[...Array(6)].map((_, i) => <SkeletonCard key={i} delay={i * 100} />)}
+    </div>
+  </div>
+);
+
 const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, onSelectPlayer, onCompare }) => {
   const [viewMode, setViewMode] = useState('cards');
   const [filters, setFilters] = useState({
@@ -35,8 +89,20 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   const tierOrder = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
   const showTierGroups = sortBy === 'rank' || sortBy === 'draftCapital';
 
+  const renderCard = (player, index) => (
+    <div key={player.id} className="card-animate" style={{ animationDelay: `${Math.min(index * 40, 600)}ms` }}>
+      <PlayerCard
+        player={player}
+        perspective={perspective}
+        onClick={() => onSelectPlayer(player.id)}
+        allPlayers={players}
+        isStudied={studiedPlayers.has(player.id)}
+      />
+    </div>
+  );
+
   return (
-    <div style={{ padding: '16px 24px', maxWidth: 1400, margin: '0 auto' }}>
+    <div className="hub-root" style={{ padding: '16px 24px', maxWidth: 1400, margin: '0 auto' }}>
       <FilterBar
         filters={filters}
         setFilters={setFilters}
@@ -47,7 +113,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
       />
 
       {/* Search + count + view toggle */}
-      <div style={{
+      <div className="hub-toolbar" style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 16, gap: 16, flexWrap: 'wrap',
       }}>
@@ -79,7 +145,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           )}
         </span>
 
-        <div style={{
+        <div className="view-toggle-desktop" style={{
           display: 'flex', gap: 0,
           fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 12,
         }}>
@@ -104,16 +170,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
       </div>
 
       {/* Loading */}
-      {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 16 }}>
-          {[...Array(8)].map((_, i) => (
-            <div key={i} style={{
-              height: 52, background: 'var(--bg-secondary)',
-              borderRadius: 'var(--radius-sm)', animation: 'pulse 1.5s infinite',
-            }} />
-          ))}
-        </div>
-      )}
+      {loading && <LoadingSkeleton />}
 
       {/* Error */}
       {error && (
@@ -136,62 +193,53 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
       {/* Card View */}
       {!loading && viewMode === 'cards' && sorted.length > 0 && (
         showTierGroups ? (
-          tierOrder.filter(t => tiers[t]).map(tier => (
-            <div key={tier} style={{ marginBottom: 24 }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                marginBottom: 12, paddingBottom: 8,
-                borderBottom: '2px solid var(--border-primary)',
-              }}>
-                <h2 style={{
-                  fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
-                  fontSize: 18, color: 'var(--text-primary)', margin: 0,
-                  textTransform: 'uppercase', letterSpacing: 0.5,
+          tierOrder.filter(t => tiers[t]).map(tier => {
+            let globalIdx = 0;
+            // count cards in earlier tiers for stagger offset
+            for (const t of tierOrder) {
+              if (t === tier) break;
+              globalIdx += (tiers[t]?.length || 0);
+            }
+            return (
+              <div key={tier} style={{ marginBottom: 24 }}>
+                <div className="card-animate" style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  marginBottom: 12, paddingBottom: 8,
+                  borderBottom: '2px solid var(--border-primary)',
+                  animationDelay: `${Math.min(globalIdx * 40, 600)}ms`,
                 }}>
-                  {tier}
-                </h2>
-                <span style={{
-                  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-                  color: 'var(--text-tertiary)', background: 'var(--bg-tertiary)',
-                  padding: '2px 8px', borderRadius: 'var(--radius-sm)',
+                  <h2 style={{
+                    fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
+                    fontSize: 18, color: 'var(--text-primary)', margin: 0,
+                    textTransform: 'uppercase', letterSpacing: 0.5,
+                  }}>
+                    {tier}
+                  </h2>
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+                    color: 'var(--text-tertiary)', background: 'var(--bg-tertiary)',
+                    padding: '2px 8px', borderRadius: 'var(--radius-sm)',
+                  }}>
+                    {tiers[tier].length}
+                  </span>
+                </div>
+                <div className="prospect-card-grid mobile-card-feed" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                  gap: 12,
                 }}>
-                  {tiers[tier].length}
-                </span>
+                  {tiers[tier].map((player, i) => renderCard(player, globalIdx + i))}
+                </div>
               </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: 12,
-              }}>
-                {tiers[tier].map(player => (
-                  <PlayerCard
-                    key={player.id}
-                    player={player}
-                    perspective={perspective}
-                    onClick={() => onSelectPlayer(player.id)}
-                    allPlayers={players}
-                    isStudied={studiedPlayers.has(player.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <div style={{
+          <div className="prospect-card-grid mobile-card-feed" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: 12,
           }}>
-            {sorted.map(player => (
-              <PlayerCard
-                key={player.id}
-                player={player}
-                perspective={perspective}
-                onClick={() => onSelectPlayer(player.id)}
-                allPlayers={players}
-                isStudied={studiedPlayers.has(player.id)}
-              />
-            ))}
+            {sorted.map((player, i) => renderCard(player, i))}
           </div>
         )
       )}

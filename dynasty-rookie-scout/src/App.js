@@ -30,13 +30,14 @@ const loadVideos = () => {
 
 const LoadingFallback = () => (
   <div style={{
-    textAlign: 'center',
-    padding: 60,
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 15,
-    color: 'var(--text-tertiary)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: 12, padding: 60,
   }}>
-    Loading...
+    <div className="loading-spinner" />
+    <span style={{
+      fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+      color: 'var(--text-secondary)',
+    }}>Loading...</span>
   </div>
 );
 
