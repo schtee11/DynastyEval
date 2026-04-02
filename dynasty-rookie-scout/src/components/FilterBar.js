@@ -1,44 +1,29 @@
 import React from 'react';
+import { positionColors } from '../utils/helpers';
 
-const buttonStyle = (active) => ({
-  fontFamily: "'Barlow Condensed', sans-serif",
-  fontWeight: 600,
-  fontSize: 13,
-  letterSpacing: 1,
-  textTransform: 'uppercase',
-  padding: '6px 14px',
-  border: '1px solid',
-  borderColor: active ? '#f59e0b' : '#2a2d3e',
-  borderRadius: 4,
-  cursor: 'pointer',
-  background: active ? 'rgba(245,158,11,0.15)' : 'transparent',
-  color: active ? '#f59e0b' : '#9ca3af',
-  transition: 'all 0.15s',
-});
-
-const selectStyle = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontSize: 12,
-  background: '#1a1d2e',
-  color: '#e2e8f0',
-  border: '1px solid #2a2d3e',
-  borderRadius: 4,
-  padding: '6px 12px',
-  cursor: 'pointer',
-  outline: 'none',
-};
+const Divider = () => (
+  <div className="filter-divider" style={{
+    width: 1,
+    height: 24,
+    background: 'var(--border-primary)',
+    flexShrink: 0,
+  }} />
+);
 
 const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPerspective }) => {
+  // Count active (non-default) filters
+  const activeCount = [
+    filters.position !== 'ALL',
+    filters.draftDay !== '',
+    filters.hideInjured,
+    filters.nameSearch,
+  ].filter(Boolean).length;
   const positions = ['ALL', 'QB', 'RB', 'WR', 'TE'];
   const perspectives = [
     { value: 'overall', label: 'Overall' },
-    { value: 'lateDown', label: 'Late Down' },
     { value: 'deepBall', label: 'Deep Ball' },
-    { value: 'screen', label: 'Screen' },
-    { value: 'redZone', label: 'Red-Zone' },
-    { value: 'press', label: 'vs. Press' },
-    { value: 'zone', label: 'vs. Zone' },
-    { value: 'single', label: 'vs. Single' },
+    { value: 'redZone', label: 'Red Zone' },
+    { value: 'lateDown', label: 'Late Down' },
   ];
   const draftDays = [
     { value: '', label: 'All Rounds' },
@@ -49,49 +34,106 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
 
   const isWR = filters.position === 'WR';
 
+  // Use position-specific color when a position is selected
+  const getButtonStyle = (pos, isActive) => {
+    if (!isActive) {
+      return {
+        borderColor: 'var(--border-primary)',
+        background: 'transparent',
+        color: 'var(--text-secondary)',
+      };
+    }
+    if (pos === 'ALL') {
+      return {
+        borderColor: 'var(--accent)',
+        background: 'var(--accent-light)',
+        color: 'var(--accent-text)',
+      };
+    }
+    const pc = positionColors[pos];
+    return {
+      borderColor: pc.border,
+      background: pc.bg,
+      color: pc.text,
+    };
+  };
+
+  const selectStyle = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    background: 'var(--bg-input)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border-primary)',
+    borderRadius: 'var(--radius-sm)',
+    padding: '5px 10px',
+    cursor: 'pointer',
+    outline: 'none',
+  };
+
   return (
     <div className="filter-bar-root" style={{
-      background: '#151825',
-      borderRadius: 8,
-      padding: '12px 16px',
-      marginBottom: 16,
+      background: 'var(--bg-secondary)',
+      border: '1px solid var(--border-primary)',
+      borderRadius: 'var(--radius-md)',
+      padding: '10px 16px',
+      marginBottom: 12,
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
       flexWrap: 'wrap',
       gap: 12,
+      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+      transition: 'background 0.2s ease, border-color 0.2s ease',
     }}>
       {/* Position filter */}
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
         <span className="filter-label" style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           fontSize: 11,
-          color: '#6b7280',
-          letterSpacing: 1,
+          fontWeight: 600,
+          color: 'var(--text-tertiary)',
+          letterSpacing: 0.5,
           textTransform: 'uppercase',
-          marginRight: 8,
-        }}>POS</span>
-        {positions.map(pos => (
-          <button
-            key={pos}
-            className="pos-btn"
-            onClick={() => setFilters(f => ({ ...f, position: pos }))}
-            style={buttonStyle(filters.position === pos)}
-          >
-            {pos}
-          </button>
-        ))}
+          marginRight: 4,
+        }}>Pos</span>
+        {positions.map(pos => {
+          const active = filters.position === pos;
+          const s = getButtonStyle(pos, active);
+          return (
+            <button
+              key={pos}
+              className="pos-btn"
+              onClick={() => setFilters(f => ({ ...f, position: pos }))}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: 12,
+                padding: '5px 12px',
+                border: `1px solid ${s.borderColor}`,
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                background: s.background,
+                color: s.color,
+                transition: 'all 0.15s',
+              }}
+            >
+              {pos}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Draft day filter */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <Divider />
+
+      {/* Draft day */}
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         <span className="filter-label" style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           fontSize: 11,
-          color: '#6b7280',
-          letterSpacing: 1,
+          fontWeight: 600,
+          color: 'var(--text-tertiary)',
+          letterSpacing: 0.5,
           textTransform: 'uppercase',
-        }}>ROUND</span>
+        }}>Round</span>
         <select
           value={filters.draftDay || ''}
           onChange={e => setFilters(f => ({ ...f, draftDay: e.target.value }))}
@@ -103,56 +145,90 @@ const FilterBar = ({ filters, setFilters, sortBy, setSortBy, perspective, setPer
         </select>
       </div>
 
-      {/* Receiving perspective filter — WR only */}
+      {/* Perspective — WR only */}
       {isWR && (
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span className="filter-label" style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 11,
-            color: '#6b7280',
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-          }}>VIEW</span>
-          <select
-            value={perspective}
-            onChange={e => setPerspective(e.target.value)}
-            style={selectStyle}
-          >
-            {perspectives.map(p => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-        </div>
+        <>
+          <Divider />
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span className="filter-label" style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 11,
+              fontWeight: 600,
+              color: 'var(--text-tertiary)',
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+            }}>View</span>
+            <select
+              value={perspective}
+              onChange={e => setPerspective(e.target.value)}
+              style={selectStyle}
+            >
+              {perspectives.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        </>
       )}
 
-      {/* Injury toggle */}
+      <Divider />
+
+      {/* Hide Injured */}
       <label className="injury-toggle" style={{
         display: 'flex',
         alignItems: 'center',
         gap: 6,
         cursor: 'pointer',
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily: "'Inter', sans-serif",
         fontSize: 12,
-        color: filters.hideInjured ? '#ef4444' : '#6b7280',
+        color: filters.hideInjured ? 'var(--danger)' : 'var(--text-tertiary)',
       }}>
         <input
           type="checkbox"
           checked={filters.hideInjured}
           onChange={e => setFilters(f => ({ ...f, hideInjured: e.target.checked }))}
-          style={{ accentColor: '#ef4444' }}
+          style={{ accentColor: 'var(--danger)' }}
         />
         Hide Injured
       </label>
 
+      {/* Active filter count + clear */}
+      {activeCount > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
+            color: 'var(--accent-text)', background: 'var(--accent-light)',
+            padding: '2px 8px', borderRadius: 10,
+          }}>
+            {activeCount} active
+          </span>
+          <button
+            onClick={() => setFilters({ position: 'ALL', draftDay: '', hideInjured: false, breakoutMax: null, nameSearch: '' })}
+            style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 500,
+              color: 'var(--text-tertiary)', background: 'none', border: 'none',
+              cursor: 'pointer', padding: 0, textDecoration: 'underline',
+              textUnderlineOffset: 2,
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Spacer */}
+      <div style={{ flex: 1 }} />
+
       {/* Sort */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         <span className="filter-label" style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           fontSize: 11,
-          color: '#6b7280',
-          letterSpacing: 1,
+          fontWeight: 600,
+          color: 'var(--text-tertiary)',
+          letterSpacing: 0.5,
           textTransform: 'uppercase',
-        }}>SORT</span>
+        }}>Sort</span>
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value)}

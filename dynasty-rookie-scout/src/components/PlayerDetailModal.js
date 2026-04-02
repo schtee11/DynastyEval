@@ -1,62 +1,144 @@
 import React, { useState, useEffect } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { positionColors, getBreakoutIndicator, getDraftCapitalInfo, hasInjuryRisk } from '../utils/helpers';
+import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/anthropicApi';
 import { perspectiveLabels } from '../services/receivingData';
+import { useTheme } from '../ThemeContext';
+import DraftBadge from './DraftBadge';
+import PlayerCompChip from './PlayerCompChip';
+import ValueDelta from './ValueDelta';
 
-const StatRow = ({ label, value, benchmark, unit = '' }) => {
+/**
+ * Enhanced StatRow with inline percentile bar.
+ * Shows: [label] [====-----] [value] [pct badge]
+ */
+const StatRow = ({ label, value, benchmark, unit = '', allValues }) => {
   const displayValue = value == null || value === '' ? 'N/A' : value;
   const isNA = displayValue === 'N/A';
-  const isAbove = !isNA && benchmark && parseFloat(value) >= benchmark;
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : parseFloat(value);
+  const pct = allValues ? computePercentile(numericValue, allValues) : null;
+  const barColor = getPercentileColor(pct);
+
   return (
     <div style={{
       display: 'flex',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      gap: 8,
       padding: '6px 0',
-      borderBottom: '1px solid #1e2133',
+      borderBottom: '1px solid var(--border-subtle)',
     }}>
       <span style={{
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily: "'Inter', sans-serif",
         fontSize: 12,
-        color: '#9ca3af',
+        color: 'var(--text-secondary)',
+        width: 120,
+        flexShrink: 0,
       }}>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+
+      {/* Mini percentile bar */}
+      {pct != null && (
+        <div style={{
+          flex: 1,
+          height: 5,
+          background: 'var(--bar-track)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          minWidth: 50,
+          position: 'relative',
+        }}>
+          <div style={{
+            width: `${Math.max(pct, 3)}%`,
+            height: '100%',
+            background: barColor,
+            borderRadius: 3,
+            transition: 'width 0.4s ease',
+          }} />
+          {/* Benchmark tick */}
+          {benchmark != null && allValues && (() => {
+            const benchPct = computePercentile(benchmark, allValues);
+            if (benchPct == null) return null;
+            return (
+              <div style={{
+                position: 'absolute',
+                left: `${benchPct}%`,
+                top: 0,
+                bottom: 0,
+                width: 1,
+                background: 'var(--text-tertiary)',
+                opacity: 0.5,
+              }} />
+            );
+          })()}
+        </div>
+      )}
+      {pct == null && <div style={{ flex: 1 }} />}
+
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 13,
+        fontWeight: 700,
+        color: isNA ? 'var(--text-tertiary)' : 'var(--text-primary)',
+        minWidth: 48,
+        textAlign: 'right',
+        flexShrink: 0,
+      }}>
+        {isNA ? 'N/A' : `${displayValue}${unit}`}
+      </span>
+
+      {pct != null && (
         <span style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 14,
+          fontSize: 9,
           fontWeight: 700,
-          color: isNA ? '#6b7280' : isAbove ? '#22c55e' : '#f1f5f9',
+          color: barColor,
+          minWidth: 28,
+          textAlign: 'right',
+          flexShrink: 0,
         }}>
-          {isNA ? 'N/A' : `${displayValue}${unit}`}
+          {pct}th
         </span>
-        {benchmark && (
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 10,
-            color: '#6b7280',
-          }}>
-            (avg: {benchmark}{unit})
-          </span>
-        )}
-      </div>
+      )}
     </div>
   );
 };
 
-const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall', onClose }) => {
+const SectionLabel = ({ children }) => (
+  <div style={{
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 600,
+    fontSize: 11,
+    color: 'var(--text-tertiary)',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginTop: 14,
+    marginBottom: 4,
+    paddingBottom: 4,
+    borderBottom: '1px solid var(--border-primary)',
+  }}>
+    {children}
+  </div>
+);
+
+const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
+
+const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose, isDesktopPanel = false }) => {
+  const { theme } = useTheme();
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
   const [slideIn, setSlideIn] = useState(false);
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
-  const isDesktop = winWidth >= 1025;
+  const isDesktop = isDesktopPanel || winWidth >= 1025;
   const isTabletLandscape = winWidth >= 1025 && winWidth <= 1400;
 
   const posColor = positionColors[player.position] || positionColors.WR;
+  const chartColor = positionChartColors[player.position] || positionChartColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
-  const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
+
+  // Same-position peers for percentile stat bars
+  const peers = allPlayers.filter(p => p.position === player.position);
+  const peerVals = (accessor) => peers.map(accessor).filter(v => v != null);
 
   const handleGenerateSummary = async () => {
     setLoadingSummary(true);
@@ -65,18 +147,16 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
       setSummary(result);
     } catch (err) {
       console.error('[PlayerDetailModal] AI summary failed:', err);
-      setSummary('Failed to generate scouting summary. Check the browser console for details.');
+      setSummary('Failed to generate scouting summary.');
     } finally {
       setLoadingSummary(false);
     }
   };
 
-  // Trigger slide-in animation on mount
   useEffect(() => {
     requestAnimationFrame(() => setSlideIn(true));
   }, []);
 
-  // Reset AI summary when player changes
   useEffect(() => {
     setSummary(null);
     setLoadingSummary(false);
@@ -91,62 +171,56 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
   const getRadarData = () => {
     const s = player.stats || {};
+    const pos = player.position;
+    const peers = allPlayers.filter(p => p.position === pos);
 
-    if (player.position === 'QB') {
+    if (pos === 'QB') {
       return [
-        { stat: 'Comp %', value: Math.min(100, ((s.completionPct || 0) / 80) * 100), fullMark: 100 },
-        { stat: 'Pass TDs', value: Math.min(100, ((s.passingTDs || 0) / 45) * 100), fullMark: 100 },
-        { stat: 'Pass YDs', value: Math.min(100, ((s.passingYards || 0) / 5000) * 100), fullMark: 100 },
-        { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 800) * 100), fullMark: 100 },
-        { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 15) * 100), fullMark: 100 },
+        { stat: 'Comp %', value: computePercentile(s.completionPct, peers.map(p => p.stats?.completionPct)), fullMark: 100 },
+        { stat: 'Pass TDs', value: computePercentile(s.passingTDs, peers.map(p => p.stats?.passingTDs)), fullMark: 100 },
+        { stat: 'Pass YDs', value: computePercentile(s.passingYards, peers.map(p => p.stats?.passingYards)), fullMark: 100 },
+        { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
+        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
       ];
     }
 
-    if (player.position === 'RB') {
+    if (pos === 'RB') {
       return [
-        { stat: 'Rush YDs', value: Math.min(100, ((s.rushingYards || 0) / 2000) * 100), fullMark: 100 },
-        { stat: 'YPC', value: Math.min(100, ((s.yardsPerCarry || 0) / 8) * 100), fullMark: 100 },
-        { stat: 'Receiving', value: Math.min(100, ((s.receivingYards || 0) / 500) * 100), fullMark: 100 },
-        { stat: 'Rush TDs', value: Math.min(100, ((s.rushingTDs || 0) / 20) * 100), fullMark: 100 },
-        { stat: 'MTF', value: Math.min(100, ((player.avoidedTackles || 0) / 60) * 100), fullMark: 100 },
+        { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
+        { stat: 'YPC', value: computePercentile(s.yardsPerCarry, peers.map(p => p.stats?.yardsPerCarry)), fullMark: 100 },
+        { stat: 'Receiving', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
+        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
+        { stat: 'MTF', value: computePercentile(player.avoidedTackles, peers.map(p => p.avoidedTackles)), fullMark: 100 },
       ];
     }
 
-    // WR — receiving perspective data
-    if (player.position === 'WR') {
+    if (pos === 'WR') {
       const pData = player.receivingByPerspective?.[modalPerspective];
       if (pData) {
         return [
-          { stat: 'YPRR', value: Math.min(100, ((pData.yprr || 0) / 4) * 100), fullMark: 100 },
-          { stat: 'Tgt/RR', value: Math.min(100, ((pData.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-          { stat: '1D+TD/RR', value: Math.min(100, ((pData.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-          { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
-          { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
-          { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-          { stat: 'Rec YDs', value: Math.min(100, ((pData.recYds || s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
+          { stat: 'YPRR', value: computePercentile(pData.yprr, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.yprr)), fullMark: 100 },
+          { stat: 'Tgt/RR', value: computePercentile(pData.tgtPerRR, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.tgtPerRR)), fullMark: 100 },
+          { stat: '1D+TD/RR', value: computePercentile(pData.firstDownTDPerRR, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.firstDownTDPerRR)), fullMark: 100 },
+          { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+          { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+          { stat: 'Rec YDs', value: computePercentile(pData.recYds || s.receivingYards, peers.map(p => p.receivingByPerspective?.[modalPerspective]?.recYds || p.stats?.receivingYards)), fullMark: 100 },
         ];
       }
-      // WR fallback (no perspective data)
       return [
-        { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-        { stat: 'Tgt/RR', value: Math.min(100, ((player.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-        { stat: '1D+TD/RR', value: Math.min(100, ((player.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-        { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
-        { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
-        { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-        { stat: 'Rec YDs', value: Math.min(100, ((s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
+        { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
+        { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+        { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+        { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
+        { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       ];
     }
 
-    // TE — same advanced metrics as WR
     return [
-      { stat: 'YPRR', value: Math.min(100, ((player.yprr || 0) / 4) * 100), fullMark: 100 },
-      { stat: 'Tgt/RR', value: Math.min(100, ((player.tgtPerRR || 0) / 35) * 100), fullMark: 100 },
-      { stat: '1D+TD/RR', value: Math.min(100, ((player.firstDownTDPerRR || 0) / 0.3) * 100), fullMark: 100 },
-      { stat: 'YAC/Rec', value: Math.min(100, ((player.yardsAfterCatchPerRec || 0) / 10) * 100), fullMark: 100 },
-      { stat: 'Cont %', value: Math.min(100, (player.contestedCatchRate || 0)), fullMark: 100 },
-      { stat: 'Tgt Share', value: Math.min(100, ((player.targetShare || 0) / 35) * 100), fullMark: 100 },
-      { stat: 'Rec YDs', value: Math.min(100, ((s.receivingYards || 0) / 1500) * 100), fullMark: 100 },
+      { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
+      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+      { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+      { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
+      { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
     ];
   };
 
@@ -158,43 +232,22 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
 
   const rankDelta = player.rank && !isUnranked ? (player.rank.oneQB - player.rank.superflex) : 0;
 
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: isDesktop ? 'none' : 'rgba(0,0,0,0.8)',
-        zIndex: 200,
-        transition: 'background 0.3s ease',
-        pointerEvents: isDesktop ? 'none' : 'auto',
-      }}
-      onClick={isDesktop ? undefined : onClose}
-    >
-      <div
-        className="detail-modal-panel"
-        onClick={e => e.stopPropagation()}
-        style={{
-          pointerEvents: 'auto',
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: isDesktop ? (isTabletLandscape ? 420 : 560) : '100%',
-          maxWidth: '100vw',
-          background: '#0f1117',
-          borderLeft: isDesktop ? `2px solid ${posColor.border}44` : 'none',
-          borderRadius: isDesktop ? 0 : 12,
-          overflowY: 'auto',
-          transform: slideIn ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: isDesktop ? '-8px 0 30px rgba(0,0,0,0.5)' : 'none',
-        }}
-      >
-        {/* Header */}
+  const availablePerspectives = player.receivingByPerspective
+    ? SIMPLIFIED_PERSPECTIVES.filter(k => player.receivingByPerspective[k])
+    : [];
+
+  // Chart theme colors
+  const gridColor = theme === 'dark' ? '#1e293b' : '#e2e8f0';
+  const labelColor = theme === 'dark' ? '#94a3b8' : '#64748b';
+  const tickColor = theme === 'dark' ? '#64748b' : '#94a3b8';
+
+  const panelContent = (
+    <>
+      {/* Header */}
         <div style={{
-          background: `linear-gradient(135deg, ${posColor.border}22, #1a1d2e)`,
+          background: 'var(--bg-secondary)',
           padding: isDesktop ? (isTabletLandscape ? '16px 18px' : '20px 24px') : '24px 28px',
-          borderBottom: '1px solid #2a2d3e',
+          borderBottom: '1px solid var(--border-primary)',
           position: 'relative',
         }}>
           {injured && (
@@ -203,16 +256,16 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               top: 0,
               left: 0,
               right: 0,
-              background: '#ef4444',
+              background: 'var(--danger)',
               color: '#fff',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 12,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 11,
               fontWeight: 700,
-              padding: '6px 16px',
+              padding: '5px 16px',
               textAlign: 'center',
-              letterSpacing: 1,
+              letterSpacing: 0.5,
             }}>
-              🚨 INJURY HISTORY — {player.injuries.map(i => i.type).join(', ')} 🚨
+              INJURY HISTORY \u2014 {player.injuries.map(i => i.type).join(', ')}
             </div>
           )}
 
@@ -221,45 +274,36 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               <h2 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 800,
-                fontSize: isDesktop ? 26 : 32,
-                color: '#f1f5f9',
+                fontSize: isDesktop ? 24 : 28,
+                color: 'var(--text-primary)',
                 margin: 0,
               }}>
                 {player.name}
               </h2>
               <span style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: 12,
                 color: posColor.text,
                 background: posColor.bg,
-                padding: '3px 10px',
-                borderRadius: 6,
+                padding: '2px 8px',
+                borderRadius: 'var(--radius-sm)',
               }}>
                 {player.position}
               </span>
               {player.draftPick && (
-                <span style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: capital.color,
-                  background: `${capital.color}18`,
-                  padding: '3px 10px',
-                  borderRadius: 6,
-                }}>
-                  {player.draftTeam
-                    ? `R${player.draftRound} #${player.draftPick} ${player.draftTeam}`
-                    : `Proj Rd ${player.draftRound} (#${player.draftPick})`}
-                </span>
+                <>
+                  <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
+                  <ValueDelta rank={player.rank?.oneQB} adp={player.dynastyADP?.oneQB} />
+                </>
               )}
             </div>
             <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'Inter', sans-serif",
               fontSize: 12,
-              color: '#9ca3af',
+              color: 'var(--text-secondary)',
             }}>
-              {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' · ') || 'TBD'}
+              {[player.college, player.height && player.weight ? `${player.height} / ${player.weight} lbs` : null, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' \u00B7 ') || 'TBD'}
             </div>
           </div>
 
@@ -269,112 +313,113 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               position: 'absolute',
               top: injured ? 36 : 12,
               right: 12,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid #2a2d3e',
-              borderRadius: 6,
-              color: '#9ca3af',
-              fontSize: 18,
+              background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-secondary)',
+              fontSize: 16,
               cursor: 'pointer',
               lineHeight: 1,
               padding: '4px 10px',
               transition: 'color 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.color = '#f1f5f9'}
-            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
           >
-            ×
+            \u00D7
           </button>
         </div>
 
         {/* Body */}
         <div style={{ padding: isDesktop ? 20 : 28 }}>
           <div className="detail-modal-body-grid" style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr' : '1fr 1fr', gap: 24, marginBottom: 24 }}>
-            {/* Left: Stats */}
+            {/* Stats */}
             <div>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
-                marginBottom: 12,
-              }}>{player.position === 'WR' && player.receivingByPerspective ? 'Receiving Breakdown' : 'Full Stat Breakdown'}</h3>
+                marginBottom: 8,
+              }}>
+                Stats
+                {player.gamesPlayed && (
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 500,
+                    color: 'var(--text-tertiary)', marginLeft: 8, textTransform: 'none', letterSpacing: 0,
+                  }}>
+                    {player.gamesPlayed} games
+                  </span>
+                )}
+              </h3>
 
-              {/* QB stats — from CFBD API */}
               {player.position === 'QB' && (
                 <>
-                  <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" />
-                  <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} />
-                  <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} />
+                  <SectionLabel>Passing</SectionLabel>
+                  <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" allValues={peerVals(p => p.stats?.completionPct)} />
+                  <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.passingYards)} />
+                  <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} allValues={peerVals(p => p.stats?.passingTDs)} />
                   <StatRow label="Interceptions" value={player.stats?.interceptions} />
-                  <StatRow label="Rushing Yards" value={player.stats?.rushingYards} />
-                  <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} />
+                  <SectionLabel>Rushing</SectionLabel>
+                  <StatRow label="Rushing Yards" value={player.stats?.rushingYards} allValues={peerVals(p => p.stats?.rushingYards)} />
+                  <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} allValues={peerVals(p => p.stats?.rushingTDs)} />
                 </>
               )}
 
-              {/* RB stats — from CFBD API */}
               {player.position === 'RB' && (
                 <>
-                  <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} />
-                  <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} />
-                  <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} />
-                  <StatRow label="Yards After Contact" value={player.yardsAfterContact} />
-                  <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} />
-                  <StatRow label="Missed Tackles Forced" value={player.avoidedTackles} benchmark={40} />
-                  <StatRow label="10+ Yard Runs" value={player.explosiveRuns} benchmark={25} />
-                  <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} />
-                  <StatRow label="Receiving Yards" value={player.stats?.receivingYards} />
-                  <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
+                  <SectionLabel>Production</SectionLabel>
+                  <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} allValues={peerVals(p => p.stats?.rushingYards)} />
+                  <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} allValues={peerVals(p => p.stats?.rushingTDs)} />
+                  <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} allValues={peerVals(p => p.stats?.yardsPerCarry)} />
+                  <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} allValues={peerVals(p => p.stats?.receptions)} />
+                  <StatRow label="Receiving Yards" value={player.stats?.receivingYards} allValues={peerVals(p => p.stats?.receivingYards)} />
+                  <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} allValues={peerVals(p => p.ycoPerAttempt)} />
+                  <StatRow label="MTF" value={player.avoidedTackles} benchmark={40} allValues={peerVals(p => p.avoidedTackles)} />
                 </>
               )}
 
-              {/* TE stats */}
               {player.position === 'TE' && (
                 <>
-                  <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
-                  <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} />
-                  <StatRow label="Routes Run" value={player.routesRun} />
-                  <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} />
-                  <StatRow label="1D+TD/RR" value={player.firstDownTDPerRR} />
-                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                  <StatRow label="Receptions" value={player.stats?.receptions} />
-                  <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
-                  <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
-                  <StatRow label="Targets" value={player.stats?.targets} />
-                  <StatRow label="YAC" value={player.yardsAfterCatch} />
-                  <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
-                  <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
-                  <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
-                  <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
-                  <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
-                  <StatRow label="Contested Receptions" value={player.contestedReceptions} />
+                  <SectionLabel>Production</SectionLabel>
+                  <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
+                  <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
+                  <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
+                  <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" allValues={peerVals(p => p.targetShare)} />
+                  <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="YPRR" value={player.yprr} benchmark={1.8} allValues={peerVals(p => p.yprr)} />
+                  <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} allValues={peerVals(p => p.recGrade)} />
+                  <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} allValues={peerVals(p => p.tgtPerRR)} />
+                  <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} allValues={peerVals(p => p.yardsAfterCatchPerRec)} />
+                  <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" allValues={peerVals(p => p.contestedCatchRate)} />
                 </>
               )}
 
-              {/* WR — perspective-based receiving data */}
               {player.position === 'WR' && (() => {
                 const pData = player.receivingByPerspective?.[modalPerspective];
                 const val = (key) => pData?.[key] ?? null;
                 return (
                   <>
-                    {player.receivingByPerspective && (
+                    {availablePerspectives.length > 0 && (
                       <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
-                        {Object.keys(player.receivingByPerspective).map(key => (
+                        {availablePerspectives.map(key => (
                           <button
                             key={key}
                             onClick={() => setModalPerspective(key)}
                             style={{
-                              fontFamily: "'JetBrains Mono', monospace",
+                              fontFamily: "'Inter', sans-serif",
                               fontSize: 11,
-                              fontWeight: modalPerspective === key ? 700 : 400,
+                              fontWeight: modalPerspective === key ? 600 : 400,
                               padding: '4px 10px',
                               border: '1px solid',
-                              borderColor: modalPerspective === key ? '#f59e0b' : '#2a2d3e',
-                              borderRadius: 4,
+                              borderColor: modalPerspective === key ? 'var(--accent)' : 'var(--border-primary)',
+                              borderRadius: 'var(--radius-sm)',
                               cursor: 'pointer',
-                              background: modalPerspective === key ? 'rgba(245,158,11,0.15)' : 'transparent',
-                              color: modalPerspective === key ? '#f59e0b' : '#9ca3af',
+                              background: modalPerspective === key ? 'var(--accent-light)' : 'transparent',
+                              color: modalPerspective === key ? 'var(--accent-text)' : 'var(--text-secondary)',
                               transition: 'all 0.15s',
                             }}
                           >
@@ -385,62 +430,52 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                     )}
                     {pData ? (
                       <>
-                        <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                         {modalPerspective === 'deepBall' ? (
                           <>
+                            <SectionLabel>Deep Ball</SectionLabel>
+                            <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                             <StatRow label="Targets" value={val('targets')} />
                             <StatRow label="Receptions" value={val('receptions')} />
-                            <StatRow label="% Career Rec Yards" value={val('pctCareerRecYds')} unit="%" />
-                            <StatRow label="% Career Rec TDs" value={val('pctCareerRecTDs')} unit="%" />
                             <StatRow label="ADoT" value={val('adot')} />
-                            <StatRow label="Contested Catch Rate" value={val('contestedCatchRate')} unit="%" />
+                            <StatRow label="Contested Catch %" value={val('contestedCatchRate')} unit="%" />
+                            <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                           </>
                         ) : modalPerspective === 'overall' ? (
                           <>
-                            <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                            <StatRow label="Routes Run" value={val('routesRun')} />
-                            <StatRow label="Targets" value={val('targets')} />
+                            <SectionLabel>Production</SectionLabel>
                             <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
                             <StatRow label="Receiving TDs" value={val('recTDs')} />
+                            <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                            <SectionLabel>Efficiency</SectionLabel>
+                            <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                             <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
                             <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
-                            <StatRow label="YAC" value={player.yardsAfterCatch} />
                             <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
-                            <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
-                            <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
-                            <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
-                            <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
-                            <StatRow label="Contested Receptions" value={player.contestedReceptions} />
+                            <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />
+                            <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                           </>
                         ) : (
                           <>
-                            <StatRow label="Routes Run" value={val('routesRun')} />
+                            <SectionLabel>{perspectiveLabels[modalPerspective] || modalPerspective}</SectionLabel>
+                            <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
                             <StatRow label="Targets" value={val('targets')} />
-                            <StatRow label="% Career Rec Yards" value={val('pctCareerRecYds')} unit="%" />
-                            <StatRow label="% Career Rec TDs" value={val('pctCareerRecTDs')} unit="%" />
                             <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
                             <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
+                            <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                           </>
                         )}
-                        <StatRow label="Receiving Grade" value={val('recGrade')} benchmark={80} />
                       </>
                     ) : (
                       <>
-                        {/* WR fallback — CFBD stats */}
-                        <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
-                        <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
-                        <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                        <StatRow label="Receptions" value={player.stats?.receptions} />
+                        <SectionLabel>Production</SectionLabel>
                         <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
                         <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
-                        <StatRow label="Targets" value={player.stats?.targets} />
-                        <StatRow label="YAC" value={player.yardsAfterCatch} />
+                        <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
+                        <SectionLabel>Efficiency</SectionLabel>
+                        <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
+                        <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
                         <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
-                        <StatRow label="Slot Rate" value={player.slotRate} unit="%" />
-                        <StatRow label="Wide Rate" value={player.wideRate} unit="%" />
-                        <StatRow label="Inline Rate" value={player.inlineRate} unit="%" />
-                        <StatRow label="Contested Catch Rate" value={player.contestedCatchRate} unit="%" />
-                        <StatRow label="Contested Receptions" value={player.contestedReceptions} />
+                        <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />
                       </>
                     )}
                   </>
@@ -455,31 +490,31 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                       alignItems: 'center',
                       gap: 6,
                       marginTop: 4,
-                      fontFamily: "'JetBrains Mono', monospace",
+                      fontFamily: "'Inter', sans-serif",
                       fontSize: 12,
                       color: breakout.color,
-                      fontWeight: 700,
+                      fontWeight: 600,
                     }}>
-                      {breakout.emoji} {breakout.label} Breakout Profile
+                      {breakout.label} Breakout Profile
                     </div>
               </div>
               )}
             </div>
 
-            {/* Right: Radar chart */}
+            {/* Radar chart */}
             <div>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 12,
               }}>Player Profile</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <RadarChart data={getRadarData()}>
-                  <PolarGrid stroke="#2a2d3e" />
+                  <PolarGrid stroke={gridColor} />
                   <PolarAngleAxis
                     dataKey="stat"
                     tick={({ x, y, payload, index }) => {
@@ -487,152 +522,118 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                       const pct = Math.round(radarData[index]?.value || 0);
                       return (
                         <g>
-                          <text
-                            x={x}
-                            y={y}
-                            textAnchor="middle"
-                            fill="#9ca3af"
-                            fontSize={11}
-                            fontFamily="'JetBrains Mono', monospace"
-                          >
+                          <text x={x} y={y} textAnchor="middle" fill={labelColor} fontSize={11} fontFamily="'Inter', sans-serif">
                             {payload.value}
                           </text>
                           <text
-                            x={x}
-                            y={y + 13}
-                            textAnchor="middle"
-                            fill={pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#6b7280'}
-                            fontSize={10}
-                            fontWeight={700}
-                            fontFamily="'JetBrains Mono', monospace"
+                            x={x} y={y + 13} textAnchor="middle"
+                            fill={pct >= 75 ? '#16a34a' : pct >= 50 ? '#d97706' : tickColor}
+                            fontSize={10} fontWeight={700} fontFamily="'JetBrains Mono', monospace"
                           >
-                            {pct}th %ile
+                            {pct}th
                           </text>
                         </g>
                       );
                     }}
                   />
                   <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-                  <Radar
-                    name={player.name}
-                    dataKey="value"
-                    stroke={posColor.border}
-                    fill={posColor.border}
-                    fillOpacity={0.25}
-                    strokeWidth={2}
-                  />
+                  <Radar name={player.name} dataKey="value" stroke={chartColor} fill={chartColor} fillOpacity={0.2} strokeWidth={2} />
                 </RadarChart>
               </ResponsiveContainer>
 
-              {/* Unranked notice */}
               {isUnranked && (
                 <div style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'Inter', sans-serif",
                   fontSize: 12,
-                  color: '#6b7280',
-                  background: '#1a1d2e',
-                  borderRadius: 6,
+                  color: 'var(--text-tertiary)',
+                  background: 'var(--bg-tertiary)',
+                  borderRadius: 'var(--radius-sm)',
                   padding: '10px 14px',
                   marginTop: 16,
                   textAlign: 'center',
                 }}>
-                  UNR — Not ranked on FantasyCalc
+                  UNR \u2014 Not ranked on FantasyCalc
                 </div>
               )}
 
-              {/* 1QB vs SF comparison */}
               {rankComparisonData.length > 0 && (<>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginTop: 16,
                 marginBottom: 8,
-              }}>1QB vs Superflex Value</h3>
+              }}>1QB vs Superflex</h3>
               <ResponsiveContainer width="100%" height={120}>
                 <BarChart data={rankComparisonData} layout="vertical">
-                  <XAxis type="number" domain={[0, 40]} tick={{ fill: '#6b7280', fontSize: 10 }} reversed />
-                  <YAxis
-                    type="category"
-                    dataKey="format"
-                    tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}
-                    width={40}
-                  />
+                  <XAxis type="number" domain={[0, 40]} tick={{ fill: tickColor, fontSize: 10 }} reversed />
+                  <YAxis type="category" dataKey="format" tick={{ fill: labelColor, fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }} width={40} />
                   <Tooltip
-                    contentStyle={{ background: '#1a1d2e', border: '1px solid #2a2d3e', borderRadius: 6 }}
-                    labelStyle={{ color: '#f1f5f9', fontFamily: "'Barlow Condensed', sans-serif" }}
-                    itemStyle={{ color: '#9ca3af', fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}
+                    contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 6 }}
+                    labelStyle={{ color: 'var(--text-primary)' }}
+                    itemStyle={{ color: 'var(--text-secondary)', fontSize: 12 }}
                   />
-                  <Bar dataKey="rank" fill="#60a5fa" name="Rank" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="adp" fill="#a78bfa" name="ADP" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="rank" fill="#3b82f6" name="Rank" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="adp" fill="#7c3aed" name="ADP" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               <div style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 11,
-                color: '#9ca3af',
+                color: 'var(--text-tertiary)',
                 marginTop: 4,
               }}>
-                📊 Rank Delta: {rankDelta > 0 ? `+${rankDelta} spots higher in SF` : rankDelta < 0 ? `${Math.abs(rankDelta)} spots higher in 1QB` : 'Same rank'}
+                Rank Delta: {rankDelta > 0 ? `+${rankDelta} spots higher in SF` : rankDelta < 0 ? `${Math.abs(rankDelta)} spots higher in 1QB` : 'Same rank'}
                 {player.position === 'QB' && rankDelta > 0 && (
-                  <span style={{ color: '#f59e0b' }}> — QB premium in Superflex</span>
+                  <span style={{ color: 'var(--warning)' }}> \u2014 QB premium</span>
                 )}
               </div>
               </>)}
             </div>
           </div>
 
-          {/* Injury Timeline */}
+          {/* Injuries */}
           {injured && (
             <div style={{
-              background: 'rgba(239,68,68,0.08)',
-              border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: 8,
+              background: 'var(--danger-light)',
+              border: '1px solid var(--danger)',
+              borderRadius: 'var(--radius-md)',
               padding: 16,
               marginBottom: 24,
             }}>
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#ef4444',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--danger)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 12,
-              }}>🚨 Injury Timeline</h3>
+              }}>Injury Timeline</h3>
               {player.injuries.map((injury, i) => (
                 <div key={i} style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
                   padding: '8px 0',
-                  borderBottom: i < player.injuries.length - 1 ? '1px solid rgba(239,68,68,0.15)' : 'none',
+                  borderBottom: i < player.injuries.length - 1 ? '1px solid var(--border-subtle)' : 'none',
                 }}>
                   <div style={{
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    background: injury.severity === 'severe' ? '#ef4444' : '#f59e0b',
+                    background: injury.severity === 'severe' ? 'var(--danger)' : 'var(--warning)',
                     flexShrink: 0,
                   }} />
                   <div>
-                    <div style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: '#f1f5f9',
-                    }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                       {injury.type}
                     </div>
-                    <div style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 11,
-                      color: '#9ca3af',
-                    }}>
-                      {injury.date} · {injury.severity} · {injury.gamesOut} games missed
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: 'var(--text-secondary)' }}>
+                      {injury.date} \u00B7 {injury.severity} \u00B7 {injury.gamesOut} games missed
                     </div>
                   </div>
                 </div>
@@ -646,37 +647,22 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 marginBottom: 8,
               }}>Player Comps</h3>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {player.playerComps.map((comp, i) => (
-                  <span key={i} style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: '#e2e8f0',
-                    background: '#1e2133',
-                    border: '1px solid #2a2d3e',
-                    padding: '6px 14px',
-                    borderRadius: 6,
-                  }}>
-                    {comp}
-                  </span>
-                ))}
-              </div>
+              <PlayerCompChip comps={player.playerComps} max={5} />
             </div>
           )}
 
-          {/* AI Scouting Summary */}
+          {/* AI Summary */}
           <div style={{
-            background: '#151825',
-            borderRadius: 8,
+            background: 'var(--bg-secondary)',
+            borderRadius: 'var(--radius-md)',
             padding: 20,
-            border: '1px solid #2a2d3e',
+            border: '1px solid var(--border-primary)',
           }}>
             <div style={{
               display: 'flex',
@@ -687,9 +673,9 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
               <h3 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: 16,
-                color: '#f59e0b',
-                letterSpacing: 1,
+                fontSize: 15,
+                color: 'var(--accent-text)',
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
                 margin: 0,
               }}>AI Scouting Report</h3>
@@ -698,17 +684,15 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
                   onClick={handleGenerateSummary}
                   disabled={loadingSummary}
                   style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    letterSpacing: 1,
-                    textTransform: 'uppercase',
-                    padding: '8px 16px',
-                    border: '1px solid #f59e0b',
-                    borderRadius: 6,
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    fontSize: 12,
+                    padding: '7px 14px',
+                    border: '1px solid var(--accent)',
+                    borderRadius: 'var(--radius-sm)',
                     cursor: loadingSummary ? 'wait' : 'pointer',
-                    background: loadingSummary ? '#2a2d3e' : 'rgba(245,158,11,0.15)',
-                    color: '#f59e0b',
+                    background: loadingSummary ? 'var(--bg-tertiary)' : 'var(--accent-light)',
+                    color: 'var(--accent-text)',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -718,27 +702,78 @@ const PlayerDetailModal = ({ player, perspective: initialPerspective = 'overall'
             </div>
             {summary ? (
               <p style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 13,
                 lineHeight: 1.7,
-                color: '#d1d5db',
+                color: 'var(--text-secondary)',
                 margin: 0,
               }}>
                 {summary}
               </p>
             ) : (
               <p style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 12,
-                color: '#6b7280',
+                color: 'var(--text-tertiary)',
                 margin: 0,
               }}>
-                Click "Generate Report" to get an AI-powered scouting analysis.
-                {!process.env.REACT_APP_ANTHROPIC_API_KEY && ' (Using fallback — set REACT_APP_ANTHROPIC_API_KEY for Claude-powered reports)'}
+                Click "Generate Report" for an AI scouting analysis.
               </p>
             )}
           </div>
         </div>
+    </>
+  );
+
+  // Desktop grid child: sticky sidebar
+  if (isDesktopPanel) {
+    return (
+      <div
+        className="detail-modal-panel"
+        style={{
+          position: 'sticky',
+          top: 'var(--header-height)',
+          height: 'calc(100vh - var(--header-height))',
+          overflowY: 'auto',
+          background: 'var(--bg-modal)',
+          borderLeft: '1px solid var(--border-primary)',
+        }}
+      >
+        {panelContent}
+      </div>
+    );
+  }
+
+  // Mobile/tablet: fixed overlay with backdrop
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'var(--bg-overlay)',
+        zIndex: 200,
+        transition: 'background 0.3s ease',
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="detail-modal-panel"
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          maxWidth: '100vw',
+          background: 'var(--bg-modal)',
+          borderRadius: 12,
+          overflowY: 'auto',
+          transform: slideIn ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        {panelContent}
       </div>
     </div>
   );

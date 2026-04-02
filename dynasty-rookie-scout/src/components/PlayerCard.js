@@ -1,191 +1,229 @@
-import React, { memo } from 'react';
-import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk, getTopStats } from '../utils/helpers';
+import React, { memo, useMemo } from 'react';
+import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator, computeHeadlineScore, getPercentileColor } from '../utils/helpers';
+import { getArchetype, getStrengthTags } from '../utils/archetypes';
+import PercentileBar from './PercentileBar';
+import DraftBadge from './DraftBadge';
+import ValueDelta from './ValueDelta';
 
-const PlayerCard = memo(({ player, perspective = 'overall', onClick }) => {
+const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers = [], isStudied = false }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
-  const capital = getDraftCapitalInfo(player.draftPick);
   const injured = hasInjuryRisk(player);
-  const topStats = getTopStats(player, perspective);
+  const rank1QB = player.rank?.oneQB;
+  const rankSF = player.rank?.superflex;
+  const breakout = getBreakoutIndicator(player.breakoutAge);
+
+  const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
+  const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
+  const headlineScore = useMemo(() => computeHeadlineScore(player, allPlayers), [player, allPlayers]);
+  const scoreColor = getPercentileColor(headlineScore);
+  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
+  const strengthTags = useMemo(() => getStrengthTags(player, allPlayers), [player, allPlayers]);
 
   return (
     <div
-      onClick={() => onClick(player)}
+      onClick={() => onClick(player.id != null ? player.id : player)}
       style={{
-        background: '#1a1d2e',
-        borderRadius: 8,
-        borderLeft: `4px solid ${posColor.border}`,
-        padding: 16,
+        background: 'var(--bg-card)',
+        border: `1px solid ${isStudied ? 'var(--success)' : 'var(--border-primary)'}`,
+        borderRadius: 'var(--radius-md)',
+        overflow: 'hidden',
         cursor: 'pointer',
         transition: 'all 0.2s',
         position: 'relative',
-        overflow: 'hidden',
-        minHeight: 180,
+        display: 'flex',
+        flexDirection: 'column',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.transform = 'translateY(0)';
         e.currentTarget.style.boxShadow = 'none';
       }}
     >
-      {/* Injury warning banner */}
+      {/* Position color bar */}
+      <div style={{ height: 3, background: posColor.border }} />
+
+      {/* Injury badge */}
       {injured && (
         <div style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          background: '#ef4444',
-          color: '#fff',
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10,
-          fontWeight: 700,
-          padding: '3px 10px',
-          borderBottomLeftRadius: 6,
-          letterSpacing: 1,
-          animation: 'pulse 2s infinite',
+          position: 'absolute', top: 7, right: 8,
+          background: 'var(--danger)', color: '#fff',
+          fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 700,
+          padding: '2px 6px', borderRadius: 'var(--radius-sm)',
         }}>
-          🚨 INJURY RISK
+          INJ
         </div>
       )}
 
-      {/* Header row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div>
-          <div style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: 18,
-            color: '#f1f5f9',
-            lineHeight: 1.1,
-          }}>
-            {player.name}
+      {/* Studied indicator */}
+      {isStudied && (
+        <div style={{
+          position: 'absolute', top: 7, right: injured ? 38 : 8,
+          background: 'var(--success)', color: '#fff',
+          fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 700,
+          padding: '2px 6px', borderRadius: 'var(--radius-sm)',
+        }}>
+          &#10003;
+        </div>
+      )}
+
+      <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Header: rank + name + pos badge */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
+          {/* Rank + value delta */}
+          <div style={{ textAlign: 'center', minWidth: 26 }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontWeight: 800,
+              fontSize: rank1QB === 'UNR' ? 10 : 20,
+              color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              lineHeight: 1,
+            }}>
+              {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
+            </div>
+            <ValueDelta rank={rank1QB} adp={player.dynastyADP?.oneQB} />
           </div>
-          <div style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            color: '#9ca3af',
-            marginTop: 2,
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 800, fontSize: 17,
+              color: 'var(--text-primary)', lineHeight: 1.1,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {player.name}
+            </div>
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 11,
+              color: 'var(--text-secondary)', marginTop: 1,
+            }}>
+              {[player.college, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' \u00B7 ') || 'TBD'}
+            </div>
+            {/* Archetype label */}
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
+              color: posColor.text, marginTop: 3, letterSpacing: 0.3,
+              textTransform: 'uppercase',
+            }}>
+              {archetype}
+            </div>
+          </div>
+          <span style={{
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
+            color: posColor.text, background: posColor.bg,
+            padding: '2px 7px', borderRadius: 'var(--radius-sm)', flexShrink: 0,
           }}>
-            {player.college || 'TBD'}
+            {player.position}
+          </span>
+        </div>
+
+        {/* Draft badge */}
+        <div style={{ marginBottom: 6 }}>
+          <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
+        </div>
+
+        {/* Strength tags */}
+        {strengthTags.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+            {strengthTags.slice(0, 3).map((tag, i) => (
+              <span key={i} style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 600,
+                color: tag.tier === 'elite' ? 'var(--success)' : 'var(--accent-text)',
+                background: tag.tier === 'elite' ? 'var(--success-light)' : 'var(--accent-light)',
+                padding: '2px 7px', borderRadius: 10,
+              }}>
+                {tag.label}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Headline score + Stat percentile bars */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: 4,
+          padding: '8px 0',
+          borderTop: '1px solid var(--border-subtle)',
+          borderBottom: '1px solid var(--border-subtle)',
+          flex: 1,
+        }}>
+          {headlineScore != null && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 22, fontWeight: 800,
+                color: scoreColor, lineHeight: 1,
+              }}>
+                {headlineScore}
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  height: 4, borderRadius: 2,
+                  background: 'var(--bar-track)', overflow: 'hidden',
+                }}>
+                  <div style={{
+                    width: `${headlineScore}%`, height: '100%',
+                    background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}cc)`,
+                    borderRadius: 2,
+                  }} />
+                </div>
+                <span style={{
+                  fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 600,
+                  color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.3,
+                }}>
+                  Prospect Score
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {accessors.map((acc, i) => {
+            const val = acc.getValue(player);
+            const allVals = peers.map(p => acc.getValue(p));
+            const fmt = typeof val === 'number' && val < 10 ? v => v.toFixed(2) : v => typeof v === 'number' && v >= 1000 ? v.toLocaleString() : v;
+            return <PercentileBar key={i} label={acc.label} value={val} allValues={allVals} format={fmt} showPct />;
+          })}
+        </div>
+
+        {/* Footer */}
+        <div style={{ paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
+            {player.breakoutAge && breakout.label !== 'N/A' ? (
+              <span style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 9.5, fontWeight: 600,
+                color: breakout.color, background: 'var(--bg-tertiary)',
+                padding: '1px 7px', borderRadius: 10,
+              }}>
+                {breakout.label} {player.breakoutAge}
+              </span>
+            ) : <span />}
+            {player.gamesPlayed && (
+              <span style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'var(--text-tertiary)',
+              }}>
+                {player.gamesPlayed} GP
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
+              color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
+            }}>
+              1QB {rank1QB === 'UNR' ? 'UNR' : `#${rank1QB}`}
+            </span>
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 8, color: 'var(--text-tertiary)',
+            }}>{'\u00B7'}</span>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
+              color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
+            }}>
+              SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
+            </span>
           </div>
         </div>
-        <span style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontWeight: 700,
-          fontSize: 13,
-          color: posColor.text,
-          background: posColor.bg,
-          padding: '2px 8px',
-          borderRadius: 4,
-          letterSpacing: 1,
-        }}>
-          {player.position}
-        </span>
-      </div>
-
-      {/* Draft pick + capital */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 10,
-      }}>
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 12,
-          fontWeight: 600,
-          color: capital.color,
-        }}>
-          {player.draftTeam
-            ? `${capital.emoji} R${player.draftRound} Pick #${player.draftPick}`
-            : getDraftRangeLabel(player.draftRound, player.draftPick) || 'Draft TBD'}
-        </span>
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10,
-          color: capital.color,
-          background: `${capital.color}22`,
-          padding: '1px 6px',
-          borderRadius: 3,
-        }}>
-          {capital.label}
-        </span>
-        {player.draftIsProjected && (
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 9,
-            color: '#9ca3af',
-            background: '#2a2d3e',
-            padding: '1px 5px',
-            borderRadius: 3,
-            letterSpacing: 0.5,
-          }}>
-            PROJ
-          </span>
-        )}
-      </div>
-
-      {/* Top 3 stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
-        gap: 6,
-        marginBottom: 10,
-      }}>
-        {topStats.map((stat, i) => (
-          <div key={i} style={{
-            background: '#0f1117',
-            borderRadius: 4,
-            padding: '6px 8px',
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#f1f5f9',
-            }}>
-              {stat.value}
-            </div>
-            <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 9,
-              color: '#6b7280',
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}>
-              {stat.label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bottom row: ranks */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        borderTop: '1px solid #2a2d3e',
-        paddingTop: 8,
-      }}>
-        {/* 1QB vs SF ranks */}
-        {player.rank && (
-          <div style={{
-            display: 'flex',
-            gap: 8,
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-          }}>
-            <span style={{ color: player.rank.oneQB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
-              1QB: {player.rank.oneQB === 'UNR' ? 'UNR' : `#${player.rank.oneQB}`}
-            </span>
-            <span style={{ color: player.rank.superflex === 'UNR' ? '#6b7280' : '#a78bfa' }}>
-              SF: {player.rank.superflex === 'UNR' ? 'UNR' : `#${player.rank.superflex}`}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

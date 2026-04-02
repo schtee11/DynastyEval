@@ -1,9 +1,28 @@
-import React, { memo } from 'react';
-import { positionColors, hasInjuryRisk, getTopStats, getTierForPlayer } from '../utils/helpers';
+import React, { memo, useMemo } from 'react';
+import { positionColors, hasInjuryRisk, getStatAccessors, getTierForPlayer, getBreakoutIndicator } from '../utils/helpers';
+import PercentileBar from './PercentileBar';
+import DraftBadge from './DraftBadge';
+import PlayerCompChip from './PlayerCompChip';
+import ValueDelta from './ValueDelta';
 
 const TIER_ORDER = ['Elite', 'Day 1', 'Day 2', 'Day 3', 'Undrafted / TBD'];
 
-/** Group sorted players into tier buckets, preserving sort order within each tier */
+const TIER_COLORS = {
+  Elite: 'var(--warning)',
+  'Day 1': 'var(--success)',
+  'Day 2': 'var(--accent-text)',
+  'Day 3': 'var(--text-tertiary)',
+  'Undrafted / TBD': 'var(--text-tertiary)',
+};
+
+const TIER_TINTS = {
+  Elite: 'var(--tier-elite-tint)',
+  'Day 1': 'var(--tier-day1-tint)',
+  'Day 2': 'var(--tier-day2-tint)',
+  'Day 3': 'var(--tier-day3-tint)',
+  'Undrafted / TBD': 'transparent',
+};
+
 const groupByTier = (players) => {
   const groups = {};
   for (const player of players) {
@@ -17,335 +36,258 @@ const groupByTier = (players) => {
   }));
 };
 
-const TierDivider = ({ tier, count, compact }) => (
+const TierDivider = ({ tier, count }) => (
   <tr>
-    <td colSpan={compact ? 6 : 7} style={{
-      padding: '12px 16px 6px',
+    <td colSpan={7} style={{
+      padding: '16px 16px 6px',
       fontFamily: "'Barlow Condensed', sans-serif",
       fontWeight: 700,
       fontSize: 13,
-      color: tier === 'Elite' ? '#f59e0b' : tier === 'Day 1' ? '#22c55e' : tier === 'Day 2' ? '#60a5fa' : '#6b7280',
-      letterSpacing: 1.5,
+      color: TIER_COLORS[tier],
+      letterSpacing: 0.5,
       textTransform: 'uppercase',
-      borderBottom: '1px solid #2a2d3e',
+      borderBottom: '2px solid var(--border-primary)',
       background: 'transparent',
     }}>
       {tier}
-      <span style={{ fontSize: 11, color: '#6b7280', fontWeight: 400, marginLeft: 8, letterSpacing: 0 }}>
-        {count} prospect{count !== 1 ? 's' : ''}
+      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 8 }}>
+        {count}
       </span>
     </td>
   </tr>
 );
 
-const PlayerRow = memo(({ player, perspective, onClick, isOdd, compact }) => {
+const PlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
-  const topStats = getTopStats(player, perspective);
   const rank1QB = player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
+  const isTopRank = rank1QB != null && rank1QB !== 'UNR' && rank1QB <= 12;
+  const breakout = getBreakoutIndicator(player.breakoutAge);
+  const tier = getTierForPlayer(player);
+  const tierTint = TIER_TINTS[tier];
+
+  const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
+  const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
+
+  // Row base background: alternating + tier tint overlay
+  const baseBg = isOdd ? 'var(--bg-secondary)' : 'var(--bg-primary)';
 
   return (
     <tr
       onClick={() => onClick(player)}
       style={{
         cursor: 'pointer',
-        background: isOdd ? '#1a1d2e' : '#151724',
-        transition: 'background 0.15s',
+        background: tierTint !== 'transparent' ? tierTint : baseBg,
+        borderLeft: `3px solid ${posColor.border}`,
+        transition: 'background 0.1s, box-shadow 0.15s',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = '#22263a'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = isOdd ? '#1a1d2e' : '#151724'; }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'var(--bg-hover)';
+        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = tierTint !== 'transparent' ? tierTint : baseBg;
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
       {/* Rank */}
       <td style={{
-        padding: '10px 12px',
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: rank1QB === 'UNR' ? 600 : 800,
-        fontSize: rank1QB === 'UNR' ? 13 : 22,
-        color: rank1QB === 'UNR' ? '#6b7280' : '#f1f5f9',
+        padding: '6px 6px',
         textAlign: 'center',
-        width: 56,
+        width: 40,
         verticalAlign: 'middle',
-        letterSpacing: rank1QB === 'UNR' ? 1 : 0,
       }}>
-        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '—'}
+        {rank1QB === 'UNR' ? (
+          <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 9, color: 'var(--text-tertiary)', letterSpacing: 0.5 }}>UNR</span>
+        ) : isTopRank ? (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 22, height: 22, borderRadius: '50%',
+            background: 'var(--accent)', color: '#fff',
+            fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 11,
+          }}>
+            {rank1QB}
+          </span>
+        ) : (
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>
+            {rank1QB ?? '\u2014'}
+          </span>
+        )}
       </td>
 
-      {/* Name + Position badge */}
-      <td style={{ padding: '10px 12px', verticalAlign: 'middle' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Player name + comp + breakout */}
+      <td style={{ padding: '5px 10px', verticalAlign: 'middle' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: 10,
-            color: posColor.text,
-            background: posColor.bg,
-            padding: '2px 6px',
-            borderRadius: 3,
-            letterSpacing: 1,
-            flexShrink: 0,
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 9,
+            color: posColor.text, background: posColor.bg,
+            padding: '2px 5px', borderRadius: 3, flexShrink: 0,
           }}>
             {player.position}
           </span>
-          <span style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: 15,
-            color: '#f1f5f9',
-            whiteSpace: 'nowrap',
-          }}>
-            {player.name}
-          </span>
-          {injured && (
-            <span style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 9,
-              fontWeight: 700,
-              color: '#fff',
-              background: '#ef4444',
-              padding: '1px 5px',
-              borderRadius: 3,
-              letterSpacing: 0.5,
-              flexShrink: 0,
-            }}>
-              INJ
-            </span>
-          )}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13.5,
+                color: 'var(--text-primary)', whiteSpace: 'nowrap',
+              }}>
+                {player.name}
+              </span>
+              {injured && (
+                <span style={{
+                  fontFamily: "'Inter', sans-serif", fontSize: 8, fontWeight: 700,
+                  color: '#fff', background: 'var(--danger)',
+                  padding: '1px 4px', borderRadius: 3, flexShrink: 0,
+                }}>
+                  INJ
+                </span>
+              )}
+              <ValueDelta rank={rank1QB} adp={player.dynastyADP?.oneQB} />
+            </div>
+            {/* Second line: comp + breakout age */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
+              {player.playerComps && player.playerComps.length > 0 && (
+                <PlayerCompChip comps={player.playerComps} max={1} />
+              )}
+              {player.breakoutAge && breakout.label !== 'N/A' && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                  fontFamily: "'Inter', sans-serif", fontSize: 9, color: breakout.color,
+                  fontWeight: 500,
+                }}>
+                  <span style={{
+                    width: 5, height: 5, borderRadius: '50%',
+                    background: breakout.color, flexShrink: 0,
+                  }} />
+                  {player.breakoutAge}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </td>
 
       {/* School */}
       <td style={{
-        padding: '10px 12px',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        color: '#9ca3af',
-        verticalAlign: 'middle',
-        whiteSpace: 'nowrap',
+        padding: '6px 8px', fontFamily: "'Inter', sans-serif", fontSize: 12,
+        color: 'var(--text-secondary)', verticalAlign: 'middle', whiteSpace: 'nowrap',
       }}>
-        {player.college || '—'}
+        {player.college || '\u2014'}
       </td>
 
-      {/* Draft Projection */}
-      <td style={{
-        padding: '10px 12px',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        verticalAlign: 'middle',
-        whiteSpace: 'nowrap',
-      }}>
-        {(() => {
-          if (!player.draftPick) {
-            return <span style={{ color: '#4b5563' }}>—</span>;
-          }
-          const rdColor = player.draftRound <= 1 ? '#f59e0b'
-            : player.draftRound <= 2 ? '#22c55e'
-            : player.draftRound <= 3 ? '#60a5fa'
-            : '#6b7280';
-          return (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{
-                color: rdColor,
-                fontWeight: 700,
-                fontSize: 12,
-              }}>
-                Rd {player.draftRound}
-              </span>
-              <span style={{ color: '#6b7280', fontSize: 10 }}>
-                #{player.draftPick}
-              </span>
-              {player.draftTeam && (
-                <span style={{ color: '#9ca3af', fontWeight: 600, fontSize: 10 }}>
-                  {player.draftTeam}
-                </span>
-              )}
-            </span>
-          );
-        })()}
+      {/* Draft */}
+      <td style={{ padding: '6px 6px', verticalAlign: 'middle' }}>
+        <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
       </td>
 
-      {/* Key Stats (2–3 position-specific) */}
-      <td className="key-stats-cell" style={{
-        padding: '10px 12px',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        color: '#d1d5db',
-        verticalAlign: 'middle',
-      }}>
-        <div className="key-stats-row" style={{ display: 'flex', gap: 12, flexWrap: 'nowrap' }}>
-          {topStats.map((stat, i) => (
-            <span key={i} style={{ whiteSpace: 'nowrap' }}>
-              <span style={{ color: '#6b7280', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                {stat.label}
-              </span>{' '}
-              <span style={{ fontWeight: 600, color: '#f1f5f9' }}>
-                {stat.value ?? '—'}
-              </span>
-            </span>
-          ))}
+      {/* Key Stats */}
+      <td style={{ padding: '5px 8px', verticalAlign: 'middle', width: 260 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {accessors.map((acc, i) => {
+            const val = acc.getValue(player);
+            const allVals = peers.map(p => acc.getValue(p));
+            const fmt = typeof val === 'number' && val < 10 ? v => v.toFixed(2) : v => typeof v === 'number' && v >= 1000 ? v.toLocaleString() : v;
+            return <PercentileBar key={i} label={acc.label} value={val} allValues={allVals} format={fmt} />;
+          })}
         </div>
       </td>
 
-      {/* 1QB / SF Ranks */}
-      {!compact && (
-        <td style={{
-          padding: '10px 12px',
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11,
-          verticalAlign: 'middle',
-          whiteSpace: 'nowrap',
+      {/* Ranks */}
+      <td style={{ padding: '6px 8px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
+          color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
         }}>
-          {rank1QB != null && (
-            <span style={{ color: rank1QB === 'UNR' ? '#6b7280' : '#60a5fa' }}>
-              {rank1QB === 'UNR' ? '1QB UNR' : `1QB #${rank1QB}`}
-            </span>
-          )}
-          {rankSF != null && (
-            <span style={{ color: rankSF === 'UNR' ? '#6b7280' : '#a78bfa', marginLeft: 8 }}>
-              {rankSF === 'UNR' ? 'SF UNR' : `SF #${rankSF}`}
-            </span>
-          )}
-        </td>
-      )}
+          {rank1QB === 'UNR' ? 'UNR' : `#${rank1QB}`}
+        </span>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
+          color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
+          marginLeft: 6,
+        }}>
+          SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
+        </span>
+      </td>
     </tr>
   );
 });
 
-/** Mobile list row — single-column compact row for phones */
-const MobilePlayerRow = memo(({ player, perspective, onClick, isOdd }) => {
+const MobilePlayerRow = memo(({ player, perspective, onClick, isOdd, allPlayers }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
-  const topStats = getTopStats(player, perspective);
   const rank1QB = player.rank?.oneQB;
+  const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
+  const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
 
   return (
     <div
       onClick={() => onClick(player)}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
+        display: 'flex', flexDirection: 'column', gap: 6,
         padding: '10px 12px',
-        background: isOdd ? '#1a1d2e' : '#151724',
-        cursor: 'pointer',
-        borderBottom: '1px solid #1e2133',
+        background: isOdd ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+        cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)',
+        borderLeft: `3px solid ${posColor.border}`,
       }}
     >
-      {/* Rank */}
-      <div style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: rank1QB === 'UNR' ? 600 : 800,
-        fontSize: rank1QB === 'UNR' ? 11 : 18,
-        color: rank1QB === 'UNR' ? '#6b7280' : '#f1f5f9',
-        width: 32,
-        textAlign: 'center',
-        flexShrink: 0,
-        letterSpacing: rank1QB === 'UNR' ? 1 : 0,
-      }}>
-        {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '—'}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontWeight: rank1QB === 'UNR' ? 500 : 700,
+          fontSize: rank1QB === 'UNR' ? 10 : 16,
+          color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
+          width: 28, textAlign: 'center', flexShrink: 0,
+        }}>
+          {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
+        </div>
+        <span style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
+          color: posColor.text, background: posColor.bg,
+          padding: '2px 6px', borderRadius: 3, flexShrink: 0,
+        }}>
+          {player.position}
+        </span>
+        <span style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14,
+          color: 'var(--text-primary)', flex: 1, minWidth: 0,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {player.name}
+        </span>
+        {player.draftRound && (
+          <DraftBadge round={player.draftRound} pick={player.draftPick} isProjected={player.draftIsProjected} />
+        )}
       </div>
-
-      {/* Position badge */}
-      <span style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: 700,
-        fontSize: 10,
-        color: posColor.text,
-        background: posColor.bg,
-        padding: '2px 6px',
-        borderRadius: 3,
-        letterSpacing: 1,
-        flexShrink: 0,
-      }}>
-        {player.position}
-      </span>
-
-      {/* Name */}
-      <span style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: 700,
-        fontSize: 14,
-        color: '#f1f5f9',
-        flex: 1,
-        minWidth: 0,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
-        {player.name}
-      </span>
-
-      {/* Draft projection */}
-      {player.draftRound && (
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10,
-          fontWeight: 700,
-          color: player.draftRound <= 1 ? '#f59e0b' : player.draftRound <= 2 ? '#22c55e' : '#60a5fa',
-          flexShrink: 0,
-        }}>
-          Rd{player.draftRound}
-        </span>
-      )}
-
-      {/* 1 key stat */}
-      {topStats[0] && (
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10,
-          color: '#9ca3af',
-          flexShrink: 0,
-          whiteSpace: 'nowrap',
-        }}>
-          <span style={{ color: '#6b7280', fontSize: 8, textTransform: 'uppercase' }}>
-            {topStats[0].label}
-          </span>{' '}
-          <span style={{ color: '#f1f5f9', fontWeight: 600 }}>
-            {topStats[0].value ?? '—'}
-          </span>
-        </span>
-      )}
+      <div style={{ display: 'flex', gap: 12, paddingLeft: 36 }}>
+        {accessors.slice(0, 2).map((acc, i) => {
+          const val = acc.getValue(player);
+          const allVals = peers.map(p => acc.getValue(p));
+          return <div key={i} style={{ flex: 1 }}><PercentileBar label={acc.label} value={val} allValues={allVals} compact /></div>;
+        })}
+      </div>
     </div>
   );
 });
 
-const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compact }) => {
+const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, allPlayers }) => {
   const tierGroups = showTiers ? groupByTier(players) : null;
 
-  const renderRows = (playerList) =>
+  const renderMobileRows = (playerList) =>
     playerList.map((player, i) => (
-      <MobilePlayerRow
-        key={player.id}
-        player={player}
-        perspective={perspective}
-        onClick={onPlayerClick}
-        isOdd={i % 2 === 1}
-      />
+      <MobilePlayerRow key={player.id} player={player} perspective={perspective} onClick={onPlayerClick} isOdd={i % 2 === 1} allPlayers={allPlayers} />
     ));
 
   return (
     <div className="player-table-root">
-      {/* Desktop/tablet table */}
       <div style={{ overflowX: 'auto' }}>
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontFamily: "'JetBrains Mono', monospace",
-        }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{
-              borderBottom: '2px solid #2a2d3e',
-            }}>
-              {(['#', 'Player', 'School', 'Draft', 'Key Stats'].concat(compact ? [] : ['Ranks (FantasyCalc)'])).map((h) => (
+            <tr style={{ borderBottom: '2px solid var(--border-primary)' }}>
+              {['#', 'Player', 'School', 'Draft', 'Key Stats', 'Ranks'].map((h) => (
                 <th key={h} style={{
-                  padding: '8px 12px',
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 11,
-                  color: '#6b7280',
-                  textAlign: 'left',
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  whiteSpace: 'nowrap',
+                  padding: '8px 12px', fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600, fontSize: 11, color: 'var(--text-tertiary)',
+                  textAlign: 'left', textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap',
                 }}>
                   {h}
                 </th>
@@ -356,57 +298,38 @@ const PlayerTableView = ({ players, perspective, onPlayerClick, showTiers, compa
             {showTiers ? (
               tierGroups.map(({ tier, players: group }) => (
                 <React.Fragment key={tier}>
-                  <TierDivider tier={tier} count={group.length} compact={compact} />
+                  <TierDivider tier={tier} count={group.length} />
                   {group.map((player, i) => (
-                    <PlayerRow
-                      key={player.id}
-                      player={player}
-                      perspective={perspective}
-                      onClick={onPlayerClick}
-                      isOdd={i % 2 === 1}
-                      compact={compact}
-                    />
+                    <PlayerRow key={player.id} player={player} perspective={perspective} onClick={onPlayerClick} isOdd={i % 2 === 1} allPlayers={allPlayers} />
                   ))}
                 </React.Fragment>
               ))
             ) : (
               players.map((player, i) => (
-                <PlayerRow
-                  key={player.id}
-                  player={player}
-                  perspective={perspective}
-                  onClick={onPlayerClick}
-                  isOdd={i % 2 === 1}
-                  compact={compact}
-                />
+                <PlayerRow key={player.id} player={player} perspective={perspective} onClick={onPlayerClick} isOdd={i % 2 === 1} allPlayers={allPlayers} />
               ))
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Mobile single-column list (shown at <=480px via CSS) */}
       <div className="player-mobile-list">
         {showTiers ? (
           tierGroups.map(({ tier, players: group }) => (
             <React.Fragment key={tier}>
               <div style={{
-                padding: '10px 12px 4px',
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 700,
-                fontSize: 12,
-                color: tier === 'Elite' ? '#f59e0b' : tier === 'Day 1' ? '#22c55e' : tier === 'Day 2' ? '#60a5fa' : '#6b7280',
-                letterSpacing: 1.5,
-                textTransform: 'uppercase',
-                borderBottom: '1px solid #2a2d3e',
+                padding: '10px 12px 4px', fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700, fontSize: 12, color: TIER_COLORS[tier],
+                letterSpacing: 0.5, textTransform: 'uppercase',
+                borderBottom: '1px solid var(--border-primary)',
               }}>
-                {tier} <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 400 }}>({group.length})</span>
+                {tier} <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 400 }}>({group.length})</span>
               </div>
-              {renderRows(group)}
+              {renderMobileRows(group)}
             </React.Fragment>
           ))
         ) : (
-          renderRows(players)
+          renderMobileRows(players)
         )}
       </div>
     </div>
