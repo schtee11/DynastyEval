@@ -97,85 +97,90 @@ const applyDraftData = (players) => {
 };
 
 /**
- * Two-phase loading:
- *  Phase 1 (fast): Return players from Sleeper/static + CFBD (both cached after first load)
- *  Phase 2 (deferred): Apply FantasyCalc rankings asynchronously via onUpdate callback
+ * Three-phase loading — instant render, progressive enrichment:
  *
- * This prevents the slow Google Sheets FantasyCalc endpoint (~10-30s cold start)
- * from blocking the entire UI.
+ *  Phase 0 (instant, ~0ms): Return static prospect data from bundled JS.
+ *    This is rookieProspects2026.js + collegeStats2025.js + draftData.js.
+ *    No network calls. UI renders immediately.
+ *
+ *  Phase 1 (background): Fetch Sleeper + CFBD live data.
+ *    When ready, merge with static data and call onUpdate().
+ *
+ *  Phase 2 (background): Apply FantasyCalc dynasty rankings.
+ *    When ready, call onUpdate() again with final data.
+ *
+ * The onUpdate callback lets the UI re-render progressively
+ * without ever blocking on network calls.
  */
 export const getPlayers = async (onUpdate) => {
-  if (playersCache) {
-    // If we have a full cache (with FC rankings), return immediately
-    return playersCache;
-  }
+  if (playersCache) return playersCache;
 
-  try {
-    // Launch Sleeper + CFBD in parallel (these are the fast ones)
-    const cfbdPromise = preloadCFBDStats(2025).catch((err) => {
-      console.warn('[DataService] CFBD preload failed:', err.message);
-      return null;
-    });
+  // Phase 0: Return static data IMMEDIATELY (no network, ~0ms)
+  let players = getStaticPlayers();
+  players = applyDraftData(players);
+  players = players.map(({ _prospect, ...p }) => p);
+  dataSourceStatus.source = 'static';
 
-    const sleeperPromise = buildRookiePlayersFromSleeper().catch((err) => {
-      console.warn('[DataService] Sleeper fetch failed, using static data:', err.message);
-      dataSourceStatus.sleeper = { ok: false, reason: err.message };
-      return [];
-    });
+  // Phase 1 + 2: Enrich with live data in background
+  const enrichInBackground = async () => {
+    try {
+      // Launch ALL network requests in parallel
+      const cfbdPromise = preloadCFBDStats(2025).catch((err) => {
+        console.warn('[DataService] CFBD preload failed:', err.message);
+        return null;
+      });
+      const sleeperPromise = buildRookiePlayersFromSleeper().catch((err) => {
+        console.warn('[DataService] Sleeper fetch failed:', err.message);
+        dataSourceStatus.sleeper = { ok: false, reason: err.message };
+        return [];
+      });
+      const fcPromise = prefetchFantasyCalc();
 
-    // Also kick off FantasyCalc fetch in parallel (but don't block on it)
-    const fcPromise = prefetchFantasyCalc();
+      // Wait for Sleeper + CFBD
+      const [sleeperResult, cfbdData] = await Promise.all([sleeperPromise, cfbdPromise]);
 
-    // Wait for Sleeper + CFBD only — these are fast (cached after first load)
-    const [sleeperResult, cfbdData] = await Promise.all([sleeperPromise, cfbdPromise]);
+      dataSourceStatus.sleeper = sleeperResult?.length > 0
+        ? { ok: true, count: sleeperResult.length }
+        : { ok: false, reason: 'No rookies returned (pre-draft?)' };
+      dataSourceStatus.cfbd = cfbdData
+        ? { ok: true, count: Object.keys(cfbdData).length }
+        : { ok: false, reason: 'Unavailable or no API key' };
 
-    let players = sleeperResult;
-    dataSourceStatus.sleeper = players?.length > 0
-      ? { ok: true, count: players.length }
-      : { ok: false, reason: 'No rookies returned (pre-draft?)' };
-    dataSourceStatus.cfbd = cfbdData
-      ? { ok: true, count: Object.keys(cfbdData).length }
-      : { ok: false, reason: 'Unavailable or no API key' };
+      // If Sleeper returned rookies, use them (better data); otherwise keep static
+      let enriched;
+      if (sleeperResult && sleeperResult.length > 0) {
+        enriched = applyDraftData(sleeperResult);
+        dataSourceStatus.source = 'sleeper';
+      } else {
+        enriched = applyDraftData(getStaticPlayers());
+        dataSourceStatus.source = 'static';
+      }
+      enriched = enriched.map(({ _prospect, ...p }) => p);
 
-    // Pre-draft or empty result: fall back to static prospect data
-    if (!players || players.length === 0) {
-      console.info('[DataService] No Sleeper rookies found (likely pre-draft) — using static prospect data');
-      players = getStaticPlayers();
-      dataSourceStatus.source = 'static';
-    } else {
-      dataSourceStatus.source = 'sleeper';
-    }
+      console.info(`[DataService] Phase 1 complete — ${enriched.length} players from ${dataSourceStatus.source}`);
+      if (onUpdate) onUpdate(enriched);
 
-    // Overlay latest draft projections (sync, fast)
-    players = applyDraftData(players);
-
-    // Clean up internal fields
-    players = players.map(({ _prospect, ...player }) => player);
-
-    // Phase 1 complete — return players immediately (with static ranks)
-    // Don't cache yet — we'll update with FC rankings
-
-    // Phase 2: Apply FantasyCalc rankings in background, then notify via callback
-    fcPromise.then(async () => {
+      // Phase 2: Apply FantasyCalc rankings
       try {
-        const withFC = await applyFantasyCalcRankings(players);
+        await fcPromise;
+        const withFC = await applyFantasyCalcRankings(enriched);
         const final = withFC.map(({ _prospect, ...p }) => p);
         playersCache = final;
-        console.info('[DataService] FantasyCalc rankings applied (deferred)');
+        console.info('[DataService] Phase 2 complete — FantasyCalc rankings applied');
         if (onUpdate) onUpdate(final);
       } catch (err) {
-        console.warn('[DataService] FantasyCalc rankings failed, keeping static ranks:', err.message);
-        playersCache = players;
+        console.warn('[DataService] FantasyCalc failed, keeping static ranks:', err.message);
+        playersCache = enriched;
       }
-    });
+    } catch (err) {
+      console.error('[DataService] Background enrichment failed:', err);
+    }
+  };
 
-    return players;
-  } catch (err) {
-    console.error('[DataService] Data fetch failed, falling back to static data:', err);
-    dataSourceStatus = { sleeper: { ok: false, reason: err.message }, source: 'static' };
-    playersCache = applyDraftData(getStaticPlayers()).map(({ _prospect, ...p }) => p);
-    return playersCache;
-  }
+  // Fire and forget — don't await
+  enrichInBackground();
+
+  return players;
 };
 
 export const getPlayerById = async (id) => {

@@ -1,24 +1,30 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 
-const SWIPE_THRESHOLD = 50; // px to trigger card change
-const SWIPE_VELOCITY = 0.3; // px/ms — fast flick triggers even below threshold
+/**
+ * Vertical full-screen swipeable card feed (TikTok / Tinder-style).
+ * Each card takes up the full viewport height minus the header.
+ * Swipe up → next card, swipe down → previous card.
+ */
+const SWIPE_THRESHOLD = 40;
+const SWIPE_VELOCITY = 0.25;
+const HEADER_HEIGHT = 52; // matches mobile header
 
-const SwipeableCardFeed = ({ children, className }) => {
+const SwipeableCardFeed = ({ children }) => {
   const cards = React.Children.toArray(children);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const touchRef = useRef({ startX: 0, startY: 0, startTime: 0, locked: null });
-  const containerRef = useRef(null);
 
-  // Reset index when card count changes (e.g. filter applied)
+  // Clamp index when card count changes (e.g. filter)
   useEffect(() => {
     setCurrentIndex((prev) => Math.min(prev, Math.max(0, cards.length - 1)));
   }, [cards.length]);
 
   const goTo = useCallback((idx) => {
-    setCurrentIndex(Math.max(0, Math.min(idx, cards.length - 1)));
-    setOffsetX(0);
+    const clamped = Math.max(0, Math.min(idx, cards.length - 1));
+    setCurrentIndex(clamped);
+    setOffsetY(0);
     setIsSwiping(false);
   }, [cards.length]);
 
@@ -38,140 +44,144 @@ const SwipeableCardFeed = ({ children, className }) => {
     const dx = touch.clientX - touchRef.current.startX;
     const dy = touch.clientY - touchRef.current.startY;
 
-    // Determine scroll direction lock (horizontal swipe vs vertical scroll)
+    // Lock direction on first significant movement
     if (touchRef.current.locked === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-      touchRef.current.locked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      touchRef.current.locked = Math.abs(dy) >= Math.abs(dx) ? 'v' : 'h';
     }
 
-    if (touchRef.current.locked === 'v') return; // let browser handle vertical scroll
+    if (touchRef.current.locked !== 'v') return;
 
-    e.preventDefault(); // prevent vertical scroll during horizontal swipe
-    setOffsetX(dx);
-  }, []);
+    e.preventDefault();
+    // Add resistance at boundaries
+    const atTop = currentIndex === 0 && dy > 0;
+    const atBottom = currentIndex >= cards.length - 1 && dy < 0;
+    const resistance = (atTop || atBottom) ? 0.3 : 1;
+    setOffsetY(dy * resistance);
+  }, [currentIndex, cards.length]);
 
   const onTouchEnd = useCallback(() => {
+    if (touchRef.current.locked !== 'v') {
+      setOffsetY(0);
+      setIsSwiping(false);
+      return;
+    }
+
     const elapsed = Date.now() - touchRef.current.startTime;
-    const velocity = Math.abs(offsetX) / Math.max(elapsed, 1);
+    const velocity = Math.abs(offsetY) / Math.max(elapsed, 1);
     const fastFlick = velocity > SWIPE_VELOCITY;
 
-    if (offsetX < -SWIPE_THRESHOLD || (offsetX < -20 && fastFlick)) {
-      goTo(currentIndex + 1);
-    } else if (offsetX > SWIPE_THRESHOLD || (offsetX > 20 && fastFlick)) {
-      goTo(currentIndex - 1);
+    if (offsetY < -SWIPE_THRESHOLD || (offsetY < -15 && fastFlick)) {
+      goTo(currentIndex + 1); // swipe up → next
+    } else if (offsetY > SWIPE_THRESHOLD || (offsetY > 15 && fastFlick)) {
+      goTo(currentIndex - 1); // swipe down → prev
     } else {
-      setOffsetX(0);
+      setOffsetY(0);
       setIsSwiping(false);
     }
-  }, [offsetX, currentIndex, goTo]);
+  }, [offsetY, currentIndex, goTo]);
 
   if (cards.length === 0) return null;
 
   const safeIndex = Math.min(currentIndex, cards.length - 1);
+  const cardHeight = `calc(100vh - ${HEADER_HEIGHT}px)`;
 
   return (
-    <div className={className}>
-      {/* Card viewport */}
+    <div
+      style={{
+        position: 'fixed',
+        top: HEADER_HEIGHT,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 50,
+        background: 'var(--bg-primary)',
+      }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Card stack — translates vertically */}
       <div
-        ref={containerRef}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
         style={{
-          overflow: 'hidden',
-          position: 'relative',
-          touchAction: 'pan-y',
+          transition: isSwiping ? 'none' : 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+          transform: `translateY(calc(-${safeIndex} * ${cardHeight} + ${offsetY}px))`,
+          willChange: 'transform',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
-            transform: `translateX(calc(-${safeIndex * 100}% + ${offsetX}px))`,
-          }}
-        >
-          {cards.map((card, i) => (
+        {cards.map((card, i) => (
+          <div
+            key={i}
+            style={{
+              height: cardHeight,
+              overflow: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              padding: '12px 12px 0',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div style={{ flex: 1, minHeight: 0 }}>{card}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Progress indicator — right edge */}
+      <div style={{
+        position: 'absolute', right: 6, top: '50%',
+        transform: 'translateY(-50%)',
+        display: 'flex', flexDirection: 'column', gap: 3,
+        alignItems: 'center',
+      }}>
+        {cards.length <= 20 ? (
+          cards.map((_, i) => (
             <div
               key={i}
               style={{
-                flex: '0 0 100%',
-                minWidth: 0,
-                padding: '0 4px',
-                boxSizing: 'border-box',
+                width: i === safeIndex ? 4 : 3,
+                height: i === safeIndex ? 14 : 6,
+                borderRadius: 2,
+                background: i === safeIndex ? 'var(--accent)' : 'var(--border-primary)',
+                transition: 'all 0.2s',
+                opacity: i === safeIndex ? 1 : 0.5,
               }}
-            >
-              {card}
-            </div>
-          ))}
-        </div>
+            />
+          ))
+        ) : (
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10, fontWeight: 700,
+            color: 'var(--text-secondary)',
+            writingMode: 'vertical-lr',
+            letterSpacing: 1,
+          }}>
+            {safeIndex + 1}/{cards.length}
+          </span>
+        )}
       </div>
 
-      {/* Dot indicators + counter */}
-      {cards.length > 1 && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 12, padding: '12px 0 4px',
+      {/* Bottom counter bar */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '8px 16px',
+        background: 'linear-gradient(transparent, var(--bg-primary))',
+        pointerEvents: 'none',
+      }}>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11, fontWeight: 600,
+          color: 'var(--text-tertiary)',
+          background: 'var(--bg-card)',
+          padding: '4px 12px',
+          borderRadius: 12,
+          border: '1px solid var(--border-primary)',
+          pointerEvents: 'auto',
         }}>
-          {/* Prev arrow */}
-          <button
-            onClick={() => goTo(safeIndex - 1)}
-            disabled={safeIndex === 0}
-            style={{
-              background: 'none', border: 'none', cursor: safeIndex === 0 ? 'default' : 'pointer',
-              color: safeIndex === 0 ? 'var(--text-tertiary)' : 'var(--accent-text)',
-              fontSize: 18, padding: 4, opacity: safeIndex === 0 ? 0.3 : 1,
-              fontFamily: 'system-ui',
-            }}
-            aria-label="Previous"
-          >
-            &#8249;
-          </button>
-
-          {/* Dots (show max 7 around current) */}
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {cards.length <= 9 ? (
-              cards.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goTo(i)}
-                  style={{
-                    width: i === safeIndex ? 10 : 6,
-                    height: i === safeIndex ? 10 : 6,
-                    borderRadius: '50%',
-                    background: i === safeIndex ? 'var(--accent)' : 'var(--border-primary)',
-                    border: 'none', padding: 0, cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  aria-label={`Go to card ${i + 1}`}
-                />
-              ))
-            ) : (
-              <span style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 12, fontWeight: 600,
-                color: 'var(--text-secondary)',
-              }}>
-                {safeIndex + 1} / {cards.length}
-              </span>
-            )}
-          </div>
-
-          {/* Next arrow */}
-          <button
-            onClick={() => goTo(safeIndex + 1)}
-            disabled={safeIndex >= cards.length - 1}
-            style={{
-              background: 'none', border: 'none',
-              cursor: safeIndex >= cards.length - 1 ? 'default' : 'pointer',
-              color: safeIndex >= cards.length - 1 ? 'var(--text-tertiary)' : 'var(--accent-text)',
-              fontSize: 18, padding: 4, opacity: safeIndex >= cards.length - 1 ? 0.3 : 1,
-              fontFamily: 'system-ui',
-            }}
-            aria-label="Next"
-          >
-            &#8250;
-          </button>
-        </div>
-      )}
+          {safeIndex + 1} of {cards.length}
+        </span>
+      </div>
     </div>
   );
 };
