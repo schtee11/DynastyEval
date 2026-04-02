@@ -331,17 +331,6 @@ button:focus-visible, select:focus-visible {
   .stats-columns { grid-template-columns: 1fr !important; }
   .header-back-label { display: none !important; }
 
-  /* Mobile swipeable card feed */
-  .mobile-card-feed {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    padding: 0 4px !important;
-  }
-  .mobile-card-feed > .card-animate {
-    flex-shrink: 0;
-  }
-
   /* Full-width cards on mobile */
   .prospect-card-grid {
     grid-template-columns: 1fr !important;
