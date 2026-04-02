@@ -5,7 +5,29 @@
 const RANKINGS_URL =
   'https://script.google.com/macros/s/AKfycbw74MLi2U_OIz0KHsWftXW0EXhz_a3UZHBZKaxwF1x1M52ewvbY5uQPUsHxH_qseUIN/exec';
 
+const FC_CACHE_KEY = 'drs_fantasycalc_v1';
+const FC_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
+
 let cache = null;
+
+const readFCCache = () => {
+  try {
+    const raw = localStorage.getItem(FC_CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > FC_CACHE_TTL) {
+      localStorage.removeItem(FC_CACHE_KEY);
+      return null;
+    }
+    return data;
+  } catch { return null; }
+};
+
+const writeFCCache = (data) => {
+  try {
+    localStorage.setItem(FC_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch { /* localStorage full or unavailable */ }
+};
 
 /**
  * Normalize a player name for matching.
@@ -36,6 +58,13 @@ const normalizeRow = (row) => ({
  */
 const fetchRawValues = async () => {
   if (cache) return cache;
+
+  // Check localStorage before hitting network
+  const stored = readFCCache();
+  if (stored) {
+    cache = stored;
+    return cache;
+  }
 
   try {
     const res = await fetch(RANKINGS_URL);
@@ -80,6 +109,7 @@ const fetchRawValues = async () => {
     }
 
     cache = { hasFormats: false, values: buildValueLookup(rows) };
+    writeFCCache(cache);
     return cache;
   } catch (err) {
     console.warn('[FantasyCalc] Failed to fetch:', err.message);
@@ -124,6 +154,12 @@ const findInLookup = (lookup, player) => {
  * 3. Sort matched players by value descending → derive rookie rank
  * 4. Write rank back to each player
  */
+/**
+ * Pre-warm the FantasyCalc cache without applying to players.
+ * Called early in parallel with other fetches.
+ */
+export const prefetchFantasyCalc = () => fetchRawValues().catch(() => null);
+
 export const applyFantasyCalcRankings = async (players) => {
   const data = await fetchRawValues();
   if (!data) return players;
