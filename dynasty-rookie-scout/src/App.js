@@ -56,7 +56,7 @@ function App() {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await getPlayers();
+        const data = await getPlayers((updated) => setPlayers(updated));
         setPlayers(data);
       } catch (err) {
         console.error('[App] Failed to load players:', err);

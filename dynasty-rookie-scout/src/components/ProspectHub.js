@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import PlayerCard from './PlayerCard';
 import PlayerListView from './PlayerListView';
 import FilterBar from './FilterBar';
 import SearchInput from './SearchInput';
+import SwipeableCardFeed from './SwipeableCardFeed';
 import { isUsingLiveData } from '../services/dataService';
 import { sortPlayers, filterPlayers, getTierForPlayer } from '../utils/helpers';
 
@@ -60,6 +61,19 @@ const LoadingSkeleton = () => (
   </div>
 );
 
+const useIsMobile = () => {
+  const [mobile, setMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth <= 768
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => setMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return mobile;
+};
+
 const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, onSelectPlayer, onCompare }) => {
   const [viewMode, setViewMode] = useState('cards');
   const [filters, setFilters] = useState({
@@ -71,6 +85,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   });
   const [sortBy, setSortBy] = useState('rank');
   const [perspective, setPerspective] = useState('overall');
+  const isMobile = useIsMobile();
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
   const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
@@ -192,21 +207,15 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
 
       {/* Card View */}
       {!loading && viewMode === 'cards' && sorted.length > 0 && (
-        showTierGroups ? (
-          tierOrder.filter(t => tiers[t]).map(tier => {
-            let globalIdx = 0;
-            // count cards in earlier tiers for stagger offset
-            for (const t of tierOrder) {
-              if (t === tier) break;
-              globalIdx += (tiers[t]?.length || 0);
-            }
-            return (
-              <div key={tier} style={{ marginBottom: 24 }}>
-                <div className="card-animate" style={{
+        isMobile ? (
+          // Mobile: swipeable horizontal card navigation
+          showTierGroups ? (
+            tierOrder.filter(t => tiers[t]).map(tier => (
+              <div key={tier} style={{ marginBottom: 20 }}>
+                <div style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  marginBottom: 12, paddingBottom: 8,
+                  marginBottom: 10, paddingBottom: 8,
                   borderBottom: '2px solid var(--border-primary)',
-                  animationDelay: `${Math.min(globalIdx * 40, 600)}ms`,
                 }}>
                   <h2 style={{
                     fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
@@ -223,24 +232,85 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
                     {tiers[tier].length}
                   </span>
                 </div>
-                <div className="prospect-card-grid mobile-card-feed" style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                  gap: 12,
-                }}>
-                  {tiers[tier].map((player, i) => renderCard(player, globalIdx + i))}
-                </div>
+                <SwipeableCardFeed>
+                  {tiers[tier].map((player) => (
+                    <PlayerCard
+                      key={player.id}
+                      player={player}
+                      perspective={perspective}
+                      onClick={() => onSelectPlayer(player.id)}
+                      allPlayers={players}
+                      isStudied={studiedPlayers.has(player.id)}
+                    />
+                  ))}
+                </SwipeableCardFeed>
               </div>
-            );
-          })
+            ))
+          ) : (
+            <SwipeableCardFeed>
+              {sorted.map((player) => (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  perspective={perspective}
+                  onClick={() => onSelectPlayer(player.id)}
+                  allPlayers={players}
+                  isStudied={studiedPlayers.has(player.id)}
+                />
+              ))}
+            </SwipeableCardFeed>
+          )
         ) : (
-          <div className="prospect-card-grid mobile-card-feed" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: 12,
-          }}>
-            {sorted.map((player, i) => renderCard(player, i))}
-          </div>
+          // Desktop: grid layout with tier groups
+          showTierGroups ? (
+            tierOrder.filter(t => tiers[t]).map(tier => {
+              let globalIdx = 0;
+              for (const t of tierOrder) {
+                if (t === tier) break;
+                globalIdx += (tiers[t]?.length || 0);
+              }
+              return (
+                <div key={tier} style={{ marginBottom: 24 }}>
+                  <div className="card-animate" style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    marginBottom: 12, paddingBottom: 8,
+                    borderBottom: '2px solid var(--border-primary)',
+                    animationDelay: `${Math.min(globalIdx * 40, 600)}ms`,
+                  }}>
+                    <h2 style={{
+                      fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
+                      fontSize: 18, color: 'var(--text-primary)', margin: 0,
+                      textTransform: 'uppercase', letterSpacing: 0.5,
+                    }}>
+                      {tier}
+                    </h2>
+                    <span style={{
+                      fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+                      color: 'var(--text-tertiary)', background: 'var(--bg-tertiary)',
+                      padding: '2px 8px', borderRadius: 'var(--radius-sm)',
+                    }}>
+                      {tiers[tier].length}
+                    </span>
+                  </div>
+                  <div className="prospect-card-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: 12,
+                  }}>
+                    {tiers[tier].map((player, i) => renderCard(player, globalIdx + i))}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="prospect-card-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: 12,
+            }}>
+              {sorted.map((player, i) => renderCard(player, i))}
+            </div>
+          )
         )
       )}
 
