@@ -208,58 +208,19 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
       {/* Card View */}
       {!loading && viewMode === 'cards' && sorted.length > 0 && (
         isMobile ? (
-          // Mobile: swipeable horizontal card navigation
-          showTierGroups ? (
-            tierOrder.filter(t => tiers[t]).map(tier => (
-              <div key={tier} style={{ marginBottom: 20 }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  marginBottom: 10, paddingBottom: 8,
-                  borderBottom: '2px solid var(--border-primary)',
-                }}>
-                  <h2 style={{
-                    fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
-                    fontSize: 18, color: 'var(--text-primary)', margin: 0,
-                    textTransform: 'uppercase', letterSpacing: 0.5,
-                  }}>
-                    {tier}
-                  </h2>
-                  <span style={{
-                    fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-                    color: 'var(--text-tertiary)', background: 'var(--bg-tertiary)',
-                    padding: '2px 8px', borderRadius: 'var(--radius-sm)',
-                  }}>
-                    {tiers[tier].length}
-                  </span>
-                </div>
-                <SwipeableCardFeed>
-                  {tiers[tier].map((player) => (
-                    <PlayerCard
-                      key={player.id}
-                      player={player}
-                      perspective={perspective}
-                      onClick={() => onSelectPlayer(player.id)}
-                      allPlayers={players}
-                      isStudied={studiedPlayers.has(player.id)}
-                    />
-                  ))}
-                </SwipeableCardFeed>
-              </div>
-            ))
-          ) : (
-            <SwipeableCardFeed>
-              {sorted.map((player) => (
-                <PlayerCard
-                  key={player.id}
-                  player={player}
-                  perspective={perspective}
-                  onClick={() => onSelectPlayer(player.id)}
-                  allPlayers={players}
-                  isStudied={studiedPlayers.has(player.id)}
-                />
-              ))}
-            </SwipeableCardFeed>
-          )
+          // Mobile: vertical full-screen swipeable card feed
+          <SwipeableCardFeed>
+            {sorted.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                perspective={perspective}
+                onClick={() => onSelectPlayer(player.id)}
+                allPlayers={players}
+                isStudied={studiedPlayers.has(player.id)}
+              />
+            ))}
+          </SwipeableCardFeed>
         ) : (
           // Desktop: grid layout with tier groups
           showTierGroups ? (

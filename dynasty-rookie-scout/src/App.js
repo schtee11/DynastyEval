@@ -51,10 +51,9 @@ function App() {
   const [studiedPlayers, setStudiedPlayers] = useState(loadStudied);
   const [playerVideos, setPlayerVideos] = useState(loadVideos);
 
-  // Load players once at app level
+  // Load players — static data returns instantly, live data enriches in background
   useEffect(() => {
     const load = async () => {
-      setLoading(true);
       try {
         const data = await getPlayers((updated) => setPlayers(updated));
         setPlayers(data);
