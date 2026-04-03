@@ -3,10 +3,24 @@ import { BrowserRouter, Routes, Route, useNavigate, useParams } from 'react-rout
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
+import BottomNav from './components/BottomNav';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import { getPlayers } from './services/dataService';
 import './App.css';
+
+const useIsMobile = () => {
+  const [mobile, setMobile] = React.useState(() =>
+    typeof window !== 'undefined' && window.innerWidth <= 768
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => setMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return mobile;
+};
 
 const ProspectHub = lazy(() => import('./components/ProspectHub'));
 const PlayerProfile = lazy(() => import('./components/PlayerProfile'));
@@ -130,12 +144,13 @@ function AppInner() {
     });
   }, []);
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="app-root">
-      <Header
-        onNavigate={(path) => navigate(path)}
-      />
-      <main>
+    <div className={`app-root ${isMobile ? 'app-mobile' : 'app-desktop'}`}>
+      {/* Header: always on desktop, hidden on mobile feed */}
+      <Header />
+      <main style={isMobile ? { paddingBottom: 56 } : undefined}>
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -178,7 +193,7 @@ function AppInner() {
           </Suspense>
         </ErrorBoundary>
       </main>
-      <Footer />
+      {isMobile ? <BottomNav /> : <Footer />}
     </div>
   );
 }

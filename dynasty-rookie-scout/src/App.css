@@ -345,4 +345,18 @@ button:focus-visible, select:focus-visible {
 
   /* Hub padding */
   .hub-root { padding: 10px 12px !important; }
+
+  /* Hide desktop header nav on mobile (bottom nav replaces it) */
+  .app-mobile .header-root nav { display: none !important; }
+  .app-mobile .header-root { height: 48px !important; }
+
+  /* Vertical feed: hide scrollbar */
+  .vertical-feed::-webkit-scrollbar { display: none; }
+  .vertical-feed { scrollbar-width: none; -ms-overflow-style: none; }
+
+  /* Bottom nav safe area */
+  .bottom-nav {
+    height: calc(56px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
 }
