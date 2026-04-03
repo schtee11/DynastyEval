@@ -33,7 +33,7 @@ const PlayerDiscussionPage = ({ players }) => {
         display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,
       }}>
         <button
-          onClick={() => navigate(`/player/${playerId}`)}
+          onClick={() => navigate('/')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
