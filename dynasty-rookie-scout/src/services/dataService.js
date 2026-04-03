@@ -93,7 +93,7 @@ export const getPlayers = async (onUpdate) => {
 
   try {
     // Launch Sleeper + CFBD in parallel
-    const cfbdPromise = preloadCFBDStats(2025).catch((err) => {
+    const cfbdPromise = preloadCFBDStats().catch((err) => {
       console.warn('[DataService] CFBD preload failed:', err.message);
       return null;
     });

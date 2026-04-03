@@ -1,36 +1,34 @@
 // Attaches college stats to player objects.
 //
-// Data source: CFBD API (live) — basic counting stats + PPA
+// Data source: Railway backend API (proxies CFBD data server-side)
 // All proprietary data sources (PFF, RAS) have been removed.
 
-import { fetchCareerStats, isCFBDAvailable } from './cfbdApi';
+const API_BASE = process.env.REACT_APP_API_URL || '';
 
-// ── CFBD data cache (loaded once, shared across all players) ────────────────
+// ── CFBD data cache (loaded once from backend, shared across all players) ──
 
 let cfbdStatsMap = null;
 let cfbdLoadPromise = null;
 
 /**
- * Pre-load all CFBD stats. Call once before attaching stats to players.
- * Safe to call multiple times — only fetches once.
+ * Pre-load all CFBD stats from the backend.
+ * The backend fetches from CFBD API with the key server-side and caches in PostgreSQL.
  */
-export const preloadCFBDStats = async (year = 2025) => {
+export const preloadCFBDStats = async () => {
   if (cfbdStatsMap) return cfbdStatsMap;
   if (cfbdLoadPromise) return cfbdLoadPromise;
 
-  if (!isCFBDAvailable()) {
-    console.info('[CFBDTransformer] No CFBD API key — no stats available');
-    return null;
-  }
-
-  cfbdLoadPromise = fetchCareerStats([2022, 2023, 2024, 2025])
-    .then((data) => {
-      cfbdStatsMap = data;
-      console.info(`[CFBDTransformer] CFBD career data loaded: ${Object.keys(data || {}).length} players`);
-      return data;
+  cfbdLoadPromise = fetch(`${API_BASE}/api/players`)
+    .then(async (res) => {
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      cfbdStatsMap = data.careerStats || {};
+      console.info(`[CFBDTransformer] Stats loaded from backend: ${Object.keys(cfbdStatsMap).length} players`);
+      return cfbdStatsMap;
     })
     .catch((err) => {
-      console.warn('[CFBDTransformer] CFBD fetch failed:', err.message);
+      console.warn('[CFBDTransformer] Backend stats fetch failed:', err.message);
+      cfbdLoadPromise = null;
       return null;
     });
 
@@ -120,7 +118,7 @@ const buildRecStats = (live) => {
 
 /**
  * Attach college stats to a player object.
- * Uses CFBD live data only (all proprietary sources removed).
+ * Uses CFBD data fetched from the backend API.
  * Call preloadCFBDStats() before using this function.
  */
 export const attachCollegeStats = (playerName, position, prospect) => {
@@ -129,7 +127,6 @@ export const attachCollegeStats = (playerName, position, prospect) => {
 
   if (!live) return {};
 
-  // Position-specific basic stats from CFBD
   let stats;
   switch (position) {
     case 'QB': stats = buildQBStats(live); break;
@@ -139,7 +136,6 @@ export const attachCollegeStats = (playerName, position, prospect) => {
     default:   stats = {};
   }
 
-  // PPA from CFBD
   const ppa = live?.ppa?.avgPPA ?? null;
 
   return {
