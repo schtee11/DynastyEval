@@ -6,6 +6,14 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Proxy API requests to Railway backend
+[[redirects]]
+  from = "/api/*"
+  to = "${REACT_APP_API_URL}/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback — must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"

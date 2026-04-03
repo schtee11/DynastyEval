@@ -3,11 +3,15 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
 import { getArchetype } from '../utils/archetypes';
 import { generateScoutingSummary } from '../services/anthropicApi';
-import { perspectiveLabels } from '../services/receivingData';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
 import ProspectGlance from './ProspectGlance';
+
+// Perspective labels kept for UI compatibility (proprietary data source removed)
+const perspectiveLabels = {
+  overall: 'Overall', deepBall: 'Deep Ball', redZone: 'Red Zone', lateDown: 'Late Down',
+};
 
 const StatRow = ({ label, value, benchmark, unit = '', allValues }) => {
   const displayValue = value == null || value === '' ? 'N/A' : value;
