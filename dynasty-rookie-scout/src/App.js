@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
@@ -146,12 +146,14 @@ function AppInner() {
   }, []);
 
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const showFooter = !isMobile && !isHome;
 
   return (
     <div className={`app-root ${isMobile ? 'app-mobile' : 'app-desktop'}`}>
-      {/* Header: always on desktop, hidden on mobile feed */}
       <Header />
-      <main style={isMobile ? { paddingBottom: 56 } : undefined}>
+      <main style={isMobile ? { paddingBottom: 56 } : isHome ? { overflow: 'hidden' } : undefined}>
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -197,7 +199,7 @@ function AppInner() {
           </Suspense>
         </ErrorBoundary>
       </main>
-      {isMobile ? <BottomNav /> : <Footer />}
+      {isMobile ? <BottomNav /> : showFooter ? <Footer /> : null}
     </div>
   );
 }
