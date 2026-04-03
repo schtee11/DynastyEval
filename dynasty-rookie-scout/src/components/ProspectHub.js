@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PlayerHeroCard from './PlayerHeroCard';
 import VerticalFeed from './VerticalFeed';
 import DesktopSplitView from './DesktopSplitView';
@@ -20,6 +21,7 @@ const useIsMobile = () => {
 };
 
 const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, onSelectPlayer, onCompare }) => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     position: 'ALL',
     draftDay: '',
@@ -173,7 +175,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
                 player={player}
                 allPlayers={players}
                 onViewProfile={onSelectPlayer}
-                onDiscuss={() => {}}
+                onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
                 isStudied={studiedPlayers.has(player.id)}
               />
             ))}

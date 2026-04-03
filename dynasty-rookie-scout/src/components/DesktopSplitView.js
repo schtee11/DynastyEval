@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PlayerListItem from './PlayerListItem';
 import DesktopDetailPanel from './DesktopDetailPanel';
 import FilterBar from './FilterBar';
@@ -11,6 +12,7 @@ import { isUsingLiveData } from '../services/dataService';
  * detail card on the right for the selected player.
  */
 const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPlayer, onCompare }) => {
+  const navigate = useNavigate();
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [filters, setFilters] = useState({
     position: 'ALL',
@@ -163,7 +165,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
               player={selectedPlayer}
               allPlayers={players}
               onViewProfile={(id) => onSelectPlayer(id)}
-              onDiscuss={() => {}}
+              onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
               isStudied={studiedPlayers.has(selectedPlayer.id)}
             />
           </div>

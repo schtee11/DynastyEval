@@ -24,6 +24,7 @@ const useIsMobile = () => {
 
 const ProspectHub = lazy(() => import('./components/ProspectHub'));
 const PlayerProfile = lazy(() => import('./components/PlayerProfile'));
+const PlayerDiscussionPage = lazy(() => import('./components/PlayerDiscussionPage'));
 const CompareView = lazy(() => import('./components/CompareView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
 const AuthPage = lazy(() => import('./components/AuthPage'));
@@ -174,6 +175,9 @@ function AppInner() {
                   addVideo={addVideo}
                   removeVideo={removeVideo}
                 />
+              } />
+              <Route path="/player/:id/discuss" element={
+                <PlayerDiscussionPage players={players} />
               } />
               <Route path="/compare" element={
                 <CompareView
