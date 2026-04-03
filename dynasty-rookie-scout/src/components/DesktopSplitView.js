@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import PlayerListItem from './PlayerListItem';
-import PlayerHeroCard from './PlayerHeroCard';
+import DesktopDetailPanel from './DesktopDetailPanel';
 import FilterBar from './FilterBar';
 import SearchInput from './SearchInput';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
@@ -153,13 +153,13 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
       <div style={{
         flex: 1,
         overflow: 'hidden',
-        background: 'var(--bg-secondary)',
+        background: 'var(--bg-primary)',
         display: 'flex',
         flexDirection: 'column',
       }}>
         {selectedPlayer ? (
-          <div style={{ height: '100%', overflowY: 'auto' }}>
-            <PlayerHeroCard
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <DesktopDetailPanel
               player={selectedPlayer}
               allPlayers={players}
               onViewProfile={(id) => onSelectPlayer(id)}
