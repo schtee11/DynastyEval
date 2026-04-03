@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 /**
  * TikTok/Reels-style vertical swipe feed.
@@ -37,17 +37,6 @@ const VerticalFeed = ({ children, onActiveChange }) => {
 
     return () => observer.disconnect();
   }, [children, onActiveChange]);
-
-  // Scroll programmatically to a specific card index
-  // Exposed for future use (e.g. filter jump, deep link)
-  const scrollToIndex = useCallback((index) => { // eslint-disable-line no-unused-vars
-    const container = containerRef.current;
-    if (!container) return;
-    const card = container.querySelector(`[data-index="${index}"]`);
-    if (card) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
 
   const childArray = React.Children.toArray(children);
   const total = childArray.length;
