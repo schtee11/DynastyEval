@@ -38,7 +38,9 @@ const VerticalFeed = ({ children, onActiveChange }) => {
     return () => observer.disconnect();
   }, [children, onActiveChange]);
 
-  const scrollToIndex = useCallback((index) => {
+  // Scroll programmatically to a specific card index
+  // Exposed for future use (e.g. filter jump, deep link)
+  const scrollToIndex = useCallback((index) => { // eslint-disable-line no-unused-vars
     const container = containerRef.current;
     if (!container) return;
     const card = container.querySelector(`[data-index="${index}"]`);
