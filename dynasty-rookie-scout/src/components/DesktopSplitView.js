@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PlayerListItem from './PlayerListItem';
 import DesktopDetailPanel from './DesktopDetailPanel';
@@ -9,7 +9,8 @@ import { isUsingLiveData } from '../services/dataService';
 
 /**
  * Desktop layout: scrollable player list on the left,
- * detail card on the right for the selected player.
+ * TikTok-style scroll-snap detail feed on the right.
+ * Arrow keys navigate between players.
  */
 const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPlayer, onCompare }) => {
   const navigate = useNavigate();
@@ -23,18 +24,87 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
   });
   const [sortBy, setSortBy] = useState('rank');
   const [perspective, setPerspective] = useState('overall');
+  const rightPanelRef = useRef(null);
+  const listRef = useRef(null);
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
   const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
 
-  // Auto-select first player if none selected
-  const selectedPlayer = useMemo(() => {
-    if (selectedPlayerId) {
-      const found = sorted.find(p => p.id === selectedPlayerId);
-      if (found) return found;
-    }
-    return sorted[0] || null;
+  // Current index in the sorted list
+  const selectedIndex = useMemo(() => {
+    if (!selectedPlayerId) return 0;
+    const idx = sorted.findIndex(p => p.id === selectedPlayerId);
+    return idx >= 0 ? idx : 0;
   }, [sorted, selectedPlayerId]);
+
+  const selectedPlayer = sorted[selectedIndex] || null;
+
+  // Navigate to a player by index
+  const goToIndex = useCallback((index) => {
+    if (index < 0 || index >= sorted.length) return;
+    const player = sorted[index];
+    setSelectedPlayerId(player.id);
+
+    // Scroll right panel to that player's card
+    const rightPanel = rightPanelRef.current;
+    if (rightPanel) {
+      const card = rightPanel.querySelector(`[data-player-index="${index}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Scroll left list to keep selected visible
+    const listEl = listRef.current;
+    if (listEl) {
+      const row = listEl.querySelector(`[data-list-id="${player.id}"]`);
+      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [sorted]);
+
+  // Arrow key navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        goToIndex(selectedIndex + 1);
+      } else if (e.key === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        goToIndex(selectedIndex - 1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndex, goToIndex]);
+
+  // Sync right panel scroll-snap with selected player
+  useEffect(() => {
+    const rightPanel = rightPanelRef.current;
+    if (!rightPanel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const idx = Number(entry.target.dataset.playerIndex);
+            if (!isNaN(idx) && sorted[idx]) {
+              setSelectedPlayerId(sorted[idx].id);
+              // Scroll left list to match
+              const listEl = listRef.current;
+              if (listEl) {
+                const row = listEl.querySelector(`[data-list-id="${sorted[idx].id}"]`);
+                if (row) row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+            }
+          }
+        }
+      },
+      { root: rightPanel, threshold: 0.5 }
+    );
+
+    const cards = rightPanel.querySelectorAll('[data-player-index]');
+    cards.forEach(card => observer.observe(card));
+    return () => observer.disconnect();
+  }, [sorted]);
 
   if (loading) {
     return (
@@ -100,7 +170,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
           </div>
         </div>
 
-        {/* Count bar */}
+        {/* Count bar + keyboard hint */}
         <div style={{
           padding: '8px 16px',
           borderBottom: '1px solid var(--border-subtle)',
@@ -114,20 +184,25 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
           }}>
             <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospects
           </span>
-          {isUsingLiveData() && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {isUsingLiveData() && (
+              <span style={{
+                background: 'var(--success-light)', color: 'var(--success)',
+                padding: '2px 8px', borderRadius: 'var(--radius-sm)',
+                fontSize: 9, fontWeight: 700,
+              }}>LIVE</span>
+            )}
             <span style={{
-              background: 'var(--success-light)', color: 'var(--success)',
-              padding: '2px 8px', borderRadius: 'var(--radius-sm)',
-              fontSize: 9, fontWeight: 700,
-            }}>LIVE</span>
-          )}
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
+              color: 'var(--text-tertiary)', opacity: 0.6,
+            }}>
+              ↑↓ navigate
+            </span>
+          </div>
         </div>
 
         {/* Player list */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-        }}>
+        <div ref={listRef} style={{ flex: 1, overflowY: 'auto' }}>
           {sorted.length === 0 ? (
             <div style={{
               padding: 40, textAlign: 'center',
@@ -137,51 +212,52 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
               No prospects match filters
             </div>
           ) : (
-            sorted.map(player => (
-              <PlayerListItem
-                key={player.id}
-                player={player}
-                allPlayers={players}
-                isSelected={selectedPlayer?.id === player.id}
-                isStudied={studiedPlayers.has(player.id)}
-                onClick={(id) => setSelectedPlayerId(id)}
-              />
+            sorted.map((player, i) => (
+              <div key={player.id} data-list-id={player.id}>
+                <PlayerListItem
+                  player={player}
+                  allPlayers={players}
+                  isSelected={selectedPlayer?.id === player.id}
+                  isStudied={studiedPlayers.has(player.id)}
+                  onClick={() => goToIndex(i)}
+                />
+              </div>
             ))
           )}
         </div>
       </div>
 
-      {/* ── Right Panel: Player Detail ── */}
-      <div style={{
-        flex: 1,
-        overflow: 'hidden',
-        background: 'var(--bg-primary)',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        {selectedPlayer ? (
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+      {/* ── Right Panel: Scroll-snap player feed ── */}
+      <div
+        ref={rightPanelRef}
+        style={{
+          flex: 1,
+          overflowY: 'scroll',
+          scrollSnapType: 'y mandatory',
+          background: 'var(--bg-primary)',
+        }}
+        className="vertical-feed"
+      >
+        {sorted.map((player, i) => (
+          <div
+            key={player.id}
+            data-player-index={i}
+            style={{
+              height: 'calc(100vh - 56px)',
+              scrollSnapAlign: 'start',
+              scrollSnapStop: 'always',
+              overflowY: 'auto',
+            }}
+          >
             <DesktopDetailPanel
-              player={selectedPlayer}
+              player={player}
               allPlayers={players}
               onViewProfile={(id) => onSelectPlayer(id)}
               onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
-              isStudied={studiedPlayers.has(selectedPlayer.id)}
+              isStudied={studiedPlayers.has(player.id)}
             />
           </div>
-        ) : (
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 14,
-          }}>
-            Select a prospect from the list
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile } from '../utils/helpers';
 import { getArchetype, getStrengthTags } from '../utils/archetypes';
+import { fetchDiscussions } from '../services/apiClient';
 import StatHighlight from './StatHighlight';
 import DraftBadge from './DraftBadge';
 
@@ -48,6 +49,19 @@ const getHeroStats = (player, allPlayers) => {
  * Desktop-optimized detail panel for the split view.
  * Uses horizontal space effectively with a two-column layout.
  */
+const timeAgo = (dateStr) => {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const seconds = Math.floor((now - date) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+};
+
 const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const chartColor = positionChartColors[player.position] || '#7c3aed';
@@ -59,6 +73,16 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
   const injured = hasInjuryRisk(player);
   const rank1QB = player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
+
+  // Fetch trending discussions for this player
+  const [discussions, setDiscussions] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetchDiscussions(String(player.id), 'hot')
+      .then(res => { if (!cancelled) setDiscussions(res.discussions || []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [player.id]);
 
   return (
     <div style={{
@@ -252,7 +276,7 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
       )}
 
       {/* ── Actions ── */}
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
         <button
           onClick={() => onViewProfile && onViewProfile(player.id)}
           style={{
@@ -289,6 +313,111 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
         >
           Discuss
         </button>
+      </div>
+
+      {/* ── Trending Discussions ── */}
+      <div style={{
+        borderTop: '1px solid var(--border-primary)',
+        paddingTop: 20,
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 12,
+        }}>
+          <div style={{
+            fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16,
+            fontWeight: 700, color: 'var(--text-primary)',
+            textTransform: 'uppercase', letterSpacing: 0.5,
+          }}>
+            Trending
+          </div>
+          <button
+            onClick={() => onDiscuss && onDiscuss(player.id)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+              color: 'var(--accent-text)',
+            }}
+          >
+            View All
+          </button>
+        </div>
+
+        {discussions.length === 0 ? (
+          <div style={{
+            padding: '24px 16px',
+            background: 'var(--bg-card)',
+            borderRadius: 10,
+            border: '1px solid var(--border-subtle)',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 13,
+              color: 'var(--text-tertiary)', marginBottom: 8,
+            }}>
+              No discussions yet
+            </div>
+            <button
+              onClick={() => onDiscuss && onDiscuss(player.id)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+                color: 'var(--accent-text)',
+              }}
+            >
+              Start the first thread
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {discussions.slice(0, 4).map(d => (
+              <div
+                key={d.id}
+                onClick={() => onDiscuss && onDiscuss(player.id)}
+                style={{
+                  display: 'flex', gap: 10, alignItems: 'flex-start',
+                  padding: '10px 12px',
+                  background: 'var(--bg-card)',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
+              >
+                {/* Vote count */}
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+                  fontWeight: 700, color: 'var(--accent-text)',
+                  minWidth: 28, textAlign: 'center',
+                  paddingTop: 2,
+                }}>
+                  {d.upvote_count || 0}
+                </div>
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                    color: 'var(--text-primary)', lineHeight: 1.3,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {d.title}
+                  </div>
+                  <div style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 11,
+                    color: 'var(--text-tertiary)', marginTop: 3,
+                    display: 'flex', gap: 8,
+                  }}>
+                    <span>{d.username || 'Anon'}</span>
+                    <span>{timeAgo(d.created_at)}</span>
+                    <span>{d.comment_count || 0} comments</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
