@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -10,6 +12,7 @@ const ProspectHub = lazy(() => import('./components/ProspectHub'));
 const PlayerProfile = lazy(() => import('./components/PlayerProfile'));
 const CompareView = lazy(() => import('./components/CompareView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
+const AuthPage = lazy(() => import('./components/AuthPage'));
 
 const STUDIED_KEY = 'drs_studied_players';
 const VIDEOS_KEY = 'drs_player_videos';
@@ -41,17 +44,40 @@ const LoadingFallback = () => (
   </div>
 );
 
-function App() {
-  const [activeTab, setActiveTab] = useState('hub');
+// Wrapper to inject navigation + route params
+function PlayerProfileRoute({ players, studiedPlayers, toggleStudied, playerVideos, addVideo, removeVideo }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const playerId = Number(id);
+  const player = players.find(p => p.id === playerId) || null;
+
+  if (!player) {
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-secondary)' }}>Player not found</div>;
+  }
+
+  return (
+    <PlayerProfile
+      player={player}
+      allPlayers={players}
+      studiedPlayers={studiedPlayers}
+      toggleStudied={toggleStudied}
+      onBack={() => navigate('/')}
+      onSelectPlayer={(pid) => navigate(`/player/${pid}`)}
+      videos={playerVideos[playerId] || []}
+      onAddVideo={(url) => addVideo(playerId, url)}
+      onRemoveVideo={(url) => removeVideo(playerId, url)}
+    />
+  );
+}
+
+function AppInner() {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
-  const [comparePlayerIds, setComparePlayerIds] = useState([]);
   const [studiedPlayers, setStudiedPlayers] = useState(loadStudied);
   const [playerVideos, setPlayerVideos] = useState(loadVideos);
 
-  // Load players once at app level
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -68,7 +94,6 @@ function App() {
     load();
   }, []);
 
-  // Persist studied set and videos
   useEffect(() => {
     localStorage.setItem(STUDIED_KEY, JSON.stringify([...studiedPlayers]));
   }, [studiedPlayers]);
@@ -105,78 +130,68 @@ function App() {
     });
   }, []);
 
-  const navigateToProfile = useCallback((playerId) => {
-    setSelectedPlayerId(playerId);
-    setActiveTab('profile');
-    window.scrollTo(0, 0);
-  }, []);
-
-  const navigateToHub = useCallback(() => {
-    setActiveTab('hub');
-    setSelectedPlayerId(null);
-  }, []);
-
-  const navigateToCompare = useCallback((playerIds = []) => {
-    setComparePlayerIds(playerIds);
-    setActiveTab('compare');
-  }, []);
-
-  const selectedPlayer = players.find(p => p.id === selectedPlayerId) || null;
-
   return (
-    <ThemeProvider>
-      <div className="app-root">
-        <Header
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          selectedPlayer={selectedPlayer}
-          onBackToHub={navigateToHub}
-        />
-        <main>
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingFallback />}>
-              {activeTab === 'hub' && (
+    <div className="app-root">
+      <Header
+        onNavigate={(path) => navigate(path)}
+      />
+      <main>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={
                 <ProspectHub
                   players={players}
                   loading={loading}
                   error={error}
                   studiedPlayers={studiedPlayers}
                   toggleStudied={toggleStudied}
-                  onSelectPlayer={navigateToProfile}
-                  onCompare={navigateToCompare}
+                  onSelectPlayer={(pid) => navigate(`/player/${pid}`)}
+                  onCompare={(ids) => navigate('/compare', { state: { playerIds: ids } })}
                 />
-              )}
-              {activeTab === 'profile' && selectedPlayer && (
-                <PlayerProfile
-                  player={selectedPlayer}
-                  allPlayers={players}
+              } />
+              <Route path="/player/:id" element={
+                <PlayerProfileRoute
+                  players={players}
                   studiedPlayers={studiedPlayers}
                   toggleStudied={toggleStudied}
-                  onBack={navigateToHub}
-                  onSelectPlayer={navigateToProfile}
-                  videos={playerVideos[selectedPlayerId] || []}
-                  onAddVideo={(url) => addVideo(selectedPlayerId, url)}
-                  onRemoveVideo={(url) => removeVideo(selectedPlayerId, url)}
+                  playerVideos={playerVideos}
+                  addVideo={addVideo}
+                  removeVideo={removeVideo}
                 />
-              )}
-              {activeTab === 'compare' && (
+              } />
+              <Route path="/compare" element={
                 <CompareView
                   players={players}
-                  initialPlayerIds={comparePlayerIds}
-                  onSelectPlayer={navigateToProfile}
+                  onSelectPlayer={(pid) => navigate(`/player/${pid}`)}
                 />
-              )}
-              {activeTab === 'myboard' && (
+              } />
+              <Route path="/board" element={
                 <MyBoard
-                  onSelectPlayer={navigateToProfile}
+                  onSelectPlayer={(pid) => navigate(`/player/${pid}`)}
                 />
-              )}
-            </Suspense>
-          </ErrorBoundary>
-        </main>
-        <Footer />
-      </div>
-    </ThemeProvider>
+              } />
+              <Route path="/login" element={
+                <AuthPage onSuccess={() => navigate('/')} />
+              } />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppInner />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 

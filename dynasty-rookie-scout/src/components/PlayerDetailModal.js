@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/anthropicApi';
-import { perspectiveLabels } from '../services/receivingData';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
 import PlayerCompChip from './PlayerCompChip';
 import ValueDelta from './ValueDelta';
+
+// Perspective labels kept for UI compatibility (proprietary data source removed)
+const perspectiveLabels = {
+  overall: 'Overall', deepBall: 'Deep Ball', redZone: 'Red Zone', lateDown: 'Late Down',
+};
 
 /**
  * Enhanced StatRow with inline percentile bar.

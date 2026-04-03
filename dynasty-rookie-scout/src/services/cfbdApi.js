@@ -9,7 +9,7 @@
 
 const CFBD_BASE = 'https://apinext.collegefootballdata.com';
 
-// ── Cache (same pattern as espnApi.js) ─────────────────────────────────────
+// ── Cache ─────────────────────────────────────────────────────────────────
 
 const CACHE_VERSION = 'cfbd_v2';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
