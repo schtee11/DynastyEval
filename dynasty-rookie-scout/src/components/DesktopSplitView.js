@@ -45,11 +45,11 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
     const player = sorted[index];
     setSelectedPlayerId(player.id);
 
-    // Scroll right panel to that player's card
+    // Scroll right panel to exact card position (avoids scrollIntoView fighting scroll-snap)
     const rightPanel = rightPanelRef.current;
     if (rightPanel) {
-      const card = rightPanel.querySelector(`[data-player-index="${index}"]`);
-      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const cardHeight = rightPanel.clientHeight;
+      rightPanel.scrollTo({ top: index * cardHeight, behavior: 'smooth' });
     }
 
     // Scroll left list to keep selected visible
