@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator, getTierForPlayer } from '../utils/helpers';
-import { getArchetype } from '../utils/archetypes';
 import PercentileBar from './PercentileBar';
 import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
@@ -25,8 +24,6 @@ const PlayerRowCard = memo(({ player, perspective, onClick, isOdd, allPlayers, i
 
   const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
   const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
-  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
-
   const baseBg = isOdd ? 'var(--bg-secondary)' : 'var(--bg-primary)';
   const bg = tierTint !== 'transparent' ? tierTint : baseBg;
 
@@ -114,12 +111,6 @@ const PlayerRowCard = memo(({ player, perspective, onClick, isOdd, allPlayers, i
             {player.college || 'TBD'}
           </span>
           <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
-          <span style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 600,
-            color: posColor.text, letterSpacing: 0.2,
-          }}>
-            {archetype}
-          </span>
           {player.breakoutAge && breakout.label !== 'N/A' && (
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 3,

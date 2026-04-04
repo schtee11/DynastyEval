@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import { positionColors, hasInjuryRisk, getStatAccessors, getBreakoutIndicator, computeHeadlineScore, getPercentileColor } from '../utils/helpers';
-import { getArchetype, getStrengthTags } from '../utils/archetypes';
 import PercentileBar from './PercentileBar';
 import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
@@ -16,8 +15,6 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
   const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
   const headlineScore = useMemo(() => computeHeadlineScore(player, allPlayers), [player, allPlayers]);
   const scoreColor = getPercentileColor(headlineScore);
-  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
-  const strengthTags = useMemo(() => getStrengthTags(player, allPlayers), [player, allPlayers]);
 
   return (
     <div
@@ -100,14 +97,6 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
             }}>
               {[player.college, player.age ? `Age ${player.age}` : null].filter(Boolean).join(' \u00B7 ') || 'TBD'}
             </div>
-            {/* Archetype label */}
-            <div style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
-              color: posColor.text, marginTop: 3, letterSpacing: 0.3,
-              textTransform: 'uppercase',
-            }}>
-              {archetype}
-            </div>
           </div>
           <span style={{
             fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
@@ -122,22 +111,6 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
         <div style={{ marginBottom: 6 }}>
           <DraftBadge round={player.draftRound} pick={player.draftPick} team={player.draftTeam} isProjected={player.draftIsProjected} />
         </div>
-
-        {/* Strength tags */}
-        {strengthTags.length > 0 && (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
-            {strengthTags.slice(0, 3).map((tag, i) => (
-              <span key={i} style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 600,
-                color: tag.tier === 'elite' ? 'var(--success)' : 'var(--accent-text)',
-                background: tag.tier === 'elite' ? 'var(--success-light)' : 'var(--accent-light)',
-                padding: '2px 7px', borderRadius: 10,
-              }}>
-                {tag.label}
-              </span>
-            ))}
-          </div>
-        )}
 
         {/* Headline score + Stat percentile bars */}
         <div style={{

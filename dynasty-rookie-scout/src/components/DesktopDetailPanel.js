@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile } from '../utils/helpers';
-import { getArchetype, getStrengthTags } from '../utils/archetypes';
+import { positionColors, getBreakoutIndicator, hasInjuryRisk, computePercentile } from '../utils/helpers';
 import { fetchDiscussions } from '../services/apiClient';
 import StatHighlight from './StatHighlight';
 import DraftBadge from './DraftBadge';
@@ -64,11 +63,7 @@ const timeAgo = (dateStr) => {
 
 const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
-  const chartColor = positionChartColors[player.position] || '#7c3aed';
-  const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
-  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
-  const strengthTags = useMemo(() => getStrengthTags(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
   const rank1QB = player.rank?.oneQB;
@@ -164,14 +159,6 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
                 <span>{player.age} yrs</span>
               </>
             )}
-            {archetype && (
-              <>
-                <span style={{ color: 'var(--text-tertiary)' }}>&middot;</span>
-                <span style={{ color: chartColor, fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  {archetype}
-                </span>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -212,22 +199,6 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
           </span>
         )}
       </div>
-
-      {/* ── Strength Tags ── */}
-      {strengthTags.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 24 }}>
-          {strengthTags.slice(0, 5).map((tag, i) => (
-            <span key={i} style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-              color: tag.tier === 'elite' ? 'var(--success)' : 'var(--accent-text)',
-              background: tag.tier === 'elite' ? 'var(--success-light)' : 'var(--accent-light)',
-              padding: '4px 10px', borderRadius: 12,
-            }}>
-              {tag.label}
-            </span>
-          ))}
-        </div>
-      )}
 
       {/* ── Stats Grid ── */}
       <div style={{

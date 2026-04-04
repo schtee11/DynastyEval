@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts';
 import { positionColors, computePercentile, getBreakoutIndicator } from '../utils/helpers';
-import { getArchetype } from '../utils/archetypes';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
 
@@ -246,8 +245,6 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
             gap: 16, marginBottom: 24,
           }}>
             {selected.map((p, i) => {
-              const posColor = positionColors[p.position] || positionColors.WR;
-              const archetype = getArchetype(p, peers);
               const breakout = getBreakoutIndicator(p.breakoutAge);
               return (
                 <div key={p.id} style={{
@@ -256,11 +253,6 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
                   borderRadius: 'var(--radius-lg)',
                   padding: 16, cursor: 'pointer',
                 }} onClick={() => onSelectPlayer(p.id)}>
-                  <div style={{
-                    fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
-                    color: posColor.text, textTransform: 'uppercase', letterSpacing: 0.5,
-                    marginBottom: 2,
-                  }}>{archetype}</div>
                   <div style={{
                     fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
                     fontSize: 22, color: 'var(--text-primary)', marginBottom: 4,

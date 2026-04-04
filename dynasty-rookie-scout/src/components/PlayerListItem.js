@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import { positionColors, hasInjuryRisk } from '../utils/helpers';
-import { getArchetype } from '../utils/archetypes';
 
 /**
  * Compact list row for the desktop split-view panel.
@@ -10,9 +9,6 @@ const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, o
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const rank1QB = player.rank?.oneQB;
-  const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
-  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
-
   // One headline stat per position
   const headlineStat = useMemo(() => {
     const s = player.stats;
@@ -74,7 +70,7 @@ const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, o
         {player.position}
       </span>
 
-      {/* Name + college + archetype */}
+      {/* Name + college */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
@@ -112,12 +108,6 @@ const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, o
           alignItems: 'center',
         }}>
           <span>{player.college}</span>
-          {archetype && (
-            <>
-              <span style={{ color: 'var(--border-secondary)' }}>&middot;</span>
-              <span style={{ color: posColor.text, fontWeight: 600, fontSize: 10 }}>{archetype}</span>
-            </>
-          )}
         </div>
       </div>
 

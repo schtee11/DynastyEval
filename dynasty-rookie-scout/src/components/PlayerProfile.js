@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
-import { getArchetype } from '../utils/archetypes';
 import { generateScoutingSummary } from '../services/anthropicApi';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
@@ -99,7 +98,6 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
   const chartColor = positionChartColors[player.position] || positionChartColors.WR;
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
-  const archetype = getArchetype(player, allPlayers);
   const isStudied = studiedPlayers.has(player.id);
 
   const peers = allPlayers.filter(p => p.position === player.position);
@@ -272,15 +270,6 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
         <div style={{ padding: '24px 28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
             <div>
-              {/* Archetype */}
-              <div style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-                color: posColor.text, textTransform: 'uppercase', letterSpacing: 1,
-                marginBottom: 4,
-              }}>
-                {archetype}
-              </div>
-
               {/* Name */}
               <h1 style={{
                 fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,

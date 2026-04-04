@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
-import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile } from '../utils/helpers';
-import { getArchetype } from '../utils/archetypes';
+import { positionColors, getBreakoutIndicator, hasInjuryRisk, computePercentile } from '../utils/helpers';
 import StatHighlight from './StatHighlight';
 import DraftBadge from './DraftBadge';
 
@@ -112,9 +111,6 @@ const getHeroStats = (player, allPlayers) => {
  */
 const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
-  const chartColor = positionChartColors[player.position] || '#7c3aed';
-  const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
-  const archetype = useMemo(() => getArchetype(player, peers), [player, peers]);
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
@@ -204,20 +200,6 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         }}>
           {player.college}{player.age ? ` · ${player.age} yrs` : ''}
         </span>
-
-        {/* Archetype */}
-        {archetype && (
-          <span style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: chartColor,
-            textTransform: 'uppercase',
-            letterSpacing: 1.5,
-            fontFamily: "'Inter', sans-serif",
-          }}>
-            {archetype}
-          </span>
-        )}
 
         {/* Draft projection */}
         <div style={{ marginTop: 4 }}>
