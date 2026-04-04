@@ -29,21 +29,16 @@ router.get('/debug/stat-types', async (req, res) => {
     const data = await fetchAllPlayerStats(2025);
     if (!data) return res.json({ error: 'No data', statTypes: {} });
 
-    // Collect all unique keys across all players per category
-    const sample = {};
-    let count = 0;
+    // Collect samples per category type
+    const samples = { qb: null, receiver: null, rusher: null };
     for (const [name, stats] of Object.entries(data)) {
-      if (count >= 3) break;
-      sample[name] = {
-        passing: stats.passing ? Object.keys(stats.passing) : null,
-        rushing: stats.rushing ? Object.keys(stats.rushing) : null,
-        receiving: stats.receiving ? Object.keys(stats.receiving) : null,
-        ppa: stats.ppa ? Object.keys(stats.ppa) : null,
-      };
-      count++;
+      if (!samples.qb && stats.passing) samples.qb = { name, keys: { passing: Object.keys(stats.passing), rushing: stats.rushing ? Object.keys(stats.rushing) : null } };
+      if (!samples.receiver && stats.receiving) samples.receiver = { name, keys: { receiving: Object.keys(stats.receiving) }, raw: stats.receiving };
+      if (!samples.rusher && stats.rushing && !stats.passing) samples.rusher = { name, keys: { rushing: Object.keys(stats.rushing), receiving: stats.receiving ? Object.keys(stats.receiving) : null }, raw: stats.rushing };
+      if (samples.qb && samples.receiver && samples.rusher) break;
     }
 
-    res.json({ totalPlayers: Object.keys(data).length, sample });
+    res.json({ totalPlayers: Object.keys(data).length, samples });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
