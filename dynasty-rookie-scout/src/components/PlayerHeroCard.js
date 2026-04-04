@@ -169,7 +169,7 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         {/* Player photo */}
         {player.sleeperId && (
           <img
-            src={`https://${process.env.REACT_APP_API_URL || ''}/api/img/player/${encodeURIComponent(player.name)}.png`}
+            src={`/api/img/player/${encodeURIComponent(player.name)}.png`}
             alt={player.name}
             style={{
               width: 80,
