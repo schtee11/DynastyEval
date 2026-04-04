@@ -43,10 +43,27 @@ const DiscussionFeed = ({ playerId, onOpenThread }) => {
   const [showCreate, setShowCreate] = useState(false);
 
   const loadDiscussions = useCallback(async () => {
+    const cacheKey = `drs_disc_${playerId}_${sort}`;
+
+    // Check sessionStorage cache
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 5 * 60 * 1000) {
+          setDiscussions(data);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch {}
+
     setLoading(true);
     try {
       const result = await fetchDiscussions(String(playerId), sort);
-      setDiscussions(result.discussions || []);
+      const data = result.discussions || [];
+      setDiscussions(data);
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })); } catch {}
     } catch (err) {
       console.error('[DiscussionFeed] Load error:', err);
       setDiscussions([]);

@@ -72,12 +72,32 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
   const rank1QB = player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
 
-  // Fetch trending discussions for this player
+  // Fetch trending discussions with client-side cache
   const [discussions, setDiscussions] = useState([]);
   useEffect(() => {
     let cancelled = false;
+    const cacheKey = `drs_disc_${player.id}`;
+
+    // Check sessionStorage cache first (instant)
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 5 * 60 * 1000) { // 5 min cache
+          setDiscussions(data);
+          return;
+        }
+      }
+    } catch {}
+
+    // Fetch in background
     fetchDiscussions(String(player.id), 'hot')
-      .then(res => { if (!cancelled) setDiscussions(res.discussions || []); })
+      .then(res => {
+        if (cancelled) return;
+        const data = res.discussions || [];
+        setDiscussions(data);
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })); } catch {}
+      })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [player.id]);
