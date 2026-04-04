@@ -40,7 +40,7 @@ const getHeroStats = (player, allPlayers) => {
     { label: 'Rec Yds', value: stats?.receivingYards ? stats.receivingYards.toLocaleString() : null, tier: tier(stats?.receivingYards, peers.map(p => p.stats?.receivingYards)) },
     { label: 'Rec', value: stats?.receptions, tier: tier(stats?.receptions, peers.map(p => p.stats?.receptions)) },
     { label: 'TDs', value: stats?.receivingTDs, tier: tier(stats?.receivingTDs, peers.map(p => p.stats?.receivingTDs)) },
-    { label: 'Targets', value: stats?.targets || null, tier: tier(stats?.targets, peers.map(p => p.stats?.targets)) },
+    { label: 'Yds/Rec', value: stats?.receptions > 0 ? (stats.receivingYards / stats.receptions).toFixed(1) : null, tier: tier(stats?.receptions > 0 ? stats.receivingYards / stats.receptions : null, peers.map(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : 0)) },
   ];
 };
 

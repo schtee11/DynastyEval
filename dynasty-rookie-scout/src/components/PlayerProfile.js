@@ -163,7 +163,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
       { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
       { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
-      { stat: 'Targets', value: computePercentile(s.targets, peers.map(p => p.stats?.targets)), fullMark: 100 },
+      { stat: 'Yds/Rec', value: computePercentile(s.receptions > 0 ? s.receivingYards / s.receptions : null, peers.map(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : 0)), fullMark: 100 },
     ];
   }, [player, peers]);
 
@@ -467,7 +467,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
                 <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
-                <StatRow label="Targets" value={player.stats?.targets || null} allValues={peerVals(p => p.stats?.targets)} />
+                <StatRow label="Yds/Rec" value={player.stats?.receptions > 0 ? (player.stats.receivingYards / player.stats.receptions).toFixed(1) : null} allValues={peerVals(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : null)} />
               </>
             )}
 
@@ -502,7 +502,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
             {player.position === 'TE' && (
               <>
                 <SectionLabel>Usage</SectionLabel>
-                <StatRow label="Targets" value={player.stats?.targets || null} allValues={peerVals(p => p.stats?.targets)} />
+                <StatRow label="Yds/Rec" value={player.stats?.receptions > 0 ? (player.stats.receivingYards / player.stats.receptions).toFixed(1) : null} allValues={peerVals(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : null)} />
               </>
             )}
 
