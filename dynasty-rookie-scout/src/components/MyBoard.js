@@ -1,18 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { getPlayers } from '../services/dataService';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchMyBoards, createBoard, updateBoard, shareBoard } from '../services/apiClient';
 import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk } from '../utils/helpers';
 
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
 const MyBoard = () => {
+  const { user } = useAuth();
   const [activeFormat, setActiveFormat] = useState('oneQB');
   const [board1QB, setBoard1QB] = useState([]);
   const [boardSF, setBoardSF] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
   const [showExport, setShowExport] = useState(false);
   const [error, setError] = useState(null);
+  const [boardId1QB, setBoardId1QB] = useState(null);
+  const [boardIdSF, setBoardIdSF] = useState(null);
+  const [shareUrl, setShareUrl] = useState(null);
+  const [visibility, setVisibility] = useState('private');
+  const [shareCopied, setShareCopied] = useState(false);
+  const shareCopiedTimer = useRef(null);
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -27,8 +36,48 @@ const MyBoard = () => {
       setAllPlayers(data);
 
       const safeRank = (p, key) => { const r = p.rank?.[key]; return (r == null || r === 'UNR') ? 999 : r; };
+      const default1QB = [...data].sort((a, b) => safeRank(a, 'oneQB') - safeRank(b, 'oneQB'));
+      const defaultSF = [...data].sort((a, b) => safeRank(a, 'superflex') - safeRank(b, 'superflex'));
 
-      // Load from localStorage or default to rank order
+      const boardFromIds = (ids) => ids.map(id => data.find(p => p.id === id)).filter(Boolean);
+
+      // If logged in, try fetching from API first
+      if (user) {
+        try {
+          const boards = await fetchMyBoards();
+          const api1QB = boards.find(b => b.format === 'oneQB');
+          const apiSF = boards.find(b => b.format === 'superflex');
+
+          if (api1QB) {
+            setBoardId1QB(api1QB.id);
+            setBoard1QB(boardFromIds(api1QB.player_ids));
+            localStorage.setItem(STORAGE_KEY_1QB, JSON.stringify(api1QB.player_ids));
+          } else {
+            const ids1QB = default1QB.map(p => p.id);
+            const created1QB = await createBoard('My 1QB Board', 'oneQB', ids1QB, 'private');
+            setBoardId1QB(created1QB.id);
+            setBoard1QB(default1QB);
+            localStorage.setItem(STORAGE_KEY_1QB, JSON.stringify(ids1QB));
+          }
+
+          if (apiSF) {
+            setBoardIdSF(apiSF.id);
+            setBoardSF(boardFromIds(apiSF.player_ids));
+            localStorage.setItem(STORAGE_KEY_SF, JSON.stringify(apiSF.player_ids));
+          } else {
+            const idsSF = defaultSF.map(p => p.id);
+            const createdSF = await createBoard('My SF Board', 'superflex', idsSF, 'private');
+            setBoardIdSF(createdSF.id);
+            setBoardSF(defaultSF);
+            localStorage.setItem(STORAGE_KEY_SF, JSON.stringify(idsSF));
+          }
+          return;
+        } catch (err) {
+          console.warn('[MyBoard] API board fetch failed, falling back to localStorage:', err.message);
+        }
+      }
+
+      // Anonymous or API fallback: load from localStorage or default to rank order
       let saved1QB, savedSF;
       try { saved1QB = localStorage.getItem(STORAGE_KEY_1QB); } catch { /* ignore */ }
       try { savedSF = localStorage.getItem(STORAGE_KEY_SF); } catch { /* ignore */ }
@@ -36,36 +85,77 @@ const MyBoard = () => {
       if (saved1QB) {
         try {
           const ids = JSON.parse(saved1QB);
-          setBoard1QB(ids.map(id => data.find(p => p.id === id)).filter(Boolean));
+          setBoard1QB(boardFromIds(ids));
         } catch (err) {
           console.warn('[MyBoard] Corrupted 1QB board in localStorage, resetting:', err.message);
           localStorage.removeItem(STORAGE_KEY_1QB);
-          setBoard1QB([...data].sort((a, b) => safeRank(a, 'oneQB') - safeRank(b, 'oneQB')));
+          setBoard1QB(default1QB);
         }
       } else {
-        setBoard1QB([...data].sort((a, b) => safeRank(a, 'oneQB') - safeRank(b, 'oneQB')));
+        setBoard1QB(default1QB);
       }
 
       if (savedSF) {
         try {
           const ids = JSON.parse(savedSF);
-          setBoardSF(ids.map(id => data.find(p => p.id === id)).filter(Boolean));
+          setBoardSF(boardFromIds(ids));
         } catch (err) {
           console.warn('[MyBoard] Corrupted SF board in localStorage, resetting:', err.message);
           localStorage.removeItem(STORAGE_KEY_SF);
-          setBoardSF([...data].sort((a, b) => safeRank(a, 'superflex') - safeRank(b, 'superflex')));
+          setBoardSF(defaultSF);
         }
       } else {
-        setBoardSF([...data].sort((a, b) => safeRank(a, 'superflex') - safeRank(b, 'superflex')));
+        setBoardSF(defaultSF);
       }
     };
     loadPlayers();
-  }, []);
+  }, [user]);
 
   const persist = useCallback((format, board) => {
     const key = format === 'oneQB' ? STORAGE_KEY_1QB : STORAGE_KEY_SF;
-    localStorage.setItem(key, JSON.stringify(board.map(p => p.id)));
-  }, []);
+    const ids = board.map(p => p.id);
+    localStorage.setItem(key, JSON.stringify(ids));
+
+    // Sync to API when logged in
+    const boardId = format === 'oneQB' ? boardId1QB : boardIdSF;
+    if (user && boardId) {
+      updateBoard(boardId, { player_ids: ids }).catch(err =>
+        console.warn('[MyBoard] API persist failed:', err.message)
+      );
+    }
+  }, [user, boardId1QB, boardIdSF]);
+
+  const handleShareBoard = async () => {
+    const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
+    if (!boardId) return;
+    try {
+      const result = await shareBoard(boardId);
+      const url = `${window.location.origin}/boards/shared/${result.share_token}`;
+      setShareUrl(url);
+    } catch (err) {
+      console.error('[MyBoard] Share failed:', err.message);
+    }
+  };
+
+  const handleCopyShareUrl = () => {
+    if (!shareUrl) return;
+    navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    if (shareCopiedTimer.current) clearTimeout(shareCopiedTimer.current);
+    shareCopiedTimer.current = setTimeout(() => setShareCopied(false), 2000);
+  };
+
+  const handleVisibilityToggle = async () => {
+    const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
+    if (!user || !boardId) return;
+    const next = visibility === 'private' ? 'public' : visibility === 'public' ? 'shared' : 'private';
+    try {
+      await updateBoard(boardId, { visibility: next });
+      setVisibility(next);
+    } catch (err) {
+      console.error('[MyBoard] Visibility update failed:', err.message);
+    }
+  };
 
   const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
   const setCurrentBoard = activeFormat === 'oneQB' ? setBoard1QB : setBoardSF;
@@ -159,26 +249,115 @@ const MyBoard = () => {
           ))}
         </div>
 
-        <button
-          onClick={() => setShowExport(true)}
-          style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: 13,
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-            padding: '8px 16px',
-            border: '1px solid #2a2d3e',
-            borderRadius: 4,
-            cursor: 'pointer',
-            background: '#1a1d2e',
-            color: '#9ca3af',
-            transition: 'all 0.15s',
-          }}
-        >
-          Export Board
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {user && (
+            <button
+              onClick={handleVisibilityToggle}
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: 13,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                padding: '8px 16px',
+                border: '1px solid #2a2d3e',
+                borderRadius: 4,
+                cursor: 'pointer',
+                background: visibility === 'public' ? 'rgba(34,197,94,0.15)' : '#1a1d2e',
+                color: visibility === 'public' ? '#22c55e' : '#9ca3af',
+                transition: 'all 0.15s',
+              }}
+            >
+              {visibility === 'private' ? 'Private' : visibility === 'public' ? 'Public' : 'Shared'}
+            </button>
+          )}
+          {user && (
+            <button
+              onClick={handleShareBoard}
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: 13,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                padding: '8px 16px',
+                border: '1px solid #2a2d3e',
+                borderRadius: 4,
+                cursor: 'pointer',
+                background: '#1a1d2e',
+                color: '#9ca3af',
+                transition: 'all 0.15s',
+              }}
+            >
+              Share Board
+            </button>
+          )}
+          <button
+            onClick={() => setShowExport(true)}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: 13,
+              letterSpacing: 1,
+              textTransform: 'uppercase',
+              padding: '8px 16px',
+              border: '1px solid #2a2d3e',
+              borderRadius: 4,
+              cursor: 'pointer',
+              background: '#1a1d2e',
+              color: '#9ca3af',
+              transition: 'all 0.15s',
+            }}
+          >
+            Export Board
+          </button>
+        </div>
       </div>
+
+      {/* Share URL display */}
+      {shareUrl && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 12,
+          padding: '8px 12px',
+          background: '#1a1d2e',
+          border: '1px solid #2a2d3e',
+          borderRadius: 6,
+        }}>
+          <input
+            readOnly
+            value={shareUrl}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#d1d5db',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 12,
+            }}
+          />
+          <button
+            onClick={handleCopyShareUrl}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: 12,
+              padding: '4px 12px',
+              border: '1px solid #f59e0b',
+              borderRadius: 4,
+              background: 'rgba(245,158,11,0.15)',
+              color: '#f59e0b',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {shareCopied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      )}
 
       {/* Drag-and-drop list */}
       <DragDropContext onDragEnd={handleDragEnd}>

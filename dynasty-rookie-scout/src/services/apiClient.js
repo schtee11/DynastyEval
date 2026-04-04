@@ -80,4 +80,26 @@ export const voteDiscussion = (id, direction) =>
     body: JSON.stringify({ direction }),
   });
 
+// Boards
+export const fetchMyBoards = () => apiFetch('/api/boards');
+export const fetchPublicBoards = () => apiFetch('/api/boards/public');
+export const createBoard = (name, format, playerIds, visibility) =>
+  apiFetch('/api/boards', {
+    method: 'POST',
+    body: JSON.stringify({ name, format, player_ids: playerIds, visibility }),
+  });
+export const updateBoard = (id, data) =>
+  apiFetch(`/api/boards/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+export const shareBoard = (id) =>
+  apiFetch(`/api/boards/${id}/share`, { method: 'POST' });
+export const fetchSharedBoard = (token) =>
+  apiFetch(`/api/boards/shared/${token}`);
+export const forkBoard = (id) =>
+  apiFetch(`/api/boards/${id}/fork`, { method: 'POST' });
+export const deleteBoard = (id) =>
+  apiFetch(`/api/boards/${id}`, { method: 'DELETE' });
+
 export default apiFetch;
