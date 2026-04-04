@@ -23,6 +23,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/players/debug/lookup/:name — look up a specific player's raw career stats
+router.get('/debug/lookup/:name', async (req, res) => {
+  try {
+    const careerStats = await fetchCareerStats([2022, 2023, 2024, 2025]);
+    if (!careerStats) return res.json({ error: 'No career data' });
+
+    const search = req.params.name.toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+
+    // Find exact or partial match
+    const matches = {};
+    for (const [name, stats] of Object.entries(careerStats)) {
+      if (name.includes(search)) {
+        matches[name] = stats;
+      }
+    }
+
+    res.json({ search, matchCount: Object.keys(matches).length, matches });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/players/debug/stat-types — show what CFBD actually returns
 router.get('/debug/stat-types', async (req, res) => {
   try {
