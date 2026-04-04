@@ -1,15 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { getPlayers } from '../services/dataService';
 import apiFetch from '../services/apiClient';
 
-const AdminPage = ({ players }) => {
+const AdminPage = ({ players: propPlayers }) => {
   const { user } = useAuth();
+  const [localPlayers, setLocalPlayers] = useState([]);
   const [manualStats, setManualStats] = useState({});
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [form, setForm] = useState({ yprr: '', target_share: '', adot: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState(null);
+
+  // Use prop players if available, otherwise fetch directly
+  const players = (propPlayers && propPlayers.length > 0) ? propPlayers : localPlayers;
+
+  useEffect(() => {
+    if (!propPlayers || propPlayers.length === 0) {
+      getPlayers().then(data => setLocalPlayers(data)).catch(() => {});
+    }
+  }, [propPlayers]);
 
   const loadStats = useCallback(async () => {
     try {
