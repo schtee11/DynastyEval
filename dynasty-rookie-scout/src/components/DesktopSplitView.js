@@ -94,6 +94,24 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, goToIndex]);
 
+  // Restore scroll position on mount (when returning from navigation)
+  useEffect(() => {
+    if (selectedIndex === 0) return;
+    const rightPanel = rightPanelRef.current;
+    if (!rightPanel) return;
+    const timer = setTimeout(() => {
+      const cardHeight = rightPanel.clientHeight;
+      rightPanel.scrollTo({ top: selectedIndex * cardHeight, behavior: 'instant' });
+      // Also scroll list to show selected item
+      const listEl = listRef.current;
+      if (listEl) {
+        const row = listEl.querySelector(`[data-list-id="${sorted[selectedIndex]?.id}"]`);
+        if (row) row.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync right panel scroll-snap with selected player
   useEffect(() => {
     const rightPanel = rightPanelRef.current;

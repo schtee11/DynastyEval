@@ -258,31 +258,6 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
         ))}
       </div>
 
-      {/* ── Player Comps ── */}
-      {player.playerComps && player.playerComps.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-            color: 'var(--text-tertiary)', textTransform: 'uppercase',
-            letterSpacing: 1, marginBottom: 8,
-          }}>
-            Player Comps
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {player.playerComps.map((comp, i) => (
-              <span key={i} style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
-                color: 'var(--text-primary)', background: 'var(--bg-tertiary)',
-                padding: '6px 14px', borderRadius: 8,
-                border: '1px solid var(--border-primary)',
-              }}>
-                {comp}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* ── Actions ── */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
         <button
