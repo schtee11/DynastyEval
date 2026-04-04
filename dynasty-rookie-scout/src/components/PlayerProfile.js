@@ -7,11 +7,6 @@ import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
 import ProspectGlance from './ProspectGlance';
 
-// Perspective labels kept for UI compatibility (proprietary data source removed)
-const perspectiveLabels = {
-  overall: 'Overall', deepBall: 'Deep Ball', redZone: 'Red Zone', lateDown: 'Late Down',
-};
-
 const StatRow = ({ label, value, benchmark, unit = '', allValues }) => {
   const displayValue = value == null || value === '' ? 'N/A' : value;
   const isNA = displayValue === 'N/A';
@@ -80,8 +75,6 @@ const SectionLabel = ({ children }) => (
   </div>
 );
 
-const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
-
 const extractYouTubeId = (url) => {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   return match ? match[1] : null;
@@ -92,7 +85,6 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
   const [summary, setSummary] = useState(null);
   const [videoInput, setVideoInput] = useState('');
   const [loadingSummary, setLoadingSummary] = useState(false);
-  const [perspective, setPerspective] = useState('overall');
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const chartColor = positionChartColors[player.position] || positionChartColors.WR;
@@ -131,7 +123,6 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
   useEffect(() => {
     setSummary(null);
     setLoadingSummary(false);
-    setPerspective('overall');
   }, [player.id]);
 
   const handleGenerateSummary = async () => {
@@ -162,50 +153,25 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
       return [
         { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
         { stat: 'YPC', value: computePercentile(s.yardsPerCarry, peers.map(p => p.stats?.yardsPerCarry)), fullMark: 100 },
-        { stat: 'Receiving', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
+        { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
+        { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
         { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
-        { stat: 'MTF', value: computePercentile(player.avoidedTackles, peers.map(p => p.avoidedTackles)), fullMark: 100 },
       ];
     }
-    if (pos === 'WR') {
-      const pData = player.receivingByPerspective?.[perspective];
-      if (pData) {
-        return [
-          { stat: 'YPRR', value: computePercentile(pData.yprr, peers.map(p => p.receivingByPerspective?.[perspective]?.yprr)), fullMark: 100 },
-          { stat: 'Tgt/RR', value: computePercentile(pData.tgtPerRR, peers.map(p => p.receivingByPerspective?.[perspective]?.tgtPerRR)), fullMark: 100 },
-          { stat: '1D+TD/RR', value: computePercentile(pData.firstDownTDPerRR, peers.map(p => p.receivingByPerspective?.[perspective]?.firstDownTDPerRR)), fullMark: 100 },
-          { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
-          { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
-          { stat: 'Rec YDs', value: computePercentile(pData.recYds || player.stats?.receivingYards, peers.map(p => p.receivingByPerspective?.[perspective]?.recYds || p.stats?.receivingYards)), fullMark: 100 },
-        ];
-      }
-      return [
-        { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
-        { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
-        { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
-        { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
-        { stat: 'Rec YDs', value: computePercentile(player.stats?.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
-      ];
-    }
-    // TE
+    // WR & TE
     return [
-      { stat: 'YPRR', value: computePercentile(player.yprr, peers.map(p => p.yprr)), fullMark: 100 },
-      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
-      { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
-      { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
-      { stat: 'Rec YDs', value: computePercentile(player.stats?.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
+      { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
+      { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
+      { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
+      { stat: 'Targets', value: computePercentile(s.targets, peers.map(p => p.stats?.targets)), fullMark: 100 },
     ];
-  }, [player, peers, perspective]);
+  }, [player, peers]);
 
   const isUnranked = player.rank?.oneQB === 'UNR' || player.rank?.superflex === 'UNR';
   const rankComparisonData = player.rank && player.dynastyADP && !isUnranked ? [
     { format: '1QB', rank: player.rank.oneQB, adp: player.dynastyADP.oneQB },
     { format: 'SF', rank: player.rank.superflex, adp: player.dynastyADP.superflex },
   ] : [];
-
-  const availablePerspectives = player.receivingByPerspective
-    ? SIMPLIFIED_PERSPECTIVES.filter(k => player.receivingByPerspective[k])
-    : [];
 
   const gridColor = theme === 'dark' ? '#1e293b' : '#e2e8f0';
   const labelColor = theme === 'dark' ? '#94a3b8' : '#64748b';
@@ -270,14 +236,49 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
         <div style={{ padding: '24px 28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
             <div>
-              {/* Name */}
-              <h1 style={{
-                fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
-                fontSize: 36, color: 'var(--text-primary)', margin: '0 0 8px',
-                lineHeight: 1.1,
-              }}>
-                {player.name}
-              </h1>
+              {/* Name with headshot */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+                {player.sleeperId ? (
+                  <img
+                    src={`https://sleepercdn.com/content/nfl/players/thumb/${player.sleeperId}.jpg`}
+                    alt={player.name}
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                    style={{
+                      width: 56, height: 56, borderRadius: '50%',
+                      objectFit: 'cover', border: `2px solid ${posColor.border}`,
+                      flexShrink: 0,
+                    }}
+                  />
+                ) : null}
+                {player.sleeperId ? (
+                  <div style={{
+                    display: 'none', width: 56, height: 56, borderRadius: '50%',
+                    background: posColor.bg, border: `2px solid ${posColor.border}`,
+                    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14,
+                    color: posColor.text,
+                  }}>
+                    {player.position}
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex', width: 56, height: 56, borderRadius: '50%',
+                    background: posColor.bg, border: `2px solid ${posColor.border}`,
+                    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14,
+                    color: posColor.text,
+                  }}>
+                    {player.position}
+                  </div>
+                )}
+                <h1 style={{
+                  fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800,
+                  fontSize: 36, color: 'var(--text-primary)', margin: 0,
+                  lineHeight: 1.1,
+                }}>
+                  {player.name}
+                </h1>
+              </div>
 
               {/* Position + College + Measurables */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -443,82 +444,39 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
           <div>
             {player.position === 'QB' && (
               <>
-                <SectionLabel>Accuracy & Efficiency</SectionLabel>
-                <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" allValues={peerVals(p => p.stats?.completionPct)} />
-                <StatRow label="Y/A" value={player.stats?.yardsPerAttempt} benchmark={7.5} allValues={peerVals(p => p.stats?.yardsPerAttempt)} />
-                <StatRow label="QB Rating" value={player.stats?.qbRating} benchmark={100} allValues={peerVals(p => p.stats?.qbRating)} />
-                <StatRow label="Accuracy %" value={player.stats?.accuracy} benchmark={75} unit="%" allValues={peerVals(p => p.stats?.accuracy)} />
-                <SectionLabel>Volume</SectionLabel>
+                <SectionLabel>QB Production</SectionLabel>
                 <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.passingYards)} />
                 <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} allValues={peerVals(p => p.stats?.passingTDs)} />
-                <StatRow label="INTs" value={player.stats?.INT} />
+                <StatRow label="INTs" value={player.stats?.interceptions} allValues={peerVals(p => p.stats?.interceptions)} />
+                <StatRow label="Completion %" value={player.stats?.completionPct} benchmark={64} unit="%" allValues={peerVals(p => p.stats?.completionPct)} />
               </>
             )}
 
             {player.position === 'RB' && (
               <>
-                <SectionLabel>Production</SectionLabel>
+                <SectionLabel>RB Production</SectionLabel>
                 <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} allValues={peerVals(p => p.stats?.rushingYards)} />
                 <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} allValues={peerVals(p => p.stats?.rushingTDs)} />
                 <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} allValues={peerVals(p => p.stats?.yardsPerCarry)} />
               </>
             )}
 
-            {player.position === 'WR' && (() => {
-              const pData = player.receivingByPerspective?.[perspective];
-              const val = (key) => pData?.[key] ?? null;
-              return (
-                <>
-                  {availablePerspectives.length > 0 && (
-                    <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
-                      {availablePerspectives.map(key => (
-                        <button key={key} onClick={() => setPerspective(key)} style={{
-                          fontFamily: "'Inter', sans-serif", fontSize: 11,
-                          fontWeight: perspective === key ? 600 : 400,
-                          padding: '4px 10px', border: '1px solid',
-                          borderColor: perspective === key ? 'var(--accent)' : 'var(--border-primary)',
-                          borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-                          background: perspective === key ? 'var(--accent-light)' : 'transparent',
-                          color: perspective === key ? 'var(--accent-text)' : 'var(--text-secondary)',
-                          transition: 'all 0.15s',
-                        }}>
-                          {perspectiveLabels[key] || key}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {pData ? (
-                    <>
-                      <SectionLabel>Production</SectionLabel>
-                      <StatRow label="Receiving Yards" value={val('recYds')?.toLocaleString()} />
-                      <StatRow label="Receiving TDs" value={val('recTDs')} />
-                      <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                      <SectionLabel>Efficiency</SectionLabel>
-                      <StatRow label="YPRR" value={val('yprr')} benchmark={2.5} />
-                      <StatRow label="Targets/RR" value={val('tgtPerRR')} unit="%" benchmark={20} />
-                      <StatRow label="1D+TD/RR" value={val('firstDownTDPerRR')} />
-                    </>
-                  ) : (
-                    <>
-                      <SectionLabel>Production</SectionLabel>
-                      <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} />
-                      <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
-                      <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
-                      <SectionLabel>Efficiency</SectionLabel>
-                      <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
-                    </>
-                  )}
-                </>
-              );
-            })()}
+            {player.position === 'WR' && (
+              <>
+                <SectionLabel>WR Production</SectionLabel>
+                <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
+                <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
+                <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
+                <StatRow label="Targets" value={player.stats?.targets} allValues={peerVals(p => p.stats?.targets)} />
+              </>
+            )}
 
             {player.position === 'TE' && (
               <>
                 <SectionLabel>Production</SectionLabel>
-                <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
+                <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
-                <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" allValues={peerVals(p => p.targetShare)} />
               </>
             )}
           </div>
@@ -529,12 +487,6 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <SectionLabel>Rushing</SectionLabel>
                 <StatRow label="Rushing Yards" value={player.stats?.rushingYards} allValues={peerVals(p => p.stats?.rushingYards)} />
                 <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} allValues={peerVals(p => p.stats?.rushingTDs)} />
-                <StatRow label="Scrambles" value={player.stats?.scrambles} allValues={peerVals(p => p.stats?.scrambles)} />
-                <SectionLabel>Advanced</SectionLabel>
-                <StatRow label="BTT Rate" value={player.stats?.bttRate} benchmark={4.0} unit="%" allValues={peerVals(p => p.stats?.bttRate)} />
-                <StatRow label="TWP Rate" value={player.stats?.twpRate} unit="%" />
-                <StatRow label="ADOT" value={player.stats?.adot} allValues={peerVals(p => p.stats?.adot)} />
-                <StatRow label="Sacks" value={player.stats?.sacks} />
               </>
             )}
 
@@ -543,29 +495,14 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <SectionLabel>Receiving</SectionLabel>
                 <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards} allValues={peerVals(p => p.stats?.receivingYards)} />
-                <SectionLabel>Advanced</SectionLabel>
-                <StatRow label="Elusive Rating" value={player.stats?.elusiveRating} benchmark={80} allValues={peerVals(p => p.stats?.elusiveRating)} />
-                <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} allValues={peerVals(p => p.ycoPerAttempt)} />
-                <StatRow label="MTF" value={player.avoidedTackles} benchmark={40} allValues={peerVals(p => p.avoidedTackles)} />
-              </>
-            )}
-
-            {player.position === 'WR' && (
-              <>
-                <SectionLabel>Receiving Profile</SectionLabel>
-                <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} allValues={peerVals(p => p.yardsAfterCatchPerRec)} />
-                <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" allValues={peerVals(p => p.contestedCatchRate)} />
-                <StatRow label="Drop Rate" value={player.dropRate} unit="%" />
+                <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
               </>
             )}
 
             {player.position === 'TE' && (
               <>
-                <SectionLabel>Efficiency</SectionLabel>
-                <StatRow label="YPRR" value={player.yprr} benchmark={1.8} allValues={peerVals(p => p.yprr)} />
-                <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} allValues={peerVals(p => p.tgtPerRR)} />
-                <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} allValues={peerVals(p => p.yardsAfterCatchPerRec)} />
-                <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" allValues={peerVals(p => p.contestedCatchRate)} />
+                <SectionLabel>Targets</SectionLabel>
+                <StatRow label="Targets" value={player.stats?.targets} allValues={peerVals(p => p.stats?.targets)} />
               </>
             )}
 

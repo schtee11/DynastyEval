@@ -47,9 +47,9 @@ const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, o
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 800,
-        fontSize: 14,
+        fontSize: 13,
         color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
-        minWidth: 28,
+        minWidth: 24,
         textAlign: 'right',
       }}>
         {rank1QB === 'UNR' ? '—' : rank1QB ?? '—'}

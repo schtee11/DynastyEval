@@ -159,6 +159,23 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
           </span>
         )}
 
+        {/* Player photo */}
+        {player.sleeperId && (
+          <img
+            src={`https://sleepercdn.com/content/nfl/players/thumb/${player.sleeperId}.jpg`}
+            alt={player.name}
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: `3px solid ${posColor.border}`,
+              background: 'var(--bg-tertiary)',
+            }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        )}
+
         {/* Position badge */}
         <span style={{
           display: 'inline-block',

@@ -92,9 +92,30 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
         gap: 20,
         marginBottom: 24,
       }}>
-        {/* Position color accent */}
+        {/* Player photo + position accent */}
+        {player.sleeperId ? (
+          <img
+            src={`https://sleepercdn.com/content/nfl/players/thumb/${player.sleeperId}.jpg`}
+            alt={player.name}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: `3px solid ${posColor.border}`,
+              background: 'var(--bg-tertiary)',
+              flexShrink: 0,
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'block';
+            }}
+          />
+        ) : null}
+        {/* Fallback accent bar (shown if no photo) */}
         <div style={{
           width: 4,
+          display: player.sleeperId ? 'none' : 'block',
           alignSelf: 'stretch',
           borderRadius: 2,
           background: posColor.border,
