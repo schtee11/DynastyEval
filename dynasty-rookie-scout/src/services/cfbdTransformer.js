@@ -174,6 +174,7 @@ const buildRecStats = (live) => {
     receptions: v(recv, 'REC'),
     receivingYards: v(recv, 'YDS'),
     receivingTDs: v(recv, 'TD'),
+    targets: v(recv, 'TARGETS'),
   };
 };
 

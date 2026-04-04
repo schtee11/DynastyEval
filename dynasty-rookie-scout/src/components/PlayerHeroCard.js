@@ -91,14 +91,9 @@ const getHeroStats = (player, allPlayers) => {
       tier: tier(stats?.receivingTDs, peers.map(p => p.stats?.receivingTDs)),
     },
     {
-      label: 'Yds/Rec',
-      value: stats?.receptions > 0
-        ? (stats.receivingYards / stats.receptions).toFixed(1)
-        : null,
-      tier: tier(
-        stats?.receptions > 0 ? stats.receivingYards / stats.receptions : null,
-        peers.map(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : 0)
-      ),
+      label: 'Targets',
+      value: stats?.targets || null,
+      tier: tier(stats?.targets, peers.map(p => p.stats?.targets)),
     },
   ];
 };
