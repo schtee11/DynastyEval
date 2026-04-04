@@ -9,11 +9,34 @@ const FREE_PREVIEW_LIMIT = 5;
  * Each child takes up the full viewport height.
  * Uses CSS scroll-snap for native smooth scrolling.
  */
+const STORAGE_KEY = 'drs_feed_index';
+
 const VerticalFeed = ({ children, onActiveChange }) => {
   const containerRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch { return 0; }
+  });
   const { user } = useAuth();
   const showGate = !user && activeIndex >= FREE_PREVIEW_LIMIT;
+
+  // Save active index to sessionStorage
+  useEffect(() => {
+    try { sessionStorage.setItem(STORAGE_KEY, String(activeIndex)); } catch {}
+  }, [activeIndex]);
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || activeIndex === 0) return;
+    const timer = setTimeout(() => {
+      const cardHeight = container.clientHeight;
+      container.scrollTo({ top: activeIndex * cardHeight, behavior: 'instant' });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Detect which card is currently visible via IntersectionObserver
   useEffect(() => {

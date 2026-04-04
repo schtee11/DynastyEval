@@ -19,7 +19,19 @@ const FREE_PREVIEW_LIMIT = 5;
 const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPlayer, onCompare }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('drs_desktop_player');
+      return saved ? Number(saved) : null;
+    } catch { return null; }
+  });
+
+  // Persist selected player
+  useEffect(() => {
+    if (selectedPlayerId != null) {
+      try { sessionStorage.setItem('drs_desktop_player', String(selectedPlayerId)); } catch {}
+    }
+  }, [selectedPlayerId]);
   const [filters, setFilters] = useState({
     position: 'ALL',
     draftDay: '',
