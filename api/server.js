@@ -36,6 +36,22 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Player image proxy — Sleeper CDN blocks direct browser requests
+app.get('/api/img/player/:id.jpg', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const url = `https://sleepercdn.com/content/nfl/players/${id}.jpg`;
+    const response = await fetch(url);
+    if (!response.ok) return res.status(404).end();
+    res.set('Content-Type', 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=604800'); // 7 days
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
+  } catch {
+    res.status(404).end();
+  }
+});
+
 // Error handler
 app.use((err, req, res, _next) => {
   console.error('[Server] Error:', err.message);

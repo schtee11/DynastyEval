@@ -118,7 +118,7 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
         {/* Player photo + position accent */}
         {player.sleeperId ? (
           <img
-            src={`https://sleepercdn.com/content/nfl/players/${player.sleeperId}.jpg`}
+            src={`https://${process.env.REACT_APP_API_URL || ''}/api/img/player/${player.sleeperId}.jpg`}
             alt={player.name}
             style={{
               width: 64,
