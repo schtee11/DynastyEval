@@ -15,7 +15,6 @@ const MyBoard = () => {
   const [boardSF, setBoardSF] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
   const [showExport, setShowExport] = useState(false);
-  const [rankMap, setRankMap] = useState({});
   const [error, setError] = useState(null);
   const [boardId1QB, setBoardId1QB] = useState(null);
   const [boardIdSF, setBoardIdSF] = useState(null);
@@ -193,29 +192,17 @@ const MyBoard = () => {
 
   const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
 
-  // Build rank map whenever board changes
-  useEffect(() => {
-    const map = {};
-    currentBoard.forEach((p, i) => { map[p.id] = i + 1; });
-    setRankMap(map);
-  }, [currentBoard]);
-
   const handleDragEnd = (result) => {
     if (!result.destination || result.source.index === result.destination.index) return;
     const items = Array.from(currentBoard);
     const [reordered] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reordered);
 
-    // Update board state
     if (activeFormat === 'oneQB') {
       setBoard1QB([...items]);
     } else {
       setBoardSF([...items]);
     }
-    // Update rank map immediately (don't wait for useEffect)
-    const map = {};
-    items.forEach((p, i) => { map[p.id] = i + 1; });
-    setRankMap(map);
     persist(activeFormat, items);
   };
 
@@ -415,11 +402,13 @@ const MyBoard = () => {
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
+              className="board-list"
               style={{
                 background: 'var(--bg-secondary)',
                 borderRadius: 8,
                 padding: 8,
                 minHeight: 200,
+                counterReset: 'board-rank',
               }}
             >
               {currentBoard.map((player, index) => {
@@ -447,18 +436,8 @@ const MyBoard = () => {
                           transition: snapshot.isDragging ? 'none' : 'background 0.15s',
                         }}
                       >
-                        {/* Rank number */}
-                        <div style={{
-                          fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: 18,
-                          fontWeight: 700,
-                          color: 'var(--text-tertiary)',
-                          width: 32,
-                          textAlign: 'center',
-                          flexShrink: 0,
-                        }}>
-                          {rankMap[player.id] || index + 1}
-                        </div>
+                        {/* Rank number — uses CSS counter so it always reflects DOM order */}
+                        <div className="board-rank-num" />
 
                         {/* Drag handle dots */}
                         <div style={{
