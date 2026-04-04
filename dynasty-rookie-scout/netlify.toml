@@ -9,7 +9,7 @@
 # Proxy API requests to Railway backend
 [[redirects]]
   from = "/api/*"
-  to = "${REACT_APP_API_URL}/api/:splat"
+  to = "https://dynastyeval-production.up.railway.app/api/:splat"
   status = 200
   force = true
 
