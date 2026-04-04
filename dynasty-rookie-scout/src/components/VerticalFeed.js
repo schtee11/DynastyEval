@@ -1,4 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import SignupGate from './SignupGate';
+
+const FREE_PREVIEW_LIMIT = 5;
 
 /**
  * TikTok/Reels-style vertical swipe feed.
@@ -8,6 +12,8 @@ import React, { useRef, useEffect, useState } from 'react';
 const VerticalFeed = ({ children, onActiveChange }) => {
   const containerRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { user } = useAuth();
+  const showGate = !user && activeIndex >= FREE_PREVIEW_LIMIT;
 
   // Detect which card is currently visible via IntersectionObserver
   useEffect(() => {
@@ -141,6 +147,9 @@ const VerticalFeed = ({ children, onActiveChange }) => {
           Swipe up
         </div>
       )}
+
+      {/* Signup gate after free preview */}
+      {showGate && <SignupGate />}
     </div>
   );
 };

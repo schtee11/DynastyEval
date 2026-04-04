@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import SignupGate from './SignupGate';
 import PlayerListItem from './PlayerListItem';
 import DesktopDetailPanel from './DesktopDetailPanel';
 import FilterBar from './FilterBar';
@@ -12,8 +14,11 @@ import { isUsingLiveData } from '../services/dataService';
  * TikTok-style scroll-snap detail feed on the right.
  * Arrow keys navigate between players.
  */
+const FREE_PREVIEW_LIMIT = 5;
+
 const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPlayer, onCompare }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [filters, setFilters] = useState({
     position: 'ALL',
@@ -38,6 +43,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
   }, [sorted, selectedPlayerId]);
 
   const selectedPlayer = sorted[selectedIndex] || null;
+  const showGate = !user && selectedIndex >= FREE_PREVIEW_LIMIT;
 
   // Navigate to a player by index
   const goToIndex = useCallback((index) => {
@@ -259,6 +265,9 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
           </div>
         ))}
       </div>
+
+      {/* Signup gate after free preview */}
+      {showGate && <SignupGate />}
     </div>
   );
 };
