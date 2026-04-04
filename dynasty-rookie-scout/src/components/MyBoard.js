@@ -8,24 +8,6 @@ import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk 
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
-// Separate component so it always re-renders with latest rank
-const BoardRank = ({ playerId, boardRef }) => {
-  const rank = (boardRef.current || []).findIndex(p => p.id === playerId) + 1;
-  return (
-    <div style={{
-      fontFamily: "'JetBrains Mono', monospace",
-      fontSize: 18,
-      fontWeight: 700,
-      color: 'var(--text-tertiary)',
-      width: 32,
-      textAlign: 'center',
-      flexShrink: 0,
-    }}>
-      {rank || '—'}
-    </div>
-  );
-};
-
 const MyBoard = () => {
   const { user } = useAuth();
   const [activeFormat, setActiveFormat] = useState('oneQB');
@@ -33,6 +15,7 @@ const MyBoard = () => {
   const [boardSF, setBoardSF] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
   const [showExport, setShowExport] = useState(false);
+  const [rankMap, setRankMap] = useState({});
   const [error, setError] = useState(null);
   const [boardId1QB, setBoardId1QB] = useState(null);
   const [boardIdSF, setBoardIdSF] = useState(null);
@@ -210,9 +193,12 @@ const MyBoard = () => {
 
   const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
 
-  // Use a ref for the board so the rank lookup always gets the latest order
-  const boardRef = useRef(currentBoard);
-  boardRef.current = currentBoard;
+  // Build rank map whenever board changes
+  useEffect(() => {
+    const map = {};
+    currentBoard.forEach((p, i) => { map[p.id] = i + 1; });
+    setRankMap(map);
+  }, [currentBoard]);
 
   const handleDragEnd = (result) => {
     if (!result.destination || result.source.index === result.destination.index) return;
@@ -220,14 +206,16 @@ const MyBoard = () => {
     const [reordered] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reordered);
 
-    // Directly set the specific board state (not via setCurrentBoard which may be stale)
+    // Update board state
     if (activeFormat === 'oneQB') {
       setBoard1QB([...items]);
     } else {
       setBoardSF([...items]);
     }
-    // Update ref immediately so rank lookups get fresh data
-    boardRef.current = items;
+    // Update rank map immediately (don't wait for useEffect)
+    const map = {};
+    items.forEach((p, i) => { map[p.id] = i + 1; });
+    setRankMap(map);
     persist(activeFormat, items);
   };
 
@@ -460,7 +448,17 @@ const MyBoard = () => {
                         }}
                       >
                         {/* Rank number */}
-                        <BoardRank playerId={player.id} boardRef={boardRef} />
+                        <div style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: 18,
+                          fontWeight: 700,
+                          color: 'var(--text-tertiary)',
+                          width: 32,
+                          textAlign: 'center',
+                          flexShrink: 0,
+                        }}>
+                          {rankMap[player.id] || index + 1}
+                        </div>
 
                         {/* Drag handle dots */}
                         <div style={{
