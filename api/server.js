@@ -8,6 +8,7 @@ const playerRoutes = require('./routes/players');
 const discussionRoutes = require('./routes/discussions');
 const adminRoutes = require('./routes/admin');
 const boardRoutes = require('./routes/boards');
+const subscriptionRoutes = require('./routes/subscriptions');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,6 +29,7 @@ app.use('/api/players', playerRoutes);
 app.use('/api/discussions', discussionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/boards', boardRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -29,6 +29,7 @@ const CompareView = lazy(() => import('./components/CompareView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
 const AuthPage = lazy(() => import('./components/AuthPage'));
 const AdminPage = lazy(() => import('./components/AdminPage'));
+const PricingPage = lazy(() => import('./components/PricingPage'));
 
 const STUDIED_KEY = 'drs_studied_players';
 const VIDEOS_KEY = 'drs_player_videos';
@@ -195,6 +196,9 @@ function AppInner() {
               } />
               <Route path="/login" element={
                 <AuthPage onSuccess={() => navigate('/')} />
+              } />
+              <Route path="/pricing" element={
+                <PricingPage />
               } />
               <Route path="/admin" element={
                 <AdminPage players={players} />
