@@ -40,13 +40,16 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const { name, format, player_ids, visibility } = req.body;
 
+    // Normalize format to match DB constraint ('1QB' or 'SF')
+    const dbFormat = format === 'oneQB' ? '1QB' : format === 'superflex' ? 'SF' : (format || '1QB');
+
     const result = await pool.query(
       `INSERT INTO boards (owner_id, name, format, player_ids, visibility)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [
         req.user.id,
         name || 'My Board',
-        format || '1QB',
+        dbFormat,
         JSON.stringify(player_ids || []),
         visibility || 'private',
       ]

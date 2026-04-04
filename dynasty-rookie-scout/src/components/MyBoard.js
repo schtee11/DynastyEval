@@ -15,6 +15,7 @@ const MyBoard = () => {
   const [boardSF, setBoardSF] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
   const [showExport, setShowExport] = useState(false);
+  const [boardVersion, setBoardVersion] = useState(0);
   const [error, setError] = useState(null);
   const [boardId1QB, setBoardId1QB] = useState(null);
   const [boardIdSF, setBoardIdSF] = useState(null);
@@ -200,6 +201,7 @@ const MyBoard = () => {
     items.splice(result.destination.index, 0, reordered);
 
     setCurrentBoard(items);
+    setBoardVersion(v => v + 1);
     persist(activeFormat, items);
   };
 
@@ -394,7 +396,7 @@ const MyBoard = () => {
 
       {/* Drag-and-drop list */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="myboard">
+        <Droppable droppableId={`myboard-${boardVersion}`}>
           {(provided) => (
             <div
               ref={provided.innerRef}
@@ -413,7 +415,7 @@ const MyBoard = () => {
                 const boardRank = index + 1;
 
                 return (
-                  <Draggable key={`${player.id}-${index}`} draggableId={String(player.id)} index={index}>
+                  <Draggable key={String(player.id)} draggableId={String(player.id)} index={index}>
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
