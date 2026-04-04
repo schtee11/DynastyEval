@@ -54,29 +54,36 @@ const imgCache = {}; // in-memory: playerName -> espnAthleteId
 app.get('/api/img/player/:name.png', async (req, res) => {
   try {
     const name = decodeURIComponent(req.params.name);
-    let athleteId = imgCache[name];
+    let athleteId = imgCache[name]?.id || null;
 
     if (!athleteId) {
       // Search ESPN for this player
-      const searchUrl = `https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(name)}&limit=3&type=player&sport=football&league=college-football`;
+      const searchUrl = `https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(name)}&limit=1&type=player&sport=football&league=college-football`;
       const searchRes = await fetch(searchUrl);
       if (searchRes.ok) {
         const data = await searchRes.json();
-        const items = data?.items?.[0]?.items || data?.results?.[0]?.items || [];
-        if (items.length > 0) {
-          const ref = items[0].$ref || items[0].href || '';
-          const match = ref.match(/athletes\/(\d+)/);
-          athleteId = match ? match[1] : (items[0].id || null);
+        const contents = data?.results?.[0]?.contents || [];
+        if (contents.length > 0) {
+          // Extract athlete ID from the web link URL
+          const webLink = contents[0].link?.web || '';
+          const match = webLink.match(/id\/(\d+)/);
+          athleteId = match ? match[1] : null;
+          // Also grab the direct image URL
+          if (contents[0].image?.default) {
+            imgCache[name] = { id: athleteId, imgUrl: contents[0].image.default };
+          }
         }
       }
-      if (athleteId) imgCache[name] = athleteId;
+      if (athleteId && !imgCache[name]?.imgUrl) {
+        imgCache[name] = { id: athleteId, imgUrl: `https://a.espncdn.com/i/headshots/college-football/players/full/${athleteId}.png` };
+      }
     }
 
-    if (!athleteId) return res.status(404).end();
+    const cached = imgCache[name];
+    if (!cached?.imgUrl) return res.status(404).end();
 
     // Fetch ESPN headshot
-    const imgUrl = `https://a.espncdn.com/combiner/i?img=/i/headshots/college-football/players/full/${athleteId}.png&w=200&h=146`;
-    const imgRes = await fetch(imgUrl);
+    const imgRes = await fetch(cached.imgUrl);
     if (!imgRes.ok) return res.status(404).end();
 
     res.set('Content-Type', 'image/png');
