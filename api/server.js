@@ -36,6 +36,19 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Debug: see raw ESPN search response
+app.get('/api/debug/espn-search/:name', async (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    const searchUrl = `https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(name)}&limit=3&type=player&sport=football&league=college-football`;
+    const searchRes = await fetch(searchUrl);
+    const data = await searchRes.json();
+    res.json({ status: searchRes.status, url: searchUrl, data });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
 // Player image proxy — searches ESPN for player, caches ESPN athlete ID, serves headshot
 const imgCache = {}; // in-memory: playerName -> espnAthleteId
 app.get('/api/img/player/:name.png', async (req, res) => {
