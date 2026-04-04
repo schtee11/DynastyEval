@@ -169,7 +169,7 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         {/* Player photo */}
         {player.sleeperId && (
           <img
-            src={`https://sleepercdn.com/content/nfl/players/thumb/${player.sleeperId}.jpg`}
+            src={`https://sleepercdn.com/content/nfl/players/${player.sleeperId}.jpg`}
             alt={player.name}
             style={{
               width: 80,
