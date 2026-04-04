@@ -1,7 +1,8 @@
 // Data service — Sleeper-first architecture
-// 1. Fetch rookies from Sleeper API (source of truth for valid rookies)
-// 2. Cross-reference with prospect metadata for scouting data
-// 3. Attach college stats from CFBD API (publicly available)
+// 1. Fetch career stats from backend (Railway proxies CFBD)
+// 2. Fetch rookies from Sleeper API (source of truth for valid rookies)
+// 3. Cross-reference with prospect metadata for scouting data
+// 4. Attach college stats to each player
 
 import { buildRookiePlayersFromSleeper } from './sleeperApi';
 import { preloadCFBDStats } from './cfbdTransformer';
@@ -83,8 +84,10 @@ const applyDraftData = (players) => {
 };
 
 /**
- * Load players: Sleeper + CFBD in parallel, then overlay draft data.
- * No more deferred FantasyCalc phase — all data loads fast.
+ * Load players:
+ *  1. Preload CFBD stats from backend FIRST (so attachCollegeStats has data)
+ *  2. Then build player list from Sleeper (which calls attachCollegeStats)
+ *  3. Overlay draft data
  */
 export const getPlayers = async (onUpdate) => {
   if (playersCache) {
@@ -92,27 +95,29 @@ export const getPlayers = async (onUpdate) => {
   }
 
   try {
-    // Launch Sleeper + CFBD in parallel
-    const cfbdPromise = preloadCFBDStats().catch((err) => {
+    // Step 1: Load CFBD stats from backend FIRST — must complete before Sleeper build
+    const cfbdData = await preloadCFBDStats().catch((err) => {
       console.warn('[DataService] CFBD preload failed:', err.message);
       return null;
     });
 
-    const sleeperPromise = buildRookiePlayersFromSleeper().catch((err) => {
+    dataSourceStatus.cfbd = cfbdData
+      ? { ok: true, count: Object.keys(cfbdData).length }
+      : { ok: false, reason: 'Unavailable' };
+
+    // Step 2: Build player list from Sleeper (attachCollegeStats now has cfbdStatsMap)
+    let players;
+    try {
+      players = await buildRookiePlayersFromSleeper();
+    } catch (err) {
       console.warn('[DataService] Sleeper fetch failed, using static data:', err.message);
       dataSourceStatus.sleeper = { ok: false, reason: err.message };
-      return [];
-    });
+      players = [];
+    }
 
-    const [sleeperResult, cfbdData] = await Promise.all([sleeperPromise, cfbdPromise]);
-
-    let players = sleeperResult;
     dataSourceStatus.sleeper = players?.length > 0
       ? { ok: true, count: players.length }
       : { ok: false, reason: 'No rookies returned (pre-draft?)' };
-    dataSourceStatus.cfbd = cfbdData
-      ? { ok: true, count: Object.keys(cfbdData).length }
-      : { ok: false, reason: 'Unavailable or no API key' };
 
     // Pre-draft or empty result: fall back to static prospect data
     if (!players || players.length === 0) {
@@ -123,7 +128,7 @@ export const getPlayers = async (onUpdate) => {
       dataSourceStatus.source = 'sleeper';
     }
 
-    // Overlay latest draft projections
+    // Step 3: Overlay latest draft projections
     players = applyDraftData(players);
 
     // Clean up internal fields

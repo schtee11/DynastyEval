@@ -7,7 +7,10 @@ const getApiKey = () => process.env.CFBD_API_KEY || '';
 
 const cfbdFetch = async (endpoint, params = {}) => {
   const apiKey = getApiKey();
-  if (!apiKey) return null;
+  if (!apiKey) {
+    console.warn('[CFBD] No CFBD_API_KEY set — stats will be empty');
+    return null;
+  }
 
   const url = new URL(`${CFBD_BASE}${endpoint}`);
   for (const [k, v] of Object.entries(params)) {
@@ -255,4 +258,4 @@ const fetchCareerStats = async (years = [2022, 2023, 2024, 2025]) => {
   return career;
 };
 
-module.exports = { fetchSleeperRookies: null, fetchCareerStats, fetchAllPlayerStats };
+module.exports = { fetchCareerStats, fetchAllPlayerStats };
