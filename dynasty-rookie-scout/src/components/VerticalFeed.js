@@ -82,7 +82,9 @@ const VerticalFeed = ({ children, onActiveChange }) => {
         position: 'relative',
       }}
     >
-      {childArray.map((child, i) => (
+      {childArray.map((child, i) => {
+        const locked = !user && i >= FREE_PREVIEW_LIMIT;
+        return (
         <div
           key={i}
           data-feed-card
@@ -94,6 +96,7 @@ const VerticalFeed = ({ children, onActiveChange }) => {
             scrollSnapStop: 'always',
             position: 'relative',
             overflow: 'hidden',
+            ...(locked ? { filter: 'blur(6px)', pointerEvents: 'none' } : {}),
           }}
         >
           {/* Only render cards that are near the active one for performance */}
@@ -109,7 +112,8 @@ const VerticalFeed = ({ children, onActiveChange }) => {
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       {/* Vertical position indicator */}
       <div style={{

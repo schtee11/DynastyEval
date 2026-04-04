@@ -230,17 +230,22 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
               No prospects match filters
             </div>
           ) : (
-            sorted.map((player, i) => (
-              <div key={player.id} data-list-id={player.id}>
+            sorted.map((player, i) => {
+              const locked = !user && i >= FREE_PREVIEW_LIMIT;
+              return (
+              <div key={player.id} data-list-id={player.id} style={locked ? {
+                filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none',
+              } : undefined}>
                 <PlayerListItem
                   player={player}
                   allPlayers={players}
                   isSelected={selectedPlayer?.id === player.id}
                   isStudied={studiedPlayers.has(player.id)}
-                  onClick={() => goToIndex(i)}
+                  onClick={() => locked ? null : goToIndex(i)}
                 />
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
