@@ -6,6 +6,7 @@ const Footer = () => {
       background: 'var(--bg-secondary)',
       borderTop: '1px solid var(--border-primary)',
       padding: '20px 24px 16px',
+      marginTop: 'auto',
       transition: 'background 0.2s ease',
     }}>
       <div style={{

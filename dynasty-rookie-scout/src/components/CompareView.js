@@ -37,17 +37,15 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
     setSelectedIds(selectedIds.filter(x => x !== id));
   };
 
-  // Stat definitions per position for comparison
+  // Stat definitions per position for comparison (CFBD data + YPRR)
   const getCompareStats = (position) => {
     if (position === 'QB') return [
       { label: 'Comp %', getValue: p => p.stats?.completionPct, unit: '%' },
       { label: 'Pass YDs', getValue: p => p.stats?.passingYards },
       { label: 'Pass TDs', getValue: p => p.stats?.passingTDs },
+      { label: 'INTs', getValue: p => p.stats?.interceptions },
       { label: 'Rush YDs', getValue: p => p.stats?.rushingYards },
-      { label: 'Y/A', getValue: p => p.stats?.yardsPerAttempt },
-      { label: 'BTT Rate', getValue: p => p.stats?.bttRate, unit: '%' },
-      { label: 'TWP Rate', getValue: p => p.stats?.twpRate, unit: '%', invert: true },
-      { label: 'QB Rating', getValue: p => p.stats?.qbRating },
+      { label: 'Rush TDs', getValue: p => p.stats?.rushingTDs },
     ];
     if (position === 'RB') return [
       { label: 'Rush YDs', getValue: p => p.stats?.rushingYards },
@@ -55,21 +53,19 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
       { label: 'Rush TDs', getValue: p => p.stats?.rushingTDs },
       { label: 'Receptions', getValue: p => p.stats?.receptions },
       { label: 'Rec YDs', getValue: p => p.stats?.receivingYards },
-      { label: 'Elusive Rating', getValue: p => p.stats?.elusiveRating },
+      { label: 'Rec TDs', getValue: p => p.stats?.receivingTDs },
     ];
     if (position === 'WR') return [
-      { label: 'YPRR', getValue: p => p.yprr || p.advancedStats?.yprr },
-      { label: 'Target Share', getValue: p => p.targetShare || p.advancedStats?.targetShare, unit: '%' },
       { label: 'Rec YDs', getValue: p => p.stats?.receivingYards },
-      { label: 'YAC/Rec', getValue: p => p.yardsAfterCatchPerRec },
-      { label: 'Contested %', getValue: p => p.contestedCatchRate, unit: '%' },
+      { label: 'Receptions', getValue: p => p.stats?.receptions },
+      { label: 'Rec TDs', getValue: p => p.stats?.receivingTDs },
+      { label: 'YPRR', getValue: p => p.advancedStats?.yprr },
     ];
     if (position === 'TE') return [
-      { label: 'YPRR', getValue: p => p.yprr || p.advancedStats?.yprr },
       { label: 'Rec YDs', getValue: p => p.stats?.receivingYards },
+      { label: 'Receptions', getValue: p => p.stats?.receptions },
       { label: 'Rec TDs', getValue: p => p.stats?.receivingTDs },
-      { label: 'Target Share', getValue: p => p.targetShare || p.advancedStats?.targetShare, unit: '%' },
-      { label: 'Contested %', getValue: p => p.contestedCatchRate, unit: '%' },
+      { label: 'YPRR', getValue: p => p.advancedStats?.yprr },
     ];
     return [];
   };
@@ -80,28 +76,26 @@ const CompareView = ({ players, initialPlayerIds = [], onSelectPlayer }) => {
       { stat: 'Pass TDs', getValue: p => p.stats?.passingTDs },
       { stat: 'Pass YDs', getValue: p => p.stats?.passingYards },
       { stat: 'Rush YDs', getValue: p => p.stats?.rushingYards },
-      { stat: 'Y/A', getValue: p => p.stats?.yardsPerAttempt },
+      { stat: 'Rush TDs', getValue: p => p.stats?.rushingTDs },
     ];
     if (position === 'RB') return [
       { stat: 'Rush YDs', getValue: p => p.stats?.rushingYards },
       { stat: 'YPC', getValue: p => p.stats?.yardsPerCarry },
       { stat: 'Rec YDs', getValue: p => p.stats?.receivingYards },
       { stat: 'Rush TDs', getValue: p => p.stats?.rushingTDs },
-      { stat: 'Elusive', getValue: p => p.stats?.elusiveRating },
+      { stat: 'Receptions', getValue: p => p.stats?.receptions },
     ];
     if (position === 'WR') return [
-      { stat: 'YPRR', getValue: p => p.yprr || p.advancedStats?.yprr },
-      { stat: 'Tgt Share', getValue: p => p.targetShare || p.advancedStats?.targetShare },
-      { stat: 'YAC/Rec', getValue: p => p.yardsAfterCatchPerRec },
-      { stat: 'Contested', getValue: p => p.contestedCatchRate },
       { stat: 'Rec YDs', getValue: p => p.stats?.receivingYards },
+      { stat: 'Receptions', getValue: p => p.stats?.receptions },
+      { stat: 'TDs', getValue: p => p.stats?.receivingTDs },
+      { stat: 'YPRR', getValue: p => p.advancedStats?.yprr },
     ];
     return [
-      { stat: 'YPRR', getValue: p => p.yprr || p.advancedStats?.yprr },
-      { stat: 'Tgt Share', getValue: p => p.targetShare || p.advancedStats?.targetShare },
       { stat: 'Rec YDs', getValue: p => p.stats?.receivingYards },
-      { stat: 'Rec TDs', getValue: p => p.stats?.receivingTDs },
-      { stat: 'Contested', getValue: p => p.contestedCatchRate },
+      { stat: 'Receptions', getValue: p => p.stats?.receptions },
+      { stat: 'TDs', getValue: p => p.stats?.receivingTDs },
+      { stat: 'YPRR', getValue: p => p.advancedStats?.yprr },
     ];
   };
 

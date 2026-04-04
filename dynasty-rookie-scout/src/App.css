@@ -175,9 +175,12 @@ a[x-apple-data-detectors] {
 
 .app-root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-primary);
   transition: background 0.2s ease;
 }
+.app-root > main { flex: 1; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }

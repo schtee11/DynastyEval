@@ -187,10 +187,10 @@ const MyBoard = () => {
     return (
       <div style={{ padding: '20px 24px', textAlign: 'center', fontFamily: "'JetBrains Mono', monospace" }}>
         <div style={{ fontSize: 36, marginBottom: 12, marginTop: 40 }}>⚠️</div>
-        <div style={{ color: '#ef4444', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+        <div style={{ color: 'var(--danger)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
           Failed to load board
         </div>
-        <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 16 }}>{error}</div>
+        <div style={{ color: 'var(--text-tertiary)', fontSize: 12, marginBottom: 16 }}>{error}</div>
         <button
           onClick={() => window.location.reload()}
           style={{
@@ -198,10 +198,10 @@ const MyBoard = () => {
             fontWeight: 700,
             fontSize: 13,
             padding: '8px 20px',
-            border: '1px solid #f59e0b',
+            border: '1px solid var(--warning)',
             borderRadius: 4,
-            background: 'rgba(245,158,11,0.15)',
-            color: '#f59e0b',
+            background: 'var(--warning-light)',
+            color: 'var(--warning)',
             cursor: 'pointer',
           }}
         >
@@ -236,7 +236,7 @@ const MyBoard = () => {
                 textTransform: 'uppercase',
                 padding: '8px 20px',
                 border: '1px solid',
-                borderColor: activeFormat === tab.id ? '#f59e0b' : '#2a2d3e',
+                borderColor: activeFormat === tab.id ? 'var(--warning)' : 'var(--border-primary)',
                 borderRadius: 4,
                 cursor: 'pointer',
                 background: activeFormat === tab.id ? 'rgba(245,158,11,0.15)' : 'transparent',
@@ -284,8 +284,8 @@ const MyBoard = () => {
                 border: '1px solid #2a2d3e',
                 borderRadius: 4,
                 cursor: 'pointer',
-                background: '#1a1d2e',
-                color: '#9ca3af',
+                background: 'var(--bg-tertiary)',
+                color: 'var(--text-tertiary)',
                 transition: 'all 0.15s',
               }}
             >
@@ -304,8 +304,8 @@ const MyBoard = () => {
               border: '1px solid #2a2d3e',
               borderRadius: 4,
               cursor: 'pointer',
-              background: '#1a1d2e',
-              color: '#9ca3af',
+              background: 'var(--bg-tertiary)',
+              color: 'var(--text-tertiary)',
               transition: 'all 0.15s',
             }}
           >
@@ -322,7 +322,7 @@ const MyBoard = () => {
           gap: 8,
           marginBottom: 12,
           padding: '8px 12px',
-          background: '#1a1d2e',
+          background: 'var(--bg-tertiary)',
           border: '1px solid #2a2d3e',
           borderRadius: 6,
         }}>
@@ -334,7 +334,7 @@ const MyBoard = () => {
               background: 'transparent',
               border: 'none',
               outline: 'none',
-              color: '#d1d5db',
+              color: 'var(--text-secondary)',
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: 12,
             }}
@@ -346,10 +346,10 @@ const MyBoard = () => {
               fontWeight: 700,
               fontSize: 12,
               padding: '4px 12px',
-              border: '1px solid #f59e0b',
+              border: '1px solid var(--warning)',
               borderRadius: 4,
-              background: 'rgba(245,158,11,0.15)',
-              color: '#f59e0b',
+              background: 'var(--warning-light)',
+              color: 'var(--warning)',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
@@ -367,7 +367,7 @@ const MyBoard = () => {
               ref={provided.innerRef}
               {...provided.droppableProps}
               style={{
-                background: '#151825',
+                background: 'var(--bg-secondary)',
                 borderRadius: 8,
                 padding: 8,
                 minHeight: 200,
@@ -403,7 +403,7 @@ const MyBoard = () => {
                           fontFamily: "'JetBrains Mono', monospace",
                           fontSize: 18,
                           fontWeight: 700,
-                          color: '#4b5563',
+                          color: 'var(--text-tertiary)',
                           width: 32,
                           textAlign: 'center',
                           flexShrink: 0,
@@ -413,7 +413,7 @@ const MyBoard = () => {
 
                         {/* Drag handle dots */}
                         <div style={{
-                          color: '#4b5563',
+                          color: 'var(--text-tertiary)',
                           fontSize: 16,
                           cursor: 'grab',
                           flexShrink: 0,
@@ -429,7 +429,7 @@ const MyBoard = () => {
                               fontFamily: "'Barlow Condensed', sans-serif",
                               fontWeight: 700,
                               fontSize: 16,
-                              color: '#f1f5f9',
+                              color: 'var(--text-primary)',
                             }}>
                               {player.name}
                             </span>
@@ -449,8 +449,8 @@ const MyBoard = () => {
                                 fontFamily: "'JetBrains Mono', monospace",
                                 fontSize: 10,
                                 fontWeight: 700,
-                                color: '#ef4444',
-                                background: 'rgba(239,68,68,0.15)',
+                                color: 'var(--danger)',
+                                background: 'var(--danger-light)',
                                 padding: '1px 6px',
                                 borderRadius: 3,
                               }}>
@@ -461,7 +461,7 @@ const MyBoard = () => {
                           <div style={{
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: 11,
-                            color: '#6b7280',
+                            color: 'var(--text-tertiary)',
                           }}>
                             {[player.college, player.draftRound ? `${capital.emoji} ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}` : null].filter(Boolean).join(' · ') || 'TBD'}
                           </div>
@@ -476,16 +476,16 @@ const MyBoard = () => {
                           flexShrink: 0,
                         }}>
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ color: '#9ca3af', fontSize: 9, textTransform: 'uppercase' }}>
+                            <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>
                               {activeFormat === 'oneQB' ? '1QB' : 'SF'} ADP
                             </div>
-                            <div style={{ color: '#f1f5f9', fontWeight: 700 }}>
+                            <div style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
                               {player.dynastyADP?.[activeFormat] != null ? `#${player.dynastyADP[activeFormat]}` : '—'}
                             </div>
                           </div>
                           {player.breakoutAge && (
                             <div style={{ textAlign: 'center' }}>
-                              <div style={{ color: '#9ca3af', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>
+                              <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>
                               <div style={{
                                 color: player.breakoutAge <= 20 ? '#f59e0b' : player.breakoutAge <= 21 ? '#22c55e' : '#6b7280',
                                 fontWeight: 700,
@@ -533,7 +533,7 @@ const MyBoard = () => {
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,
               fontSize: 18,
-              color: '#f59e0b',
+              color: 'var(--warning)',
               letterSpacing: 1,
               textTransform: 'uppercase',
               marginTop: 0,
@@ -545,8 +545,8 @@ const MyBoard = () => {
               style={{
                 width: '100%',
                 height: 300,
-                background: '#1a1d2e',
-                color: '#d1d5db',
+                background: 'var(--bg-tertiary)',
+                color: 'var(--text-secondary)',
                 border: '1px solid #2a2d3e',
                 borderRadius: 6,
                 padding: 12,
@@ -566,7 +566,7 @@ const MyBoard = () => {
                   border: '1px solid #2a2d3e',
                   borderRadius: 4,
                   background: 'transparent',
-                  color: '#9ca3af',
+                  color: 'var(--text-tertiary)',
                   cursor: 'pointer',
                 }}
               >
@@ -578,10 +578,10 @@ const MyBoard = () => {
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
                   padding: '8px 16px',
-                  border: '1px solid #f59e0b',
+                  border: '1px solid var(--warning)',
                   borderRadius: 4,
-                  background: 'rgba(245,158,11,0.15)',
-                  color: '#f59e0b',
+                  background: 'var(--warning-light)',
+                  color: 'var(--warning)',
                   cursor: 'pointer',
                 }}
               >
