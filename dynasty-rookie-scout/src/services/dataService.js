@@ -23,6 +23,7 @@ export const getDataSourceStatus = () => dataSourceStatus;
  */
 const mapProspectToPlayer = (p) => ({
   id: p.id,
+  sleeperId: p.sleeperId,
   name: p.name,
   position: p.position,
   college: p.college,

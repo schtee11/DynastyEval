@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,6 +24,68 @@ const BackArrow = () => (
     <polyline points="15 18 9 12 15 6" />
   </svg>
 );
+
+const UserMenu = ({ user, logout, navigate }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <div ref={menuRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="header-nav-btn"
+        style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 12,
+          padding: '5px 10px', border: '1px solid var(--border-primary)',
+          borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+          background: open ? 'var(--accent-light)' : 'var(--bg-tertiary)',
+          color: 'var(--text-secondary)',
+          display: 'flex', alignItems: 'center', gap: 4,
+        }}
+      >
+        {user.username}
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', right: 0, marginTop: 4,
+          background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
+          borderRadius: 8, boxShadow: 'var(--shadow-lg)', minWidth: 160,
+          zIndex: 200, overflow: 'hidden',
+        }}>
+          <button onClick={() => { navigate('/admin'); setOpen(false); }} style={menuItemStyle}>
+            Admin
+          </button>
+          <button onClick={() => { navigate('/pricing'); setOpen(false); }} style={menuItemStyle}>
+            Pricing
+          </button>
+          <div style={{ height: 1, background: 'var(--border-primary)' }} />
+          <button onClick={() => { logout(); setOpen(false); }} style={{ ...menuItemStyle, color: 'var(--danger)' }}>
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const menuItemStyle = {
+  display: 'block', width: '100%', padding: '10px 14px', border: 'none',
+  background: 'transparent', color: 'var(--text-secondary)', textAlign: 'left',
+  fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
+  cursor: 'pointer',
+};
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -113,18 +175,7 @@ const Header = () => {
         </nav>
 
         {user ? (
-          <button
-            onClick={logout}
-            className="header-nav-btn"
-            style={{
-              fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 12,
-              padding: '5px 10px', border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-              background: 'var(--bg-tertiary)', color: 'var(--text-secondary)',
-            }}
-          >
-            {user.username}
-          </button>
+          <UserMenu user={user} logout={logout} navigate={navigate} />
         ) : (
           <button
             onClick={() => navigate('/login')}

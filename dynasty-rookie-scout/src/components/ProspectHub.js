@@ -77,7 +77,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           onClick={() => setShowFilters(!showFilters)}
           style={{
             position: 'fixed',
-            top: 56,
+            top: 52,
             left: 12,
             zIndex: 60,
             padding: '6px 12px',
