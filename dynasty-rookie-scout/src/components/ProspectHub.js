@@ -29,7 +29,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
     breakoutMax: null,
     nameSearch: '',
   });
-  const [sortBy, setSortBy] = useState('rank');
+  const [sortBy, setSortBy] = useState('adp');
   const [perspective, setPerspective] = useState('overall');
   const [showFilters, setShowFilters] = useState(false);
   const isMobile = useIsMobile();
@@ -173,11 +173,12 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
         {/* Vertical swipe feed */}
         {sorted.length > 0 ? (
           <VerticalFeed>
-            {sorted.map((player) => (
+            {sorted.map((player, i) => (
               <PlayerHeroCard
                 key={player.id}
                 player={player}
                 allPlayers={players}
+                displayRank={i + 1}
                 onViewProfile={onSelectPlayer}
                 onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
                 isStudied={studiedPlayers.has(player.id)}

@@ -117,12 +117,12 @@ const getHeroStats = (player, allPlayers) => {
  * Middle: 4 headline stats
  * Bottom: Action bar
  */
-const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied }) => {
+const PlayerHeroCard = ({ player, allPlayers = [], displayRank, onViewProfile, onDiscuss, isStudied }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
-  const rank1QB = player.rank?.oneQB;
+  const rank1QB = displayRank ?? player.rank?.oneQB;
 
   return (
     <div style={{

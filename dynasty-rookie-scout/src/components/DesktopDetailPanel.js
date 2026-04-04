@@ -66,12 +66,12 @@ const timeAgo = (dateStr) => {
   return `${days}d`;
 };
 
-const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied }) => {
+const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, onViewProfile, onDiscuss, isStudied }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
-  const rank1QB = player.rank?.oneQB;
+  const rank1QB = displayRank ?? player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
 
   // Fetch trending discussions with client-side cache

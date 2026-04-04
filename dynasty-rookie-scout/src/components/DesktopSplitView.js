@@ -39,13 +39,14 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
     breakoutMax: null,
     nameSearch: '',
   });
-  const [sortBy, setSortBy] = useState('rank');
+  const [sortBy, setSortBy] = useState('adp');
+  const [leagueType, setLeagueType] = useState('oneQB');
   const [perspective, setPerspective] = useState('overall');
   const rightPanelRef = useRef(null);
   const listRef = useRef(null);
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
-  const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
+  const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueType, perspective), [filtered, sortBy, leagueType, perspective]);
 
   // Current index in the sorted list
   const selectedIndex = useMemo(() => {
@@ -215,11 +216,28 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
           justifyContent: 'space-between',
           background: 'var(--bg-primary)',
         }}>
-          <span style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 12, color: 'var(--text-tertiary)',
-          }}>
-            <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospects
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 12, color: 'var(--text-tertiary)',
+            }}>
+              <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospects
+            </span>
+            <div style={{ display: 'flex', gap: 0 }}>
+              {['oneQB', 'superflex'].map(lt => (
+                <button key={lt} onClick={() => setLeagueType(lt)} style={{
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700,
+                  padding: '3px 8px', border: '1px solid var(--border-primary)',
+                  borderLeft: lt === 'superflex' ? 'none' : undefined,
+                  borderRadius: lt === 'oneQB' ? '4px 0 0 4px' : '0 4px 4px 0',
+                  background: leagueType === lt ? 'var(--accent)' : 'transparent',
+                  color: leagueType === lt ? '#fff' : 'var(--text-tertiary)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}>
+                  {lt === 'oneQB' ? '1QB' : 'SF'}
+                </button>
+              ))}
+            </div>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {isUsingLiveData() && (
               <span style={{
@@ -257,6 +275,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
                 <PlayerListItem
                   player={player}
                   allPlayers={players}
+                  displayRank={i + 1}
                   isSelected={selectedPlayer?.id === player.id}
                   isStudied={studiedPlayers.has(player.id)}
                   onClick={() => locked ? null : goToIndex(i)}
@@ -293,6 +312,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
             <DesktopDetailPanel
               player={player}
               allPlayers={players}
+              displayRank={i + 1}
               onViewProfile={(id) => onSelectPlayer(id)}
               onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
               isStudied={studiedPlayers.has(player.id)}

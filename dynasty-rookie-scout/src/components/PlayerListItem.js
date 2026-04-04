@@ -5,10 +5,10 @@ import { positionColors, hasInjuryRisk } from '../utils/helpers';
  * Compact list row for the desktop split-view panel.
  * Shows: rank, position badge, name, college, draft info, key stat.
  */
-const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, onClick }) => {
+const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, onClick, displayRank }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
-  const rank1QB = player.rank?.oneQB;
+  const rank1QB = displayRank ?? player.rank?.oneQB;
   // One headline stat per position
   const headlineStat = useMemo(() => {
     const s = player.stats;
