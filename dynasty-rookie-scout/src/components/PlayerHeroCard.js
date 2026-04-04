@@ -142,16 +142,16 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         background: posColor.border,
       }} />
 
-      {/* ── Top Section: Player Identity (55%) ── */}
+      {/* ── Top Section: Player Identity (45%) ── */}
       <div style={{
-        flex: '0 0 55%',
+        flex: '0 0 45%',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '24px 24px 16px',
+        padding: '16px 16px 8px',
         textAlign: 'center',
-        gap: 10,
+        gap: 6,
       }}>
         {/* Rank badge */}
         {rank1QB && (
@@ -187,7 +187,6 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
             {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
         </div>
-        )}
 
         {/* Position badge */}
         <span style={{
@@ -264,13 +263,13 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         </div>
       </div>
 
-      {/* ── Middle Section: Stats (30%) ── */}
+      {/* ── Middle Section: Stats (35%) ── */}
       <div style={{
-        flex: '0 0 30%',
+        flex: '0 0 35%',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: '0 24px',
+        padding: '0 16px',
       }}>
         <div style={{
           display: 'flex',
@@ -301,14 +300,14 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         </div>
       </div>
 
-      {/* ── Bottom Section: Actions (15%) ── */}
+      {/* ── Bottom Section: Actions (20%) ── */}
       <div style={{
-        flex: '0 0 15%',
+        flex: '0 0 20%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 12,
-        padding: '0 24px 16px',
+        gap: 10,
+        padding: '0 16px 12px',
       }}>
         <button
           onClick={() => onViewProfile && onViewProfile(player.id)}

@@ -46,7 +46,7 @@ const VerticalFeed = ({ children, onActiveChange }) => {
       ref={containerRef}
       className="vertical-feed"
       style={{
-        height: 'calc(100dvh - 56px)', // viewport minus header
+        height: 'calc(100dvh - 48px - 56px)', // viewport minus header (48px) minus bottom nav (56px)
         overflowY: 'scroll',
         scrollSnapType: 'y mandatory',
         WebkitOverflowScrolling: 'touch',
@@ -60,7 +60,7 @@ const VerticalFeed = ({ children, onActiveChange }) => {
           data-index={i}
           className="vertical-feed-card"
           style={{
-            height: 'calc(100dvh - 56px)',
+            height: 'calc(100dvh - 48px - 56px)',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
             position: 'relative',
@@ -129,9 +129,9 @@ const VerticalFeed = ({ children, onActiveChange }) => {
       {/* Swipe hint on first card */}
       {activeIndex === 0 && (
         <div className="swipe-hint" style={{
-          position: 'fixed', bottom: 72, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', bottom: 140, left: '50%', transform: 'translateX(-50%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-          zIndex: 50, pointerEvents: 'none',
+          zIndex: 40, pointerEvents: 'none',
           color: 'var(--text-tertiary)', fontSize: 11,
           fontFamily: "'Inter', sans-serif", fontWeight: 600,
         }}>

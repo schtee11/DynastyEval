@@ -44,7 +44,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
     if (loading) {
       return (
         <div style={{
-          height: 'calc(100dvh - 56px)',
+          height: 'calc(100dvh - 48px - 56px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexDirection: 'column', gap: 12,
         }}>
@@ -60,7 +60,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
     if (error) {
       return (
         <div style={{
-          height: 'calc(100dvh - 56px)',
+          height: 'calc(100dvh - 48px - 56px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexDirection: 'column', gap: 12, padding: 24,
         }}>
@@ -77,9 +77,9 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           onClick={() => setShowFilters(!showFilters)}
           style={{
             position: 'fixed',
-            top: 52,
+            top: 50,
             left: 12,
-            zIndex: 60,
+            zIndex: 101,
             padding: '6px 12px',
             borderRadius: 20,
             border: '1px solid var(--border-primary)',
@@ -186,7 +186,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           </VerticalFeed>
         ) : (
           <div style={{
-            height: 'calc(100dvh - 56px)',
+            height: 'calc(100dvh - 48px - 56px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif",
           }}>
