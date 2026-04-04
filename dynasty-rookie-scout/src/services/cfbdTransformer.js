@@ -8,11 +8,14 @@ const API_BASE = process.env.REACT_APP_API_URL || '';
 // ── CFBD data cache (loaded once from backend, shared across all players) ──
 
 let cfbdStatsMap = null;
+let manualStatsMap = null;
 let cfbdLoadPromise = null;
 
+/** Get manual stats map (populated after preload) */
+export const getManualStats = () => manualStatsMap || {};
+
 /**
- * Pre-load all CFBD stats from the backend.
- * The backend fetches from CFBD API with the key server-side and caches in PostgreSQL.
+ * Pre-load all CFBD stats + manual overrides from the backend.
  */
 export const preloadCFBDStats = async () => {
   if (cfbdStatsMap) return cfbdStatsMap;
@@ -23,7 +26,8 @@ export const preloadCFBDStats = async () => {
       if (!res.ok) throw new Error(`API ${res.status}`);
       const data = await res.json();
       cfbdStatsMap = data.careerStats || {};
-      console.info(`[CFBDTransformer] Stats loaded from backend: ${Object.keys(cfbdStatsMap).length} players`);
+      manualStatsMap = data.manualStats || {};
+      console.info(`[CFBDTransformer] Stats loaded: ${Object.keys(cfbdStatsMap).length} players, ${Object.keys(manualStatsMap).length} manual overrides`);
       return cfbdStatsMap;
     })
     .catch((err) => {

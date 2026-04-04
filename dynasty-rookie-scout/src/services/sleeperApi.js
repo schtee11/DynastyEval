@@ -6,7 +6,7 @@
 // cross-reference with our prospect metadata to build the full player list.
 
 import { getProspects } from './rookieProspects2026';
-import { attachCollegeStats } from './cfbdTransformer';
+import { attachCollegeStats, getManualStats } from './cfbdTransformer';
 
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
@@ -253,6 +253,19 @@ export const buildRookiePlayersFromSleeper = async () => {
       _prospect: prospect,
       ...csvStats,
     };
+
+    // Apply manual stat overrides from admin DB (takes priority over static data)
+    const manual = getManualStats();
+    const manualKey = normName(playerName);
+    if (manual[manualKey]) {
+      const ms = manual[manualKey];
+      player.advancedStats = {
+        ...(player.advancedStats || {}),
+        ...(ms.yprr != null ? { yprr: ms.yprr } : {}),
+        ...(ms.targetShare != null ? { targetShare: ms.targetShare } : {}),
+        ...(ms.adot != null ? { adot: ms.adot } : {}),
+      };
+    }
 
     return player;
   })

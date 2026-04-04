@@ -1,4 +1,5 @@
 const express = require('express');
+const pool = require('../db/pool');
 const { fetchSleeperRookies } = require('../services/sleeperProxy');
 const { fetchCareerStats, fetchAllPlayerStats } = require('../services/cfbdProxy');
 const { batchGetTargets, getPlayerTargets } = require('../services/espnProxy');
@@ -36,9 +37,24 @@ router.get('/', async (req, res) => {
       }
     }
 
+    // Fetch manual stat overrides from database
+    let manualStats = {};
+    try {
+      const msResult = await pool.query('SELECT * FROM manual_stats');
+      for (const row of msResult.rows) {
+        const key = row.player_name.toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+        manualStats[key] = {
+          yprr: row.yprr ? parseFloat(row.yprr) : null,
+          targetShare: row.target_share ? parseFloat(row.target_share) : null,
+          adot: row.adot ? parseFloat(row.adot) : null,
+        };
+      }
+    } catch {}
+
     res.json({
       players: rookies,
       careerStats: stats,
+      manualStats,
       source: 'sleeper+cfbd+espn',
     });
   } catch (err) {
