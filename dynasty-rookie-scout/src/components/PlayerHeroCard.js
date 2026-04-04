@@ -166,21 +166,27 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
           </span>
         )}
 
-        {/* Player photo */}
-        {player.sleeperId && (
+        {/* Player photo with initials fallback */}
+        <div style={{ position: 'relative', width: 80, height: 80 }}>
           <img
             src={`/api/img/player/${encodeURIComponent(player.name)}.png`}
             alt={player.name}
             style={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: `3px solid ${posColor.border}`,
-              background: 'var(--bg-tertiary)',
+              width: 80, height: 80, borderRadius: '50%', objectFit: 'cover',
+              border: `3px solid ${posColor.border}`, background: 'var(--bg-tertiary)',
             }}
-            onError={(e) => { e.target.style.display = 'none'; }}
+            onError={(e) => { e.target.style.display = 'none'; if (e.target.nextElementSibling) e.target.nextElementSibling.style.display = 'flex'; }}
           />
+          <div style={{
+            display: 'none', width: 80, height: 80, borderRadius: '50%',
+            background: posColor.bg, border: `3px solid ${posColor.border}`,
+            alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 0, left: 0,
+            fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28,
+            fontWeight: 800, color: posColor.text,
+          }}>
+            {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+          </div>
+        </div>
         )}
 
         {/* Position badge */}
@@ -350,6 +356,7 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
+            transition: 'all 0.15s',
           }}
           title={isStudied ? 'Studied' : 'Mark as studied'}
         >

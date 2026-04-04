@@ -125,6 +125,22 @@ const VerticalFeed = ({ children, onActiveChange }) => {
           </div>
         )}
       </div>
+
+      {/* Swipe hint on first card */}
+      {activeIndex === 0 && (
+        <div className="swipe-hint" style={{
+          position: 'fixed', bottom: 72, left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+          zIndex: 50, pointerEvents: 'none',
+          color: 'var(--text-tertiary)', fontSize: 11,
+          fontFamily: "'Inter', sans-serif", fontWeight: 600,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+          Swipe up
+        </div>
+      )}
     </div>
   );
 };

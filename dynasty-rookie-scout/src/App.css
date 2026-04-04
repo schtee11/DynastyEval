@@ -61,6 +61,19 @@
   --header-height: 56px;
   --panel-width: 560px;
 
+  /* Transitions */
+  --transition-fast: 0.15s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Z-index scale */
+  --z-sticky: 10;
+  --z-header: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+
   /* Position colors */
   --pos-qb-bg: rgba(220, 38, 38, 0.08);
   --pos-qb-text: #dc2626;
@@ -191,9 +204,81 @@ a[x-apple-data-detectors] {
   to { transform: rotate(360deg); }
 }
 
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes statFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Global button press feedback */
+button:active:not(:disabled) { transform: scale(0.97); }
+
+/* Global button press feedback */
+button:active:not(:disabled) { transform: scale(0.97); }
+
+/* Button polish utility */
+.btn-press {
+  transition: transform var(--transition-fast) var(--ease-out), opacity var(--transition-fast);
+}
+.btn-press:hover { opacity: 0.92; }
+.btn-press:active { transform: scale(0.97); }
+
+/* Bottom sheet animations */
+.sheet-overlay { animation: fadeIn var(--transition-normal) var(--ease-out) both; }
+.sheet-panel { animation: slideUp var(--transition-slow) var(--ease-out) both; }
+
+/* Dropdown menu animation */
+.dropdown-menu { animation: scaleIn var(--transition-fast) var(--ease-out) both; transform-origin: top right; }
+.dropdown-item { transition: background var(--transition-fast); }
+.dropdown-item:hover { background: var(--bg-hover); }
+
+/* Stat stagger animation */
+.stat-stagger > * { animation: statFadeIn var(--transition-slow) var(--ease-out) both; }
+.stat-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stat-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stat-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stat-stagger > *:nth-child(4) { animation-delay: 180ms; }
+
+/* Player detail fade */
+.detail-fade-in { animation: fadeIn 0.25s ease both; }
+
+/* Swipe hint */
+@keyframes swipeHint {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(10px); opacity: 1; }
+}
+.swipe-hint {
+  animation: swipeHint 2s var(--ease-out) 3;
+  animation-delay: 1.5s;
+  animation-fill-mode: both;
+}
+
 /* Stagger animation for cards */
 .card-animate {
-  animation: fadeInUp 0.35s ease both;
+  animation: fadeInUp 0.35s var(--ease-out) both;
 }
 
 /* Shimmer skeleton */

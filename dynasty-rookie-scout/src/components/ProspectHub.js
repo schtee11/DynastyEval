@@ -106,13 +106,15 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
         {showFilters && (
           <>
             <div
+              className="sheet-overlay"
               onClick={() => setShowFilters(false)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setShowFilters(false); }}
               style={{
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
                 zIndex: 70,
               }}
             />
-            <div style={{
+            <div className="sheet-panel" style={{
               position: 'fixed',
               bottom: 0,
               left: 0,
@@ -124,10 +126,12 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
               maxHeight: '70vh',
               overflowY: 'auto',
               boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+              animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             }}>
               <div style={{
-                width: 40, height: 4, borderRadius: 2,
-                background: 'var(--border-primary)',
+                width: 48, height: 5, borderRadius: 2,
+                background: 'var(--text-tertiary)',
+                opacity: 0.4,
                 margin: '0 auto 16px',
               }} />
               <SearchInput

@@ -103,7 +103,7 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
   }, [player.id]);
 
   return (
-    <div style={{
+    <div key={player.id} className="detail-fade-in" style={{
       padding: '32px 40px',
       maxWidth: 800,
       margin: '0 auto',
@@ -115,35 +115,26 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
         gap: 20,
         marginBottom: 24,
       }}>
-        {/* Player photo + position accent */}
-        {player.sleeperId ? (
+        {/* Player photo with initials fallback */}
+        <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
           <img
             src={`/api/img/player/${encodeURIComponent(player.name)}.png`}
             alt={player.name}
             style={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: `3px solid ${posColor.border}`,
-              background: 'var(--bg-tertiary)',
-              flexShrink: 0,
+              width: 64, height: 64, borderRadius: '50%', objectFit: 'cover',
+              border: `3px solid ${posColor.border}`, background: 'var(--bg-tertiary)',
             }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'block';
-            }}
+            onError={(e) => { e.target.style.display = 'none'; if (e.target.nextElementSibling) e.target.nextElementSibling.style.display = 'flex'; }}
           />
-        ) : null}
-        {/* Fallback accent bar (shown if no photo) */}
-        <div style={{
-          width: 4,
-          display: player.sleeperId ? 'none' : 'block',
-          alignSelf: 'stretch',
-          borderRadius: 2,
-          background: posColor.border,
-          flexShrink: 0,
-        }} />
+          <div style={{
+            display: 'none', width: 64, height: 64, borderRadius: '50%',
+            background: posColor.bg, border: `3px solid ${posColor.border}`,
+            alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 0, left: 0,
+            fontFamily: "'Barlow Condensed', sans-serif", fontSize: 22, fontWeight: 800, color: posColor.text,
+          }}>
+            {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+          </div>
+        </div>
 
         <div style={{ flex: 1 }}>
           {/* Position + Rank row */}
@@ -245,7 +236,7 @@ const DesktopDetailPanel = ({ player, allPlayers = [], onViewProfile, onDiscuss,
       </div>
 
       {/* ── Stats Grid ── */}
-      <div style={{
+      <div key={player.id} className="stat-stagger" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: 16,

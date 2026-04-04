@@ -31,7 +31,7 @@ const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, o
         gap: 12,
         padding: '10px 16px',
         cursor: 'pointer',
-        transition: 'all 0.15s',
+        transition: 'background var(--transition-fast, 0.15s) ease, border-color var(--transition-fast, 0.15s) ease',
         background: isSelected ? 'var(--accent-light)' : 'transparent',
         borderLeft: isSelected ? `3px solid var(--accent)` : '3px solid transparent',
         borderBottom: '1px solid var(--border-subtle)',

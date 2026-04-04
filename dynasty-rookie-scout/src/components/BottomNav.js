@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const FeedIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,16 +36,17 @@ const ProfileIcon = () => (
   </svg>
 );
 
-const tabs = [
-  { path: '/', label: 'Feed', Icon: FeedIcon },
-  { path: '/compare', label: 'Compare', Icon: CompareIcon },
-  { path: '/board', label: 'Board', Icon: BoardIcon },
-  { path: '/login', label: 'Profile', Icon: ProfileIcon },
-];
-
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const tabs = [
+    { path: '/', label: 'Feed', Icon: FeedIcon },
+    { path: '/compare', label: 'Compare', Icon: CompareIcon },
+    { path: '/board', label: 'Board', Icon: BoardIcon },
+    { path: user ? '/admin' : '/login', label: 'Profile', Icon: ProfileIcon },
+  ];
 
   return (
     <nav className="bottom-nav" style={{
@@ -82,7 +84,7 @@ const BottomNav = () => {
               border: 'none',
               cursor: 'pointer',
               color: active ? 'var(--accent)' : 'var(--text-tertiary)',
-              transition: 'color 0.15s',
+              transition: 'all 0.2s ease',
             }}
           >
             <Icon />
@@ -94,6 +96,10 @@ const BottomNav = () => {
             }}>
               {label}
             </span>
+            {active && <div style={{
+              width: 4, height: 4, borderRadius: '50%',
+              background: 'var(--accent)', marginTop: 2,
+            }} />}
           </button>
         );
       })}

@@ -6,13 +6,13 @@ import React from 'react';
  */
 const StatHighlight = ({ label, value, tier, color }) => {
   const tierColors = {
-    elite: '#16a34a',
-    good: '#2563eb',
-    avg: '#d97706',
-    poor: '#94a3b8',
+    elite: 'var(--bar-elite)',
+    good: 'var(--bar-good)',
+    avg: 'var(--bar-avg)',
+    poor: 'var(--bar-poor)',
   };
 
-  const displayValue = value == null || value === '' || value === 'N/A' ? '—' : value;
+  const displayValue = value == null || value === '' || value === 'N/A' ? 'N/A' : value;
   const tierColor = tierColors[tier] || tierColors.avg;
 
   return (

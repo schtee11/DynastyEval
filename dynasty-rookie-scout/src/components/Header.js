@@ -58,20 +58,22 @@ const UserMenu = ({ user, logout, navigate }) => {
         </svg>
       </button>
       {open && (
-        <div style={{
+        <div className="dropdown-menu" style={{
           position: 'absolute', top: '100%', right: 0, marginTop: 4,
           background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
           borderRadius: 8, boxShadow: 'var(--shadow-lg)', minWidth: 160,
           zIndex: 200, overflow: 'hidden',
+          animation: 'scaleIn 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+          transformOrigin: 'top right',
         }}>
-          <button onClick={() => { navigate('/admin'); setOpen(false); }} style={menuItemStyle}>
+          <button className="dropdown-item" onClick={() => { navigate('/admin'); setOpen(false); }} style={menuItemStyle}>
             Admin
           </button>
-          <button onClick={() => { navigate('/pricing'); setOpen(false); }} style={menuItemStyle}>
+          <button className="dropdown-item" onClick={() => { navigate('/pricing'); setOpen(false); }} style={menuItemStyle}>
             Pricing
           </button>
           <div style={{ height: 1, background: 'var(--border-primary)' }} />
-          <button onClick={() => { logout(); setOpen(false); }} style={{ ...menuItemStyle, color: 'var(--danger)' }}>
+          <button className="dropdown-item" onClick={() => { logout(); setOpen(false); }} style={{ ...menuItemStyle, color: 'var(--danger)' }}>
             Sign Out
           </button>
         </div>
