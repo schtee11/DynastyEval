@@ -49,15 +49,79 @@ const normFuzzy = (n) =>
     .replace(/\b(jr|sr|ii|iii|iv)\s*$/g, '')
     .trim();
 
+// Common nickname → full name mappings for fuzzy matching
+const NICKNAMES = {
+  'mike': ['michael'],
+  'michael': ['mike'],
+  'kc': ['kenneth', 'casey', 'k c'],
+  'ty': ['tyler', 'tyrone'],
+  'nick': ['nicholas'],
+  'nicholas': ['nick'],
+  'will': ['william'],
+  'william': ['will'],
+  'dan': ['daniel'],
+  'daniel': ['dan'],
+  'matt': ['matthew'],
+  'matthew': ['matt'],
+  'chris': ['christopher'],
+  'christopher': ['chris'],
+  'josh': ['joshua'],
+  'joshua': ['josh'],
+  'joe': ['joseph'],
+  'joseph': ['joe'],
+  'ben': ['benjamin'],
+  'benjamin': ['ben'],
+  'rob': ['robert'],
+  'robert': ['rob'],
+  'jake': ['jacob'],
+  'jacob': ['jake'],
+  'tony': ['antonio', 'anthony'],
+  'antonio': ['tony'],
+  'anthony': ['tony'],
+};
+
 /**
- * Look up a player in the CFBD stats map with fuzzy matching.
+ * Look up a player in the CFBD stats map with multi-level fuzzy matching:
+ * 1. Exact normalized name
+ * 2. Without suffix (Jr, Sr, III, etc.)
+ * 3. Nickname variants (Mike → Michael, KC → Kenneth, etc.)
+ * 4. Last name only (if unique in the map)
  */
 const getCFBDStats = (name) => {
   if (!cfbdStatsMap) return null;
+
+  // Level 1: exact normalized
   const key = norm(name);
   if (cfbdStatsMap[key]) return cfbdStatsMap[key];
+
+  // Level 2: without suffix
   const fuzzy = normFuzzy(name);
   if (fuzzy !== key && cfbdStatsMap[fuzzy]) return cfbdStatsMap[fuzzy];
+
+  // Level 3: nickname variants
+  const parts = fuzzy.split(' ');
+  if (parts.length >= 2) {
+    const firstName = parts[0];
+    const rest = parts.slice(1).join(' ');
+    const variants = NICKNAMES[firstName];
+    if (variants) {
+      for (const variant of variants) {
+        const attempt = `${variant} ${rest}`;
+        if (cfbdStatsMap[attempt]) return cfbdStatsMap[attempt];
+      }
+    }
+  }
+
+  // Level 4: last name match (find entries ending with the same last name)
+  if (parts.length >= 2) {
+    const lastName = parts[parts.length - 1];
+    const matches = Object.keys(cfbdStatsMap).filter(k => k.endsWith(` ${lastName}`));
+    if (matches.length === 1) {
+      // Unique last name match — safe to use
+      return cfbdStatsMap[matches[0]];
+    }
+  }
+
   return null;
 };
 
