@@ -38,7 +38,7 @@ const norm = (n) =>
  * Fetch and cache all player stats for a season.
  */
 const fetchSeasonStats = async (year, category) => {
-  const cacheKey = `cfbd_stats_${year}_${category}`;
+  const cacheKey = `cfbd_stats_v2_${year}_${category}`;
 
   const cached = await pool.query(
     'SELECT data_json, fetched_at FROM player_cache WHERE cache_key = $1',
@@ -52,10 +52,11 @@ const fetchSeasonStats = async (year, category) => {
     }
   }
 
+  // Fetch both regular season AND postseason (bowl games, CFP)
   const data = await cfbdFetch('/stats/player/season', {
     year,
     category,
-    seasonType: 'regular',
+    seasonType: 'both',
   });
 
   if (data) {
@@ -71,7 +72,7 @@ const fetchSeasonStats = async (year, category) => {
 };
 
 const fetchSeasonPPA = async (year) => {
-  const cacheKey = `cfbd_ppa_${year}`;
+  const cacheKey = `cfbd_ppa_v2_${year}`;
 
   const cached = await pool.query(
     'SELECT data_json, fetched_at FROM player_cache WHERE cache_key = $1',
@@ -187,7 +188,7 @@ const fetchAllPlayerStats = async (year = 2025) => {
  * Fetch career stats across multiple seasons.
  */
 const fetchCareerStats = async (years = [2022, 2023, 2024, 2025]) => {
-  const cacheKey = `cfbd_career_${years.join('-')}`;
+  const cacheKey = `cfbd_career_v2_${years.join('-')}`;
 
   const cached = await pool.query(
     'SELECT data_json, fetched_at FROM player_cache WHERE cache_key = $1',
