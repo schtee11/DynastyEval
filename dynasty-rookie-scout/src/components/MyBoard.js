@@ -126,19 +126,46 @@ const MyBoard = () => {
     }
   }, [user, boardId1QB, boardIdSF]);
 
+  const [toastMsg, setToastMsg] = useState(null);
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
+
   const handleShareBoard = async () => {
-    const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
+    let boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
+
+    // Auto-create board if it doesn't exist yet
+    if (!boardId && user) {
+      try {
+        const ids = currentBoard.map(p => p.id);
+        const name = activeFormat === 'oneQB' ? 'My 1QB Board' : 'My SF Board';
+        const format = activeFormat === 'oneQB' ? 'oneQB' : 'superflex';
+        const created = await createBoard(name, format, ids, 'shared');
+        boardId = created.board?.id || created.id;
+        if (activeFormat === 'oneQB') setBoardId1QB(boardId);
+        else setBoardIdSF(boardId);
+      } catch (err) {
+        showToast('Failed to create board');
+        return;
+      }
+    }
+
     if (!boardId) {
-      alert('Save your board first by reordering a player.');
+      showToast('Sign in to share your board');
       return;
     }
+
     try {
       const result = await shareBoard(boardId);
       const token = result.shareToken || result.share_token;
-      if (!token) { console.error('[MyBoard] No share token returned'); return; }
+      if (!token) { showToast('Failed to generate share link'); return; }
       const url = `${window.location.origin}/board/shared/${token}`;
       setShareUrl(url);
+      navigator.clipboard.writeText(url).then(() => showToast('Share link copied!'));
     } catch (err) {
+      showToast('Failed to share board');
       console.error('[MyBoard] Share failed:', err.message);
     }
   };
@@ -383,9 +410,10 @@ const MyBoard = () => {
                 const posColor = positionColors[player.position] || positionColors.WR;
                 const capital = getDraftCapitalInfo(player.draftPick);
                 const injured = hasInjuryRisk(player);
+                const boardRank = index + 1;
 
                 return (
-                  <Draggable key={player.id} draggableId={String(player.id)} index={index}>
+                  <Draggable key={`${player.id}-${index}`} draggableId={String(player.id)} index={index}>
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
@@ -414,7 +442,7 @@ const MyBoard = () => {
                           textAlign: 'center',
                           flexShrink: 0,
                         }}>
-                          {index + 1}
+                          {boardRank}
                         </div>
 
                         {/* Drag handle dots */}
@@ -595,6 +623,19 @@ const MyBoard = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* Toast notification */}
+      {toastMsg && (
+        <div style={{
+          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
+          borderRadius: 10, padding: '12px 24px', boxShadow: 'var(--shadow-lg)',
+          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+          color: 'var(--text-primary)', zIndex: 300,
+          animation: 'fadeIn 0.2s ease',
+        }}>
+          {toastMsg}
         </div>
       )}
     </div>
