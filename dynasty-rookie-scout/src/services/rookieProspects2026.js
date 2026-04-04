@@ -80,7 +80,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 3, superflex: 3 },
     rank: { oneQB: 3, superflex: 5 },
     injuries: [{ type: "Knee", date: "2025-10", severity: "Moderate", gamesOut: 3 }],
-    advancedStats: { yprr: 3.44 },
+    advancedStats: { yprr: 2.71 },
     cfbdLookup: { team: "Arizona State", year: 2025 },
   },
   {
