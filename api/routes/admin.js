@@ -89,4 +89,32 @@ router.get('/manual-stats/export', async (req, res) => {
   }
 });
 
+// POST /api/admin/manual-stats/seed — bulk seed from static data
+// Hit this once to populate the DB from the frontend's prospect data
+router.post('/manual-stats/seed', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { players } = req.body; // array of { name, yprr, targetShare, adot }
+    if (!Array.isArray(players)) {
+      return res.status(400).json({ error: 'players array required' });
+    }
+
+    let inserted = 0;
+    for (const p of players) {
+      if (!p.name) continue;
+      await pool.query(
+        `INSERT INTO manual_stats (player_name, yprr, target_share, adot, updated_at, updated_by)
+         VALUES ($1, $2, $3, $4, NOW(), $5)
+         ON CONFLICT (player_name) DO NOTHING`,
+        [p.name, p.yprr ?? null, p.targetShare ?? null, p.adot ?? null, req.user.id]
+      );
+      inserted++;
+    }
+
+    res.json({ ok: true, inserted });
+  } catch (err) {
+    console.error('[Admin] Seed error:', err.message);
+    res.status(500).json({ error: 'Seed failed' });
+  }
+});
+
 module.exports = router;

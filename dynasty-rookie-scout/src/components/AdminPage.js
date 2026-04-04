@@ -69,10 +69,37 @@ const AdminPage = ({ players }) => {
     );
   }
 
-  const wrTe = (players || [])
+  const allWrTe = (players || [])
     .filter(p => ['WR', 'TE'].includes(p.position))
-    .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => (a.rank?.oneQB || 999) - (b.rank?.oneQB || 999));
+
+  const wrTe = allWrTe
+    .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()));
+
+  const handleSeedFromStatic = async () => {
+    const toSeed = allWrTe
+      .filter(p => p.advancedStats?.yprr)
+      .map(p => ({
+        name: p.name,
+        yprr: p.advancedStats.yprr,
+      }));
+
+    if (toSeed.length === 0) {
+      setMessage({ type: 'error', text: 'No static YPRR data to seed' });
+      return;
+    }
+
+    try {
+      const result = await apiFetch('/api/admin/manual-stats/seed', {
+        method: 'POST',
+        body: JSON.stringify({ players: toSeed }),
+      });
+      setMessage({ type: 'success', text: `Seeded ${result.inserted} players from static data` });
+      loadStats();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    }
+  };
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 20px 60px' }}>
@@ -82,12 +109,27 @@ const AdminPage = ({ players }) => {
       }}>
         Admin — Manual Stats
       </h1>
-      <p style={{
-        fontFamily: "'Inter', sans-serif", fontSize: 13,
-        color: 'var(--text-tertiary)', marginBottom: 20,
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 20, flexWrap: 'wrap', gap: 8,
       }}>
-        Override YPRR, target share, ADOT for WR/TE prospects. DB values take priority over static data.
-      </p>
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontSize: 13,
+          color: 'var(--text-tertiary)', margin: 0,
+        }}>
+          Override YPRR, target share, ADOT for WR/TE prospects. DB values take priority over static data.
+        </p>
+        {Object.keys(manualStats).length === 0 && (
+          <button onClick={handleSeedFromStatic} style={{
+            padding: '8px 16px', borderRadius: 8, border: 'none',
+            background: 'var(--accent)', color: '#fff', fontSize: 12,
+            fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            Seed from static data
+          </button>
+        )}
+      </div>
 
       {message && (
         <div style={{
