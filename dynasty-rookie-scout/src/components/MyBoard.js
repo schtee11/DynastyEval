@@ -8,6 +8,24 @@ import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk 
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
+// Separate component so it always re-renders with latest rank
+const BoardRank = ({ playerId, boardRef }) => {
+  const rank = (boardRef.current || []).findIndex(p => p.id === playerId) + 1;
+  return (
+    <div style={{
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 18,
+      fontWeight: 700,
+      color: 'var(--text-tertiary)',
+      width: 32,
+      textAlign: 'center',
+      flexShrink: 0,
+    }}>
+      {rank || '—'}
+    </div>
+  );
+};
+
 const MyBoard = () => {
   const { user } = useAuth();
   const [activeFormat, setActiveFormat] = useState('oneQB');
@@ -15,7 +33,6 @@ const MyBoard = () => {
   const [boardSF, setBoardSF] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
   const [showExport, setShowExport] = useState(false);
-  const [boardVersion, setBoardVersion] = useState(0);
   const [error, setError] = useState(null);
   const [boardId1QB, setBoardId1QB] = useState(null);
   const [boardIdSF, setBoardIdSF] = useState(null);
@@ -192,16 +209,25 @@ const MyBoard = () => {
   };
 
   const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
-  const setCurrentBoard = activeFormat === 'oneQB' ? setBoard1QB : setBoardSF;
+
+  // Use a ref for the board so the rank lookup always gets the latest order
+  const boardRef = useRef(currentBoard);
+  boardRef.current = currentBoard;
 
   const handleDragEnd = (result) => {
-    if (!result.destination) return;
+    if (!result.destination || result.source.index === result.destination.index) return;
     const items = Array.from(currentBoard);
     const [reordered] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reordered);
 
-    setCurrentBoard(items);
-    setBoardVersion(v => v + 1);
+    // Directly set the specific board state (not via setCurrentBoard which may be stale)
+    if (activeFormat === 'oneQB') {
+      setBoard1QB([...items]);
+    } else {
+      setBoardSF([...items]);
+    }
+    // Update ref immediately so rank lookups get fresh data
+    boardRef.current = items;
     persist(activeFormat, items);
   };
 
@@ -396,7 +422,7 @@ const MyBoard = () => {
 
       {/* Drag-and-drop list */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId={`myboard-${boardVersion}`}>
+        <Droppable droppableId={`board-${activeFormat}`}>
           {(provided) => (
             <div
               ref={provided.innerRef}
@@ -412,7 +438,6 @@ const MyBoard = () => {
                 const posColor = positionColors[player.position] || positionColors.WR;
                 const capital = getDraftCapitalInfo(player.draftPick);
                 const injured = hasInjuryRisk(player);
-                const boardRank = index + 1;
 
                 return (
                   <Draggable key={String(player.id)} draggableId={String(player.id)} index={index}>
@@ -435,17 +460,7 @@ const MyBoard = () => {
                         }}
                       >
                         {/* Rank number */}
-                        <div style={{
-                          fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: 18,
-                          fontWeight: 700,
-                          color: 'var(--text-tertiary)',
-                          width: 32,
-                          textAlign: 'center',
-                          flexShrink: 0,
-                        }}>
-                          {boardRank}
-                        </div>
+                        <BoardRank playerId={player.id} boardRef={boardRef} />
 
                         {/* Drag handle dots */}
                         <div style={{
