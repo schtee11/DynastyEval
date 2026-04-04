@@ -36,16 +36,39 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Player image proxy — Sleeper CDN blocks direct browser requests
-app.get('/api/img/player/:id.jpg', async (req, res) => {
+// Player image proxy — searches ESPN for player, caches ESPN athlete ID, serves headshot
+const imgCache = {}; // in-memory: playerName -> espnAthleteId
+app.get('/api/img/player/:name.png', async (req, res) => {
   try {
-    const id = req.params.id;
-    const url = `https://sleepercdn.com/content/nfl/players/${id}.jpg`;
-    const response = await fetch(url);
-    if (!response.ok) return res.status(404).end();
-    res.set('Content-Type', 'image/jpeg');
-    res.set('Cache-Control', 'public, max-age=604800'); // 7 days
-    const buffer = await response.arrayBuffer();
+    const name = decodeURIComponent(req.params.name);
+    let athleteId = imgCache[name];
+
+    if (!athleteId) {
+      // Search ESPN for this player
+      const searchUrl = `https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(name)}&limit=3&type=player&sport=football&league=college-football`;
+      const searchRes = await fetch(searchUrl);
+      if (searchRes.ok) {
+        const data = await searchRes.json();
+        const items = data?.items?.[0]?.items || data?.results?.[0]?.items || [];
+        if (items.length > 0) {
+          const ref = items[0].$ref || items[0].href || '';
+          const match = ref.match(/athletes\/(\d+)/);
+          athleteId = match ? match[1] : (items[0].id || null);
+        }
+      }
+      if (athleteId) imgCache[name] = athleteId;
+    }
+
+    if (!athleteId) return res.status(404).end();
+
+    // Fetch ESPN headshot
+    const imgUrl = `https://a.espncdn.com/combiner/i?img=/i/headshots/college-football/players/full/${athleteId}.png&w=200&h=146`;
+    const imgRes = await fetch(imgUrl);
+    if (!imgRes.ok) return res.status(404).end();
+
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=2592000'); // 30 days
+    const buffer = await imgRes.arrayBuffer();
     res.send(Buffer.from(buffer));
   } catch {
     res.status(404).end();

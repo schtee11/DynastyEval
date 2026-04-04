@@ -244,7 +244,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
                 {player.sleeperId ? (
                   <img
-                    src={`https://${process.env.REACT_APP_API_URL || ''}/api/img/player/${player.sleeperId}.jpg`}
+                    src={`https://${process.env.REACT_APP_API_URL || ''}/api/img/player/${encodeURIComponent(player.name)}.png`}
                     alt={player.name}
                     onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                     style={{
