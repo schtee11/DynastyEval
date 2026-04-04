@@ -239,8 +239,8 @@ const MyBoard = () => {
                 borderColor: activeFormat === tab.id ? 'var(--warning)' : 'var(--border-primary)',
                 borderRadius: 4,
                 cursor: 'pointer',
-                background: activeFormat === tab.id ? 'rgba(245,158,11,0.15)' : 'transparent',
-                color: activeFormat === tab.id ? '#f59e0b' : '#9ca3af',
+                background: activeFormat === tab.id ? 'var(--warning-light)' : 'transparent',
+                color: activeFormat === tab.id ? 'var(--warning)' : 'var(--text-tertiary)',
                 transition: 'all 0.15s',
               }}
             >
@@ -263,8 +263,8 @@ const MyBoard = () => {
                 border: '1px solid #2a2d3e',
                 borderRadius: 4,
                 cursor: 'pointer',
-                background: visibility === 'public' ? 'rgba(34,197,94,0.15)' : '#1a1d2e',
-                color: visibility === 'public' ? '#22c55e' : '#9ca3af',
+                background: visibility === 'public' ? 'var(--success-light)' : 'var(--bg-tertiary)',
+                color: visibility === 'public' ? 'var(--success)' : 'var(--text-tertiary)',
                 transition: 'all 0.15s',
               }}
             >
@@ -387,7 +387,7 @@ const MyBoard = () => {
                         {...provided.dragHandleProps}
                         style={{
                           ...provided.draggableProps.style,
-                          background: snapshot.isDragging ? '#252842' : '#1a1d2e',
+                          background: snapshot.isDragging ? 'var(--bg-hover)' : 'var(--bg-card)',
                           borderRadius: 6,
                           borderLeft: `3px solid ${posColor.border}`,
                           padding: '10px 16px',
@@ -487,7 +487,7 @@ const MyBoard = () => {
                             <div style={{ textAlign: 'center' }}>
                               <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>
                               <div style={{
-                                color: player.breakoutAge <= 20 ? '#f59e0b' : player.breakoutAge <= 21 ? '#22c55e' : '#6b7280',
+                                color: player.breakoutAge <= 20 ? 'var(--warning)' : player.breakoutAge <= 21 ? 'var(--success)' : 'var(--text-tertiary)',
                                 fontWeight: 700,
                               }}>{player.breakoutAge}</div>
                             </div>
@@ -521,7 +521,7 @@ const MyBoard = () => {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#0f1117',
+              background: 'var(--bg-primary)',
               borderRadius: 12,
               border: '1px solid #2a2d3e',
               padding: 24,
