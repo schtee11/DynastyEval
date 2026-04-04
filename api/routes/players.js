@@ -1,6 +1,6 @@
 const express = require('express');
 const { fetchSleeperRookies } = require('../services/sleeperProxy');
-const { fetchCareerStats } = require('../services/cfbdProxy');
+const { fetchCareerStats, fetchAllPlayerStats } = require('../services/cfbdProxy');
 
 const router = express.Router();
 
@@ -23,6 +23,32 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/players/debug/stat-types — show what CFBD actually returns
+router.get('/debug/stat-types', async (req, res) => {
+  try {
+    const data = await fetchAllPlayerStats(2025);
+    if (!data) return res.json({ error: 'No data', statTypes: {} });
+
+    // Collect all unique keys across all players per category
+    const sample = {};
+    let count = 0;
+    for (const [name, stats] of Object.entries(data)) {
+      if (count >= 3) break;
+      sample[name] = {
+        passing: stats.passing ? Object.keys(stats.passing) : null,
+        rushing: stats.rushing ? Object.keys(stats.rushing) : null,
+        receiving: stats.receiving ? Object.keys(stats.receiving) : null,
+        ppa: stats.ppa ? Object.keys(stats.ppa) : null,
+      };
+      count++;
+    }
+
+    res.json({ totalPlayers: Object.keys(data).length, sample });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/players/:id/stats — individual player career stats
 router.get('/:id/stats', async (req, res) => {
   try {
@@ -31,7 +57,6 @@ router.get('/:id/stats', async (req, res) => {
       return res.json({ stats: null });
     }
 
-    // Search by normalized name (id here is the player name, URL-encoded)
     const name = decodeURIComponent(req.params.id).toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
     const stats = careerStats[name] || null;
 
