@@ -38,6 +38,7 @@ const mapProspectToPlayer = (p) => ({
   dynastyADP: p.dynastyADP,
   rank: p.rank,
   playerComps: p.playerComps,
+  advancedStats: p.advancedStats,
   _prospect: p,
 });
 

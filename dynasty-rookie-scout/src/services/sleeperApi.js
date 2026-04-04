@@ -249,6 +249,7 @@ export const buildRookiePlayersFromSleeper = async () => {
       dynastyADP: prospect?.dynastyADP ?? null,
       rank: prospect?.rank ?? null,
       playerComps: prospect?.playerComps || [],
+      advancedStats: prospect?.advancedStats ?? null,
       _prospect: prospect,
       ...csvStats,
     };

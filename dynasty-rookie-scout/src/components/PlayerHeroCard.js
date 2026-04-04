@@ -74,7 +74,8 @@ const getHeroStats = (player, allPlayers) => {
   }
 
   // WR and TE
-  return [
+  const yprr = player.advancedStats?.yprr;
+  const result = [
     {
       label: 'Rec Yds',
       value: stats?.receivingYards ? stats.receivingYards.toLocaleString() : null,
@@ -90,16 +91,23 @@ const getHeroStats = (player, allPlayers) => {
       value: stats?.receivingTDs,
       tier: tier(stats?.receivingTDs, peers.map(p => p.stats?.receivingTDs)),
     },
-    stats?.targets ? {
-      label: 'Targets',
-      value: stats.targets,
-      tier: tier(stats.targets, peers.map(p => p.stats?.targets).filter(Boolean)),
-    } : {
+  ];
+
+  if (yprr) {
+    result.push({
+      label: 'YPRR',
+      value: yprr.toFixed(2),
+      tier: tier(yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)),
+    });
+  } else {
+    result.push({
       label: 'Yds/Rec',
       value: stats?.receptions > 0 ? (stats.receivingYards / stats.receptions).toFixed(1) : null,
       tier: tier(stats?.receptions > 0 ? stats.receivingYards / stats.receptions : null, peers.map(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : 0)),
-    },
-  ];
+    });
+  }
+
+  return result;
 };
 
 /**
