@@ -2,7 +2,6 @@ const express = require('express');
 const pool = require('../db/pool');
 const { fetchSleeperRookies } = require('../services/sleeperProxy');
 const { fetchCareerStats, fetchAllPlayerStats } = require('../services/cfbdProxy');
-const { batchGetTargets, getPlayerTargets } = require('../services/espnProxy');
 
 const router = express.Router();
 
@@ -14,28 +13,7 @@ router.get('/', async (req, res) => {
       fetchCareerStats([2022, 2023, 2024, 2025]).catch(() => null),
     ]);
 
-    // Merge ESPN targets into career stats for receivers
     const stats = careerStats || {};
-    if (Object.keys(stats).length > 0) {
-      // Get names of players with receiving data but no targets
-      const needTargets = Object.entries(stats)
-        .filter(([_, s]) => s.receiving && (!s.receiving.TARGETS || s.receiving.TARGETS === 0) && s.receiving.REC > 0)
-        .map(([name]) => name);
-
-      if (needTargets.length > 0) {
-        try {
-          const espnTargets = await batchGetTargets(needTargets);
-          for (const [name, targets] of Object.entries(espnTargets)) {
-            if (stats[name]?.receiving && targets > 0) {
-              stats[name].receiving.TARGETS = targets;
-            }
-          }
-          console.info(`[Players] ESPN targets merged for ${Object.keys(espnTargets).length}/${needTargets.length} players`);
-        } catch (err) {
-          console.warn('[Players] ESPN targets fetch failed:', err.message);
-        }
-      }
-    }
 
     // Fetch manual stat overrides from database
     let manualStats = {};
