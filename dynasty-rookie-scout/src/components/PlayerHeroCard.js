@@ -73,7 +73,8 @@ const getHeroStats = (player, allPlayers) => {
     ];
   }
 
-  // WR and TE
+  // WR and TE — YPRR compared against all WR+TE (not just same position)
+  const yprrPeers = allPlayers.filter(p => ['WR', 'TE'].includes(p.position));
   const yprr = player.advancedStats?.yprr;
   const result = [
     {
@@ -97,7 +98,7 @@ const getHeroStats = (player, allPlayers) => {
     result.push({
       label: 'YPRR',
       value: yprr.toFixed(2),
-      tier: tier(yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)),
+      tier: tier(yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)),
     });
   } else {
     result.push({

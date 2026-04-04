@@ -36,13 +36,15 @@ const getHeroStats = (player, allPlayers) => {
       { label: 'Rec', value: stats?.receptions, tier: tier(stats?.receptions, peers.map(p => p.stats?.receptions)) },
     ];
   }
+  // For YPRR, compare against all WR+TE peers (not just same position) since it's a universal receiving metric
+  const yprrPeers = allPlayers.filter(p => ['WR', 'TE'].includes(p.position));
   const yprr = player.advancedStats?.yprr;
   return [
     { label: 'Rec Yds', value: stats?.receivingYards ? stats.receivingYards.toLocaleString() : null, tier: tier(stats?.receivingYards, peers.map(p => p.stats?.receivingYards)) },
     { label: 'Rec', value: stats?.receptions, tier: tier(stats?.receptions, peers.map(p => p.stats?.receptions)) },
     { label: 'TDs', value: stats?.receivingTDs, tier: tier(stats?.receivingTDs, peers.map(p => p.stats?.receivingTDs)) },
     yprr
-      ? { label: 'YPRR', value: yprr.toFixed(2), tier: tier(yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)) }
+      ? { label: 'YPRR', value: yprr.toFixed(2), tier: tier(yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)) }
       : { label: 'Yds/Rec', value: stats?.receptions > 0 ? (stats.receivingYards / stats.receptions).toFixed(1) : null, tier: tier(stats?.receptions > 0 ? stats.receivingYards / stats.receptions : null, peers.map(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : 0)) },
   ];
 };
