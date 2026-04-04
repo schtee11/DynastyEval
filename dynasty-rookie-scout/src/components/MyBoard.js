@@ -35,18 +35,19 @@ const MyBoard = () => {
       }
       setAllPlayers(data);
 
-      const safeRank = (p, key) => { const r = p.rank?.[key]; return (r == null || r === 'UNR') ? 999 : r; };
-      const default1QB = [...data].sort((a, b) => safeRank(a, 'oneQB') - safeRank(b, 'oneQB'));
-      const defaultSF = [...data].sort((a, b) => safeRank(a, 'superflex') - safeRank(b, 'superflex'));
+      const safeAdp = (p, key) => { const a = p.dynastyADP?.[key]; return (a == null || a === 'UNR') ? 999 : a; };
+      const default1QB = [...data].sort((a, b) => safeAdp(a, 'oneQB') - safeAdp(b, 'oneQB'));
+      const defaultSF = [...data].sort((a, b) => safeAdp(a, 'superflex') - safeAdp(b, 'superflex'));
 
       const boardFromIds = (ids) => ids.map(id => data.find(p => p.id === id)).filter(Boolean);
 
       // If logged in, try fetching from API first
       if (user) {
         try {
-          const boards = await fetchMyBoards();
-          const api1QB = boards.find(b => b.format === 'oneQB');
-          const apiSF = boards.find(b => b.format === 'superflex');
+          const boardsRes = await fetchMyBoards();
+          const boards = boardsRes.boards || boardsRes || [];
+          const api1QB = boards.find(b => b.format === '1QB') || boards.find(b => b.format === 'oneQB');
+          const apiSF = boards.find(b => b.format === 'SF') || boards.find(b => b.format === 'superflex');
 
           if (api1QB) {
             setBoardId1QB(api1QB.id);
@@ -55,7 +56,7 @@ const MyBoard = () => {
           } else {
             const ids1QB = default1QB.map(p => p.id);
             const created1QB = await createBoard('My 1QB Board', 'oneQB', ids1QB, 'private');
-            setBoardId1QB(created1QB.id);
+            setBoardId1QB(created1QB.board?.id || created1QB.id);
             setBoard1QB(default1QB);
             localStorage.setItem(STORAGE_KEY_1QB, JSON.stringify(ids1QB));
           }
@@ -67,7 +68,7 @@ const MyBoard = () => {
           } else {
             const idsSF = defaultSF.map(p => p.id);
             const createdSF = await createBoard('My SF Board', 'superflex', idsSF, 'private');
-            setBoardIdSF(createdSF.id);
+            setBoardIdSF(createdSF.board?.id || createdSF.id);
             setBoardSF(defaultSF);
             localStorage.setItem(STORAGE_KEY_SF, JSON.stringify(idsSF));
           }
@@ -127,10 +128,15 @@ const MyBoard = () => {
 
   const handleShareBoard = async () => {
     const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
-    if (!boardId) return;
+    if (!boardId) {
+      alert('Save your board first by reordering a player.');
+      return;
+    }
     try {
       const result = await shareBoard(boardId);
-      const url = `${window.location.origin}/boards/shared/${result.share_token}`;
+      const token = result.shareToken || result.share_token;
+      if (!token) { console.error('[MyBoard] No share token returned'); return; }
+      const url = `${window.location.origin}/board/shared/${token}`;
       setShareUrl(url);
     } catch (err) {
       console.error('[MyBoard] Share failed:', err.message);
