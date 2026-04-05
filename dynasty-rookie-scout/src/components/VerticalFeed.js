@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { positionColors } from '../utils/helpers';
+import BottomSheet from './BottomSheet';
 import SignupGate from './SignupGate';
 
 const FREE_PREVIEW_LIMIT = 5;
@@ -167,161 +168,112 @@ const VerticalFeed = ({ children, players = [], onActiveChange }) => {
       </div>
 
       {/* Quick-jump player list (bottom sheet) */}
-      {showJumpList && (
-        <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setShowJumpList(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              zIndex: 'var(--z-overlay, 200)',
-            }}
-          />
-          {/* Sheet */}
+      <BottomSheet open={showJumpList} onClose={() => setShowJumpList(false)}>
+        {/* Header */}
+        <div style={{
+          padding: '4px 16px 8px',
+          borderBottom: '1px solid var(--border-primary)',
+        }}>
           <div style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 'var(--z-modal, 300)',
-            background: 'var(--bg-primary)',
-            borderRadius: '16px 16px 0 0',
-            maxHeight: '70vh',
             display: 'flex',
-            flexDirection: 'column',
-            animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}>
-            {/* Handle + header */}
-            <div style={{
-              padding: '12px 16px 8px',
-              borderBottom: '1px solid var(--border-primary)',
-              flexShrink: 0,
+            <span style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: 15,
+              letterSpacing: 1,
+              textTransform: 'uppercase',
+              color: 'var(--text-primary)',
             }}>
-              <div style={{
-                width: 36,
-                height: 4,
-                borderRadius: 2,
-                background: 'var(--text-tertiary)',
-                opacity: 0.4,
-                margin: '0 auto 10px',
-              }} />
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
+              Jump to Player
+            </span>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              color: 'var(--text-tertiary)',
+            }}>
+              {total} players
+            </span>
+          </div>
+        </div>
+
+        {/* Scrollable player list */}
+        <div
+          ref={jumpListRef}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)' }}
+        >
+          {players.map((player, i) => {
+            const isActive = i === activeIndex;
+            const posColor = positionColors[player.position] || positionColors.WR;
+            return (
+              <div
+                key={player.id}
+                {...(isActive ? { 'data-jump-active': true } : {})}
+                onClick={() => jumpTo(i)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 16px',
+                  cursor: 'pointer',
+                  background: isActive ? 'var(--accent-light)' : 'transparent',
+                  borderLeft: isActive ? '3px solid var(--accent)' : '3px solid transparent',
+                  transition: 'background 0.1s',
+                }}
+              >
+                <span style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: isActive ? 'var(--accent-text)' : 'var(--text-tertiary)',
+                  width: 28,
+                  textAlign: 'right',
+                  flexShrink: 0,
+                }}>
+                  {i + 1}
+                </span>
                 <span style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
-                  fontSize: 15,
-                  letterSpacing: 1,
-                  textTransform: 'uppercase',
-                  color: 'var(--text-primary)',
+                  fontSize: 11,
+                  color: posColor.text,
+                  background: posColor.bg,
+                  padding: '2px 6px',
+                  borderRadius: 3,
+                  flexShrink: 0,
+                  minWidth: 26,
+                  textAlign: 'center',
                 }}>
-                  Jump to Player
+                  {player.position}
+                </span>
+                <span style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 14,
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? 'var(--accent-text)' : 'var(--text-primary)',
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {player.name}
                 </span>
                 <span style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 11,
                   color: 'var(--text-tertiary)',
+                  flexShrink: 0,
                 }}>
-                  {total} players
+                  {player.college}
                 </span>
               </div>
-            </div>
-
-            {/* Scrollable player list */}
-            <div
-              ref={jumpListRef}
-              style={{
-                overflowY: 'auto',
-                WebkitOverflowScrolling: 'touch',
-                flex: 1,
-                paddingBottom: 'env(safe-area-inset-bottom, 0)',
-              }}
-            >
-              {players.map((player, i) => {
-                const isActive = i === activeIndex;
-                const posColor = positionColors[player.position] || positionColors.WR;
-                return (
-                  <div
-                    key={player.id}
-                    {...(isActive ? { 'data-jump-active': true } : {})}
-                    onClick={() => jumpTo(i)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '10px 16px',
-                      cursor: 'pointer',
-                      background: isActive ? 'var(--accent-light)' : 'transparent',
-                      borderLeft: isActive ? '3px solid var(--accent)' : '3px solid transparent',
-                      transition: 'background 0.1s',
-                    }}
-                  >
-                    {/* Rank */}
-                    <span style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: isActive ? 'var(--accent-text)' : 'var(--text-tertiary)',
-                      width: 28,
-                      textAlign: 'right',
-                      flexShrink: 0,
-                    }}>
-                      {i + 1}
-                    </span>
-
-                    {/* Position badge */}
-                    <span style={{
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontWeight: 700,
-                      fontSize: 11,
-                      color: posColor.text,
-                      background: posColor.bg,
-                      padding: '2px 6px',
-                      borderRadius: 3,
-                      flexShrink: 0,
-                      minWidth: 26,
-                      textAlign: 'center',
-                    }}>
-                      {player.position}
-                    </span>
-
-                    {/* Name */}
-                    <span style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 14,
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? 'var(--accent-text)' : 'var(--text-primary)',
-                      flex: 1,
-                      minWidth: 0,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {player.name}
-                    </span>
-
-                    {/* College */}
-                    <span style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 11,
-                      color: 'var(--text-tertiary)',
-                      flexShrink: 0,
-                    }}>
-                      {player.college}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
+            );
+          })}
+        </div>
+      </BottomSheet>
 
       {/* Swipe hint on first card */}
       {activeIndex === 0 && !showJumpList && (

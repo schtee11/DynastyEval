@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PlayerHeroCard from './PlayerHeroCard';
 import VerticalFeed from './VerticalFeed';
 import DesktopSplitView from './DesktopSplitView';
+import BottomSheet from './BottomSheet';
 import FilterBar from './FilterBar';
 import SearchInput from './SearchInput';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
@@ -102,37 +103,8 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
         </button>
 
         {/* Filter bottom sheet overlay */}
-        {showFilters && (
-          <>
-            <div
-              className="sheet-overlay"
-              onClick={() => setShowFilters(false)}
-              onKeyDown={(e) => { if (e.key === 'Escape') setShowFilters(false); }}
-              style={{
-                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                zIndex: 'var(--z-overlay)',
-              }}
-            />
-            <div className="sheet-panel" style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 'var(--z-modal)',
-              background: 'var(--bg-primary)',
-              borderRadius: '16px 16px 0 0',
-              padding: '16px 16px 32px',
-              maxHeight: '70vh',
-              overflowY: 'auto',
-              boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
-              animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}>
-              <div style={{
-                width: 48, height: 5, borderRadius: 2,
-                background: 'var(--text-tertiary)',
-                opacity: 0.4,
-                margin: '0 auto 16px',
-              }} />
+        <BottomSheet open={showFilters} onClose={() => setShowFilters(false)}>
+            <div style={{ padding: '4px 16px 32px' }}>
               <SearchInput
                 value={filters.nameSearch}
                 onChange={(v) => setFilters(f => ({ ...f, nameSearch: v }))}
@@ -166,7 +138,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
                 Show {sorted.length} prospect{sorted.length !== 1 ? 's' : ''}
               </button>
             </div>
-          </>
+          </BottomSheet>
         )}
 
         {/* Vertical swipe feed */}
