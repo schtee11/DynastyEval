@@ -126,7 +126,7 @@ router.post('/sync', requireAuth, async (req, res) => {
     let draftPicks = [];
     if (userRoster) {
       try {
-        const picks = await sleeperFetch(`/league/${league_id}/traded_picks`);
+        const tradedPicks = await sleeperFetch(`/league/${league_id}/traded_picks`);
 
         // Fetch draft order to determine pick slots
         const drafts = await sleeperFetch(`/league/${league_id}/drafts`);
@@ -139,42 +139,35 @@ router.post('/sync', requireAuth, async (req, res) => {
           rosterToSlot[rosterId] = Number(slot);
         }
 
-        // Build the user's pick ownership
-        // Start with original picks (all rounds for their roster)
         const totalRounds = league.settings?.draft_rounds || 4;
-        const ownedPicks = [];
+        const totalTeams = league.total_rosters || rosters.length || 12;
 
-        for (let round = 1; round <= totalRounds; round++) {
-          const slot = rosterToSlot[userRoster.roster_id] || userRoster.roster_id;
-          ownedPicks.push({
-            round,
-            slot,
-            roster_id: userRoster.roster_id,
-            original_owner_id: userRoster.roster_id,
-            season: yr,
-          });
+        // Build ownership map for all picks: key = "round-roster_id" → current owner
+        // Default: every team owns their own picks
+        const pickOwnership = {};
+        for (const roster of rosters) {
+          for (let round = 1; round <= totalRounds; round++) {
+            pickOwnership[`${round}-${roster.roster_id}`] = roster.roster_id;
+          }
         }
 
-        // Apply trades: remove picks traded away, add picks traded in
-        for (const trade of (picks || [])) {
+        // Apply trades to reassign ownership
+        for (const trade of (tradedPicks || [])) {
           if (trade.season !== yr) continue;
+          // trade.roster_id = the original team, trade.owner_id = current owner
+          pickOwnership[`${trade.round}-${trade.roster_id}`] = trade.owner_id;
+        }
 
-          // Traded away from user
-          if (trade.previous_owner_id === userRoster.roster_id) {
-            const idx = ownedPicks.findIndex(
-              p => p.round === trade.round && p.original_owner_id === trade.roster_id && p.season === yr
-            );
-            if (idx >= 0) ownedPicks.splice(idx, 1);
-          }
-
-          // Traded to user
-          if (trade.owner_id === userRoster.roster_id) {
-            const slot = rosterToSlot[trade.roster_id] || trade.roster_id;
+        // Filter to picks owned by the user
+        const ownedPicks = [];
+        for (const [key, ownerId] of Object.entries(pickOwnership)) {
+          if (ownerId === userRoster.roster_id) {
+            const [round, originalRosterId] = key.split('-').map(Number);
+            const slot = rosterToSlot[originalRosterId] || originalRosterId;
             ownedPicks.push({
-              round: trade.round,
+              round,
               slot,
-              roster_id: trade.owner_id,
-              original_owner_id: trade.roster_id,
+              original_owner_id: originalRosterId,
               season: yr,
             });
           }
@@ -183,7 +176,6 @@ router.post('/sync', requireAuth, async (req, res) => {
         draftPicks = ownedPicks.sort((a, b) => a.round - b.round || a.slot - b.slot);
       } catch (err) {
         console.error('[Sleeper] Draft picks error:', err.message);
-        // Not fatal — continue without picks
       }
     }
 
