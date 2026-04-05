@@ -34,8 +34,17 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   const [showFilters, setShowFilters] = useState(false);
   const isMobile = useIsMobile();
 
+  // Use league format from Sleeper sync if available, otherwise default to 1QB
+  const leagueFormat = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('drs_league_format');
+      if (saved === 'SF') return 'superflex';
+    } catch { /* ignore */ }
+    return 'oneQB';
+  }, []);
+
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
-  const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
+  const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueFormat, perspective), [filtered, sortBy, leagueFormat, perspective]);
 
   const hasActiveFilters = filters.position !== 'ALL' || filters.draftDay || filters.hideInjured || filters.nameSearch;
 

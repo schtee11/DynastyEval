@@ -24,8 +24,39 @@ import SleeperSync from './SleeperSync';
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
+/**
+ * Check if a board position falls within a round the user owns a pick in.
+ * Returns a label like "RD 1 PICK" or "RD 2 PICK", or null.
+ * Since exact draft slot isn't known pre-draft, we show the round range.
+ */
+function getPickLabel(position, picks, totalTeams) {
+  if (!picks || picks.length === 0 || !totalTeams) return null;
+  const round = Math.ceil(position / totalTeams);
+  const startOfRound = (round - 1) * totalTeams + 1;
+  const endOfRound = round * totalTeams;
+
+  // Count how many picks the user has in this round
+  const picksInRound = picks.filter(p => p.round === round);
+  if (picksInRound.length === 0) return null;
+
+  // Show markers at evenly-spaced positions within the round range
+  // E.g. 1 pick in 12-team round → mark the middle position
+  // E.g. 2 picks in 12-team round → mark positions at 1/3 and 2/3
+  const roundSize = endOfRound - startOfRound + 1;
+  const posInRound = position - startOfRound; // 0-indexed within round
+  const spacing = Math.floor(roundSize / (picksInRound.length + 1));
+
+  for (let i = 0; i < picksInRound.length; i++) {
+    const markerPos = spacing * (i + 1);
+    if (posInRound === markerPos) {
+      return `YOUR PICK · RD ${round}`;
+    }
+  }
+  return null;
+}
+
 /* ── Sortable row extracted so useSortable hook works per-item ── */
-const SortableRow = ({ player, index, activeFormat }) => {
+const SortableRow = ({ player, index, activeFormat, pickLabel }) => {
   const {
     attributes,
     listeners,
@@ -38,9 +69,9 @@ const SortableRow = ({ player, index, activeFormat }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    background: isDragging ? 'var(--bg-hover)' : 'var(--bg-card)',
+    background: isDragging ? 'var(--bg-hover)' : pickLabel ? 'var(--warning-light)' : 'var(--bg-card)',
     borderRadius: 6,
-    borderLeft: `3px solid ${(positionColors[player.position] || positionColors.WR).border}`,
+    borderLeft: `3px solid ${pickLabel ? 'var(--warning)' : (positionColors[player.position] || positionColors.WR).border}`,
     padding: '10px 16px',
     marginBottom: 4,
     display: 'flex',
@@ -126,6 +157,22 @@ const SortableRow = ({ player, index, activeFormat }) => {
               🚨 INJURY
             </span>
           )}
+          {pickLabel && (
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10,
+              fontWeight: 700,
+              color: 'var(--warning)',
+              background: 'var(--warning-light)',
+              border: '1px solid var(--warning)',
+              padding: '1px 6px',
+              borderRadius: 3,
+              marginLeft: 'auto',
+              whiteSpace: 'nowrap',
+            }}>
+              {pickLabel}
+            </span>
+          )}
         </div>
         <div style={{
           fontFamily: "'JetBrains Mono', monospace",
@@ -179,6 +226,8 @@ const MyBoard = () => {
   const [shareUrl, setShareUrl] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
   const shareCopiedTimer = useRef(null);
+  const [sleeperPicks, setSleeperPicks] = useState([]); // [{round, roster_id, ...}]
+  const [sleeperLeagueCount, setSleeperLeagueCount] = useState(null); // total teams in league
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -529,7 +578,22 @@ const MyBoard = () => {
       )}
 
       {/* Sleeper sync */}
-      {user && <SleeperSync />}
+      {user && <SleeperSync onSynced={(result) => {
+        // Auto-switch format to match synced league
+        if (result.format === 'SF') {
+          setActiveFormat('superflex');
+          try { localStorage.setItem('drs_league_format', 'SF'); } catch {}
+        } else {
+          setActiveFormat('oneQB');
+          try { localStorage.setItem('drs_league_format', '1QB'); } catch {}
+        }
+        // Store picks for board markers
+        const picks = Array.isArray(result.draft_picks) ? result.draft_picks : [];
+        setSleeperPicks(picks);
+        // Determine total teams from roster positions or default
+        const totalTeams = result.total_rosters || 12;
+        setSleeperLeagueCount(totalTeams);
+      }} />}
 
       {/* Drag-and-drop list */}
       <DndContext
@@ -549,14 +613,19 @@ const MyBoard = () => {
               minHeight: 200,
             }}
           >
-            {currentBoard.map((player, index) => (
-              <SortableRow
-                key={String(player.id)}
-                player={player}
-                index={index}
-                activeFormat={activeFormat}
-              />
-            ))}
+            {currentBoard.map((player, index) => {
+              // Check if this board position matches one of the user's draft picks
+              const pickLabel = getPickLabel(index + 1, sleeperPicks, sleeperLeagueCount);
+              return (
+                <SortableRow
+                  key={String(player.id)}
+                  player={player}
+                  index={index}
+                  activeFormat={activeFormat}
+                  pickLabel={pickLabel}
+                />
+              );
+            })}
           </div>
         </SortableContext>
       </DndContext>

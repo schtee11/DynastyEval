@@ -37,17 +37,30 @@ const SleeperSync = ({ onSynced }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Load already-synced leagues
+  // Load already-synced leagues and notify parent
   useEffect(() => {
     const load = async () => {
       try {
         const { leagues: data } = await fetchMySleeperLeagues();
         setSyncedLeagues(data || []);
+        // Notify parent with the most recently synced league
+        if (data && data.length > 0 && onSynced) {
+          const latest = data[0];
+          const picks = Array.isArray(latest.draft_picks)
+            ? latest.draft_picks
+            : JSON.parse(latest.draft_picks || '[]');
+          onSynced({
+            format: latest.format,
+            draft_picks: picks,
+            league_name: latest.league_name,
+            total_rosters: latest.total_rosters || 12,
+          });
+        }
       } catch { /* ignore */ }
       finally { setLoadingSynced(false); }
     };
     load();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLookup = async () => {
     if (!username.trim()) return;

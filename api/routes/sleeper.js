@@ -28,6 +28,10 @@ const SLEEPER_BASE = 'https://api.sleeper.app/v1';
       )
     `);
     await pool.query('CREATE INDEX IF NOT EXISTS idx_sleeper_leagues_user ON sleeper_leagues(user_id)');
+    // Add total_rosters column if missing (for existing tables)
+    await pool.query(`
+      ALTER TABLE sleeper_leagues ADD COLUMN IF NOT EXISTS total_rosters INTEGER DEFAULT 12
+    `);
   } catch (err) {
     console.error('[Sleeper] Table init error:', err.message);
   }
@@ -168,10 +172,12 @@ router.post('/sync', requireAuth, async (req, res) => {
     }
 
     // Upsert into database
+    const totalRosters = league.total_rosters || rosters.length || 12;
+
     await pool.query(
       `INSERT INTO sleeper_leagues
-        (user_id, sleeper_user_id, sleeper_username, league_id, league_name, season, format, scoring_settings, roster_positions, draft_picks, synced_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+        (user_id, sleeper_user_id, sleeper_username, league_id, league_name, season, format, scoring_settings, roster_positions, draft_picks, total_rosters, synced_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
        ON CONFLICT (user_id, league_id) DO UPDATE SET
         sleeper_username = $3,
         league_name = $5,
@@ -180,6 +186,7 @@ router.post('/sync', requireAuth, async (req, res) => {
         scoring_settings = $8,
         roster_positions = $9,
         draft_picks = $10,
+        total_rosters = $11,
         synced_at = NOW()`,
       [
         req.user.id,
@@ -192,6 +199,7 @@ router.post('/sync', requireAuth, async (req, res) => {
         JSON.stringify(league.scoring_settings || {}),
         JSON.stringify(league.roster_positions || []),
         JSON.stringify(draftPicks),
+        totalRosters,
       ]
     );
 
@@ -201,6 +209,7 @@ router.post('/sync', requireAuth, async (req, res) => {
       format,
       draft_picks: draftPicks,
       roster_positions: league.roster_positions,
+      total_rosters: league.total_rosters || rosters.length || 12,
     });
   } catch (err) {
     console.error('[Sleeper] Sync error:', err.message, err.stack);
@@ -212,7 +221,7 @@ router.post('/sync', requireAuth, async (req, res) => {
 router.get('/my-leagues', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT league_id, league_name, season, format, draft_picks, roster_positions, sleeper_username, synced_at
+      `SELECT league_id, league_name, season, format, draft_picks, roster_positions, sleeper_username, synced_at, total_rosters
        FROM sleeper_leagues WHERE user_id = $1 ORDER BY synced_at DESC`,
       [req.user.id]
     );
