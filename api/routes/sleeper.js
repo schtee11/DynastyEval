@@ -225,6 +225,50 @@ router.post('/sync', requireAuth, async (req, res) => {
   }
 });
 
+// DEBUG: GET /api/sleeper/debug/:leagueId/:sleeperUserId — show raw pick calculation
+router.get('/debug/:leagueId/:sleeperUserId', requireAuth, async (req, res) => {
+  try {
+    const { leagueId, sleeperUserId } = req.params;
+    const yr = '2025';
+
+    const league = await sleeperFetch(`/league/${leagueId}`);
+    const rosters = await sleeperFetch(`/league/${leagueId}/rosters`);
+    const tradedPicks = await sleeperFetch(`/league/${leagueId}/traded_picks`);
+    const drafts = await sleeperFetch(`/league/${leagueId}/drafts`);
+
+    const userRoster = rosters.find(r => r.owner_id === sleeperUserId);
+
+    const currentDraft = (drafts || []).find(d => d.season === yr) || (drafts || [])[0];
+    const slotToRoster = currentDraft?.slot_to_roster_id || {};
+
+    const rosterToSlot = {};
+    for (const [slot, rosterId] of Object.entries(slotToRoster)) {
+      rosterToSlot[rosterId] = Number(slot);
+    }
+
+    // Filter traded picks for this season
+    const seasonTrades = (tradedPicks || []).filter(t => t.season === yr);
+
+    res.json({
+      user_roster_id: userRoster?.roster_id,
+      total_rosters: league.total_rosters,
+      draft_rounds: league.settings?.draft_rounds,
+      slot_to_roster: slotToRoster,
+      roster_to_slot: rosterToSlot,
+      traded_picks_this_season: seasonTrades,
+      all_roster_owner_ids: rosters.map(r => ({ roster_id: r.roster_id, owner_id: r.owner_id })),
+      draft_info: {
+        draft_id: currentDraft?.draft_id,
+        season: currentDraft?.season,
+        status: currentDraft?.status,
+        type: currentDraft?.type,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/sleeper/my-leagues — get current user's synced leagues
 router.get('/my-leagues', requireAuth, async (req, res) => {
   try {
