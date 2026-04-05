@@ -26,7 +26,7 @@ app.use(helmet({
 
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(s => s.trim())
-  : ['http://localhost:3000'];
+  : ['http://localhost:3000', 'https://dynastyeval.netlify.app'];
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
