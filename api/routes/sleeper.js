@@ -6,10 +6,40 @@ const router = express.Router();
 
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
+// Auto-create table on first load
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS sleeper_leagues (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        sleeper_user_id VARCHAR(64) NOT NULL,
+        sleeper_username VARCHAR(100),
+        league_id VARCHAR(64) NOT NULL,
+        league_name VARCHAR(255),
+        season VARCHAR(4) NOT NULL,
+        format VARCHAR(20) DEFAULT '1QB',
+        scoring_settings JSONB DEFAULT '{}',
+        roster_positions JSONB DEFAULT '[]',
+        draft_picks JSONB DEFAULT '[]',
+        synced_at TIMESTAMPTZ DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, league_id)
+      )
+    `);
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_sleeper_leagues_user ON sleeper_leagues(user_id)');
+  } catch (err) {
+    console.error('[Sleeper] Table init error:', err.message);
+  }
+})();
+
 async function sleeperFetch(path) {
-  const res = await fetch(`${SLEEPER_BASE}${path}`);
-  if (!res.ok) throw new Error(`Sleeper API error: ${res.status}`);
-  return res.json();
+  const url = `${SLEEPER_BASE}${path}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Sleeper API ${res.status} for ${path}`);
+  const text = await res.text();
+  if (!text || text === 'null') return null;
+  return JSON.parse(text);
 }
 
 // Determine league format from roster positions
@@ -34,7 +64,7 @@ router.get('/user/:username', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('[Sleeper] User lookup error:', err.message);
-    res.status(500).json({ error: 'Failed to look up Sleeper user' });
+    res.status(500).json({ error: 'Failed to look up Sleeper user: ' + err.message });
   }
 });
 
@@ -61,7 +91,7 @@ router.get('/leagues/:sleeperUserId/:season', requireAuth, async (req, res) => {
     res.json({ leagues: dynastyLeagues });
   } catch (err) {
     console.error('[Sleeper] Leagues error:', err.message);
-    res.status(500).json({ error: 'Failed to fetch leagues' });
+    res.status(500).json({ error: 'Failed to fetch leagues: ' + err.message });
   }
 });
 
@@ -173,8 +203,8 @@ router.post('/sync', requireAuth, async (req, res) => {
       roster_positions: league.roster_positions,
     });
   } catch (err) {
-    console.error('[Sleeper] Sync error:', err.message);
-    res.status(500).json({ error: 'Failed to sync league' });
+    console.error('[Sleeper] Sync error:', err.message, err.stack);
+    res.status(500).json({ error: 'Failed to sync league: ' + err.message });
   }
 });
 
