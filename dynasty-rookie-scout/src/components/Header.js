@@ -95,11 +95,6 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isProfile = location.pathname.startsWith('/player/');
-  const isDiscussion = location.pathname.includes('/discuss');
-  // Extract player ID for discussion back navigation
-  const playerIdMatch = location.pathname.match(/^\/player\/(\d+)/);
-  const backPath = isDiscussion && playerIdMatch ? `/player/${playerIdMatch[1]}` : '/';
-  const backLabel = isDiscussion ? 'Player' : 'Prospects';
 
   const tabs = [
     { path: '/', label: 'Prospects' },
@@ -127,7 +122,7 @@ const Header = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {isProfile ? (
           <button
-            onClick={() => navigate(backPath)}
+            onClick={() => navigate('/')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'none', border: 'none', cursor: 'pointer',
@@ -136,7 +131,7 @@ const Header = () => {
             }}
           >
             <BackArrow />
-            <span className="header-back-label">{backLabel}</span>
+            <span className="header-back-label">Prospects</span>
           </button>
         ) : (
           <>
