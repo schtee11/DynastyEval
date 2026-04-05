@@ -98,7 +98,7 @@ const Header = () => {
 
   const tabs = [
     { path: '/', label: 'Prospects' },
-    { path: '/compare', label: 'Compare' },
+    { path: '/community', label: 'Community' },
     { path: '/board', label: 'My Board' },
   ];
 

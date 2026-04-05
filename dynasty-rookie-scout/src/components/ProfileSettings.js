@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { changePassword } from '../services/apiClient';
 
@@ -11,6 +11,14 @@ const ProfileSettings = () => {
   const [profileMsg, setProfileMsg] = useState(null);
   const [profileErr, setProfileErr] = useState(null);
   const [profileSaving, setProfileSaving] = useState(false);
+
+  // Re-sync form when user data loads (e.g. after AuthContext finishes fetchMe)
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username || '');
+      setBio(user.bio || '');
+    }
+  }, [user]);
 
   // Password form
   const [currentPwd, setCurrentPwd] = useState('');

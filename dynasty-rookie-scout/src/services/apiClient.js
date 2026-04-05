@@ -72,6 +72,9 @@ export const fetchPlayerStats = (name) =>
 export const fetchDiscussions = (playerId, sort = 'new') =>
   apiFetch(`/api/discussions?player_id=${playerId}&sort=${sort}`);
 
+export const fetchAllDiscussions = (sort = 'hot', limit = 50, offset = 0) =>
+  apiFetch(`/api/discussions?sort=${sort}&limit=${limit}&offset=${offset}`);
+
 export const createDiscussion = (playerId, title, content, url) =>
   apiFetch('/api/discussions', {
     method: 'POST',

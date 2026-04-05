@@ -26,6 +26,8 @@ const ProspectHub = lazy(() => import('./components/ProspectHub'));
 const PlayerProfile = lazy(() => import('./components/PlayerProfile'));
 const PlayerDiscussionPage = lazy(() => import('./components/PlayerDiscussionPage'));
 const CompareView = lazy(() => import('./components/CompareView'));
+const CommunityPage = lazy(() => import('./components/CommunityPage'));
+const SharedBoardView = lazy(() => import('./components/SharedBoardView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
 const AuthPage = lazy(() => import('./components/AuthPage'));
 const AdminPage = lazy(() => import('./components/AdminPage'));
@@ -184,6 +186,9 @@ function AppInner() {
               <Route path="/player/:id/discuss" element={
                 <PlayerDiscussionPage players={players} />
               } />
+              <Route path="/community" element={
+                <CommunityPage players={players} />
+              } />
               <Route path="/compare" element={
                 <CompareView
                   players={players}
@@ -194,6 +199,9 @@ function AppInner() {
                 <MyBoard
                   onSelectPlayer={(pid) => navigate(`/player/${pid}`)}
                 />
+              } />
+              <Route path="/board/shared/:token" element={
+                <SharedBoardView players={players} />
               } />
               <Route path="/login" element={
                 <AuthPage onSuccess={() => navigate('/')} />

@@ -176,7 +176,6 @@ const MyBoard = () => {
   const [boardId1QB, setBoardId1QB] = useState(null);
   const [boardIdSF, setBoardIdSF] = useState(null);
   const [shareUrl, setShareUrl] = useState(null);
-  const [visibility, setVisibility] = useState('private');
   const [shareCopied, setShareCopied] = useState(false);
   const shareCopiedTimer = useRef(null);
 
@@ -335,18 +334,6 @@ const MyBoard = () => {
     shareCopiedTimer.current = setTimeout(() => setShareCopied(false), 2000);
   };
 
-  const handleVisibilityToggle = async () => {
-    const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
-    if (!user || !boardId) return;
-    const next = visibility === 'private' ? 'public' : visibility === 'public' ? 'shared' : 'private';
-    try {
-      await updateBoard(boardId, { visibility: next });
-      setVisibility(next);
-    } catch (err) {
-      console.error('[MyBoard] Visibility update failed:', err.message);
-    }
-  };
-
   const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
 
   const sensors = useSensors(
@@ -452,27 +439,6 @@ const MyBoard = () => {
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {user && (
-            <button
-              onClick={handleVisibilityToggle}
-              style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                padding: '8px 16px',
-                border: '1px solid var(--border-primary)',
-                borderRadius: 4,
-                cursor: 'pointer',
-                background: visibility === 'public' ? 'var(--success-light)' : 'var(--bg-tertiary)',
-                color: visibility === 'public' ? 'var(--success)' : 'var(--text-tertiary)',
-                transition: 'all 0.15s',
-              }}
-            >
-              {visibility === 'private' ? 'Private' : visibility === 'public' ? 'Public' : 'Shared'}
-            </button>
-          )}
           {user && (
             <button
               onClick={handleShareBoard}
