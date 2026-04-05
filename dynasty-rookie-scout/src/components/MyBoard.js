@@ -25,31 +25,16 @@ const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
 /**
- * Check if a board position falls within a round the user owns a pick in.
- * Returns a label like "RD 1 PICK" or "RD 2 PICK", or null.
- * Since exact draft slot isn't known pre-draft, we show the round range.
+ * Check if a board position (1-indexed) matches one of the user's draft picks.
+ * Each pick has { round, slot } — the overall pick number is (round-1)*totalTeams + slot.
+ * Returns a label like "YOUR PICK · 1.03" or null.
  */
 function getPickLabel(position, picks, totalTeams) {
   if (!picks || picks.length === 0 || !totalTeams) return null;
-  const round = Math.ceil(position / totalTeams);
-  const startOfRound = (round - 1) * totalTeams + 1;
-  const endOfRound = round * totalTeams;
-
-  // Count how many picks the user has in this round
-  const picksInRound = picks.filter(p => p.round === round);
-  if (picksInRound.length === 0) return null;
-
-  // Show markers at evenly-spaced positions within the round range
-  // E.g. 1 pick in 12-team round → mark the middle position
-  // E.g. 2 picks in 12-team round → mark positions at 1/3 and 2/3
-  const roundSize = endOfRound - startOfRound + 1;
-  const posInRound = position - startOfRound; // 0-indexed within round
-  const spacing = Math.floor(roundSize / (picksInRound.length + 1));
-
-  for (let i = 0; i < picksInRound.length; i++) {
-    const markerPos = spacing * (i + 1);
-    if (posInRound === markerPos) {
-      return `YOUR PICK · RD ${round}`;
+  for (const pick of picks) {
+    const overallPos = (pick.round - 1) * totalTeams + (pick.slot || 1);
+    if (overallPos === position) {
+      return `YOUR PICK · ${pick.round}.${String(pick.slot || 1).padStart(2, '0')}`;
     }
   }
   return null;

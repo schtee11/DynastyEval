@@ -127,14 +127,28 @@ router.post('/sync', requireAuth, async (req, res) => {
     if (userRoster) {
       try {
         const picks = await sleeperFetch(`/league/${league_id}/traded_picks`);
+
+        // Fetch draft order to determine pick slots
+        const drafts = await sleeperFetch(`/league/${league_id}/drafts`);
+        const currentDraft = (drafts || []).find(d => d.season === yr) || (drafts || [])[0];
+        const slotToRoster = currentDraft?.slot_to_roster_id || {};
+
+        // Build reverse map: roster_id → draft slot
+        const rosterToSlot = {};
+        for (const [slot, rosterId] of Object.entries(slotToRoster)) {
+          rosterToSlot[rosterId] = Number(slot);
+        }
+
         // Build the user's pick ownership
         // Start with original picks (all rounds for their roster)
         const totalRounds = league.settings?.draft_rounds || 4;
         const ownedPicks = [];
 
         for (let round = 1; round <= totalRounds; round++) {
+          const slot = rosterToSlot[userRoster.roster_id] || userRoster.roster_id;
           ownedPicks.push({
             round,
+            slot,
             roster_id: userRoster.roster_id,
             original_owner_id: userRoster.roster_id,
             season: yr,
@@ -155,8 +169,10 @@ router.post('/sync', requireAuth, async (req, res) => {
 
           // Traded to user
           if (trade.owner_id === userRoster.roster_id) {
+            const slot = rosterToSlot[trade.roster_id] || trade.roster_id;
             ownedPicks.push({
               round: trade.round,
+              slot,
               roster_id: trade.owner_id,
               original_owner_id: trade.roster_id,
               season: yr,
@@ -164,7 +180,7 @@ router.post('/sync', requireAuth, async (req, res) => {
           }
         }
 
-        draftPicks = ownedPicks.sort((a, b) => a.round - b.round);
+        draftPicks = ownedPicks.sort((a, b) => a.round - b.round || a.slot - b.slot);
       } catch (err) {
         console.error('[Sleeper] Draft picks error:', err.message);
         // Not fatal — continue without picks
