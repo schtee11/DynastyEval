@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import DiscussionFeed from './DiscussionFeed';
 import DiscussionThread from './DiscussionThread';
 
@@ -9,7 +9,6 @@ import DiscussionThread from './DiscussionThread';
  */
 const PlayerDiscussionPage = ({ players }) => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [activeThreadId, setActiveThreadId] = useState(null);
   const playerId = Number(id);
   const player = players.find(p => p.id === playerId);
@@ -28,53 +27,46 @@ const PlayerDiscussionPage = ({ players }) => {
       margin: '0 auto',
       padding: '20px 24px',
     }}>
-      {/* Breadcrumb navigation */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        marginBottom: 20,
-        fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
-      }}>
-        <button
-          onClick={() => navigate(`/player/${playerId}`)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit',
-            color: 'var(--accent-text)', display: 'flex', alignItems: 'center', gap: 4,
-            padding: 0,
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+      {/* Page title with player context */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+          color: 'var(--text-tertiary)',
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+          marginBottom: 4,
+        }}>
           {player.name}
-        </button>
+        </div>
 
-        {activeThreadId && (
-          <>
-            <span style={{ color: 'var(--text-tertiary)' }}>/</span>
-            <button
-              onClick={() => setActiveThreadId(null)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit',
-                color: 'var(--accent-text)', padding: 0,
-              }}
-            >
-              Discussions
-            </button>
-          </>
+        {activeThreadId ? (
+          <button
+            onClick={() => setActiveThreadId(null)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 24, fontWeight: 800,
+              color: 'var(--accent-text)',
+              padding: 0,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Discussions
+          </button>
+        ) : (
+          <h2 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 24, fontWeight: 800,
+            color: 'var(--text-primary)', margin: 0,
+          }}>
+            Discussions
+          </h2>
         )}
       </div>
-
-      {!activeThreadId && (
-        <h2 style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: 24, fontWeight: 800,
-          color: 'var(--text-primary)', margin: '0 0 20px',
-        }}>
-          Discussions
-        </h2>
-      )}
 
       {activeThreadId ? (
         <DiscussionThread
