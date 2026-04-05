@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
-import { generateScoutingSummary } from '../services/anthropicApi';
+import { generateScoutingSummary } from '../services/scoutingSummary';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
 import PlayerCompChip from './PlayerCompChip';
@@ -128,7 +128,6 @@ const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
 const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose, isDesktopPanel = false }) => {
   const { theme } = useTheme();
   const [summary, setSummary] = useState(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
   const [slideIn, setSlideIn] = useState(false);
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
@@ -144,17 +143,8 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
   const peers = allPlayers.filter(p => p.position === player.position);
   const peerVals = (accessor) => peers.map(accessor).filter(v => v != null);
 
-  const handleGenerateSummary = async () => {
-    setLoadingSummary(true);
-    try {
-      const result = await generateScoutingSummary(player);
-      setSummary(result);
-    } catch (err) {
-      console.error('[PlayerDetailModal] AI summary failed:', err);
-      setSummary('Failed to generate scouting summary.');
-    } finally {
-      setLoadingSummary(false);
-    }
+  const handleGenerateSummary = () => {
+    setSummary(generateScoutingSummary(player));
   };
 
   useEffect(() => {
@@ -686,7 +676,6 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               {!summary && (
                 <button
                   onClick={handleGenerateSummary}
-                  disabled={loadingSummary}
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 600,
@@ -694,13 +683,13 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                     padding: '7px 14px',
                     border: '1px solid var(--accent)',
                     borderRadius: 'var(--radius-sm)',
-                    cursor: loadingSummary ? 'wait' : 'pointer',
-                    background: loadingSummary ? 'var(--bg-tertiary)' : 'var(--accent-light)',
+                    cursor: 'pointer',
+                    background: 'var(--accent-light)',
                     color: 'var(--accent-text)',
                     transition: 'all 0.15s',
                   }}
                 >
-                  {loadingSummary ? 'Generating...' : 'Generate Report'}
+                  Generate Report
                 </button>
               )}
             </div>

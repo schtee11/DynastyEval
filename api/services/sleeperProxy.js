@@ -21,8 +21,11 @@ const fetchSleeperPlayers = async () => {
     }
   }
 
-  // Fetch from Sleeper
-  const res = await fetch(`${SLEEPER_BASE}/players/nfl`);
+  // Fetch from Sleeper (with 15s timeout)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const res = await fetch(`${SLEEPER_BASE}/players/nfl`, { signal: controller.signal });
+  clearTimeout(timeout);
   if (!res.ok) {
     throw new Error(`Sleeper /players/nfl → ${res.status}`);
   }

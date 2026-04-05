@@ -16,7 +16,7 @@
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-tertiary: #64748b;
   --text-inverse: #ffffff;
 
   --border-primary: #e2e8f0;
@@ -102,7 +102,7 @@
 
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-tertiary: #718096;
   --text-inverse: #0f172a;
 
   --border-primary: #1e293b;
@@ -305,9 +305,16 @@ button:active:not(:disabled) { transform: scale(0.97); }
 ::selection { background: var(--accent-light); color: var(--text-primary); }
 [data-theme="dark"] ::selection { background: rgba(59, 130, 246, 0.3); }
 
-button:focus-visible, select:focus-visible {
+button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Hover effects via CSS classes (works on touch + keyboard too) */
+.theme-toggle-btn:hover { color: var(--text-primary) !important; }
+.player-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ═══ Layout: Sticky list header ═══ */
@@ -419,21 +426,6 @@ button:focus-visible, select:focus-visible {
   .profile-grid { grid-template-columns: 1fr !important; }
   .stats-columns { grid-template-columns: 1fr !important; }
   .header-back-label { display: none !important; }
-
-  /* Full-width cards on mobile */
-  .prospect-card-grid {
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-  }
-
-  /* Hide view toggle on mobile — always cards */
-  .view-toggle-desktop { display: none !important; }
-
-  /* Compact search bar */
-  .hub-toolbar { gap: 8px !important; margin-bottom: 10px !important; }
-
-  /* Hub padding */
-  .hub-root { padding: 10px 12px !important; }
 
   /* Hide desktop header nav on mobile (bottom nav replaces it) */
   .app-mobile .header-root nav { display: none !important; }

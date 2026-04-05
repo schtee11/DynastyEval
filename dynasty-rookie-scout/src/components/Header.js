@@ -196,14 +196,13 @@ const Header = () => {
         <button
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          className="theme-toggle-btn"
           style={{
             background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)',
             borderRadius: 'var(--radius-sm)', padding: '5px 7px', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--text-secondary)', transition: 'all 0.15s', marginLeft: 2,
           }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>

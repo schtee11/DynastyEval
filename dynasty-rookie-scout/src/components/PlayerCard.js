@@ -30,14 +30,7 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
         display: 'flex',
         flexDirection: 'column',
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+      className="player-card-hover"
     >
       {/* Position color bar */}
       <div style={{ height: 3, background: posColor.border }} />

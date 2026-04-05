@@ -96,3 +96,8 @@ CREATE TABLE IF NOT EXISTS boards (
 
 CREATE INDEX idx_boards_owner ON boards(owner_id);
 CREATE INDEX idx_boards_share ON boards(share_token) WHERE share_token IS NOT NULL;
+
+-- General discussion listing by recency
+CREATE INDEX IF NOT EXISTS idx_discussions_created ON discussions(created_at DESC);
+-- Public board browsing
+CREATE INDEX IF NOT EXISTS idx_boards_public ON boards(visibility, created_at DESC) WHERE visibility = 'public';

@@ -48,7 +48,10 @@ export const fetchSleeperPlayers = async () => {
   const cached = getFromCache();
   if (cached) return cached;
 
-  const res = await fetch(`${SLEEPER_BASE}/players/nfl`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const res = await fetch(`${SLEEPER_BASE}/players/nfl`, { signal: controller.signal });
+  clearTimeout(timeout);
   if (!res.ok) {
     throw new Error(`Sleeper /players/nfl → ${res.status}`);
   }

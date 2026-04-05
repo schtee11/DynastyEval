@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
-import { generateScoutingSummary } from '../services/anthropicApi';
+import { generateScoutingSummary } from '../services/scoutingSummary';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
@@ -84,7 +84,6 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
   const { theme } = useTheme();
   const [summary, setSummary] = useState(null);
   const [videoInput, setVideoInput] = useState('');
-  const [loadingSummary, setLoadingSummary] = useState(false);
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const chartColor = positionChartColors[player.position] || positionChartColors.WR;
@@ -122,19 +121,10 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
   // Reset state on player change
   useEffect(() => {
     setSummary(null);
-    setLoadingSummary(false);
   }, [player.id]);
 
-  const handleGenerateSummary = async () => {
-    setLoadingSummary(true);
-    try {
-      const result = await generateScoutingSummary(player);
-      setSummary(result);
-    } catch (err) {
-      setSummary('Failed to generate scouting summary.');
-    } finally {
-      setLoadingSummary(false);
-    }
+  const handleGenerateSummary = () => {
+    setSummary(generateScoutingSummary(player));
   };
 
   const getRadarData = useCallback(() => {
@@ -675,14 +665,14 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
             {summary}
           </p>
         ) : (
-          <button onClick={handleGenerateSummary} disabled={loadingSummary} style={{
+          <button onClick={handleGenerateSummary} style={{
             fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
             padding: '10px 20px', borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--accent)', background: 'var(--accent-light)',
-            color: 'var(--accent-text)', cursor: loadingSummary ? 'wait' : 'pointer',
-            opacity: loadingSummary ? 0.6 : 1, transition: 'all 0.15s',
+            color: 'var(--accent-text)', cursor: 'pointer',
+            transition: 'all 0.15s',
           }}>
-            {loadingSummary ? 'Generating...' : 'Generate AI Summary'}
+            Generate Scouting Summary
           </button>
         )}
       </div>

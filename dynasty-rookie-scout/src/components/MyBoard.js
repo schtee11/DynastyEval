@@ -74,11 +74,17 @@ const SortableRow = ({ player, index, activeFormat }) => {
         {...listeners}
         style={{
           color: 'var(--text-tertiary)',
-          fontSize: 16,
+          fontSize: 18,
           cursor: 'grab',
           flexShrink: 0,
           lineHeight: 1,
           touchAction: 'none',
+          padding: '8px 4px',
+          minWidth: 28,
+          minHeight: 44,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         ⋮⋮
@@ -456,7 +462,7 @@ const MyBoard = () => {
                 letterSpacing: 1,
                 textTransform: 'uppercase',
                 padding: '8px 16px',
-                border: '1px solid #2a2d3e',
+                border: '1px solid var(--border-primary)',
                 borderRadius: 4,
                 cursor: 'pointer',
                 background: visibility === 'public' ? 'var(--success-light)' : 'var(--bg-tertiary)',
@@ -477,7 +483,7 @@ const MyBoard = () => {
                 letterSpacing: 1,
                 textTransform: 'uppercase',
                 padding: '8px 16px',
-                border: '1px solid #2a2d3e',
+                border: '1px solid var(--border-primary)',
                 borderRadius: 4,
                 cursor: 'pointer',
                 background: 'var(--bg-tertiary)',
@@ -497,7 +503,7 @@ const MyBoard = () => {
               letterSpacing: 1,
               textTransform: 'uppercase',
               padding: '8px 16px',
-              border: '1px solid #2a2d3e',
+              border: '1px solid var(--border-primary)',
               borderRadius: 4,
               cursor: 'pointer',
               background: 'var(--bg-tertiary)',
@@ -519,7 +525,7 @@ const MyBoard = () => {
           marginBottom: 12,
           padding: '8px 12px',
           background: 'var(--bg-tertiary)',
-          border: '1px solid #2a2d3e',
+          border: '1px solid var(--border-primary)',
           borderRadius: 6,
         }}>
           <input
@@ -604,7 +610,7 @@ const MyBoard = () => {
             style={{
               background: 'var(--bg-primary)',
               borderRadius: 12,
-              border: '1px solid #2a2d3e',
+              border: '1px solid var(--border-primary)',
               padding: 24,
               width: '100%',
               maxWidth: 600,
@@ -628,7 +634,7 @@ const MyBoard = () => {
                 height: 300,
                 background: 'var(--bg-tertiary)',
                 color: 'var(--text-secondary)',
-                border: '1px solid #2a2d3e',
+                border: '1px solid var(--border-primary)',
                 borderRadius: 6,
                 padding: 12,
                 fontFamily: "'JetBrains Mono', monospace",
@@ -644,7 +650,7 @@ const MyBoard = () => {
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 600,
                   padding: '8px 16px',
-                  border: '1px solid #2a2d3e',
+                  border: '1px solid var(--border-primary)',
                   borderRadius: 4,
                   background: 'transparent',
                   color: 'var(--text-tertiary)',

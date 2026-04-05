@@ -74,12 +74,16 @@ const cfbdFetch = async (endpoint, params = {}) => {
     if (v != null) url.searchParams.set(k, v);
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
   const res = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       Accept: 'application/json',
     },
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!res.ok) {
     console.warn(`[CFBD] ${endpoint} failed: ${res.status} ${res.statusText}`);

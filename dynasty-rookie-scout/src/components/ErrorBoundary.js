@@ -27,26 +27,26 @@ class ErrorBoundary extends React.Component {
             fontFamily: "'Barlow Condensed', sans-serif",
             fontWeight: 700,
             fontSize: 22,
-            color: '#ef4444',
+            color: 'var(--danger)',
             marginBottom: 8,
           }}>Something went wrong</h2>
-          <p style={{ color: '#9ca3af', fontSize: 13, marginBottom: 16 }}>
+          <p style={{ color: 'var(--text-tertiary)', fontSize: 13, marginBottom: 16 }}>
             The app hit an unexpected error. Check the browser console for details.
           </p>
           <details style={{
             textAlign: 'left',
             maxWidth: 600,
             margin: '0 auto 20px',
-            background: '#1a1d2e',
-            border: '1px solid #2a2d3e',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-primary)',
             borderRadius: 8,
             padding: 16,
           }}>
-            <summary style={{ color: '#f59e0b', cursor: 'pointer', fontSize: 12, marginBottom: 8 }}>
+            <summary style={{ color: 'var(--warning)', cursor: 'pointer', fontSize: 12, marginBottom: 8 }}>
               Error details
             </summary>
             <pre style={{
-              color: '#ef4444',
+              color: 'var(--danger)',
               fontSize: 11,
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -66,10 +66,10 @@ class ErrorBoundary extends React.Component {
               fontWeight: 700,
               fontSize: 14,
               padding: '10px 24px',
-              border: '1px solid #f59e0b',
+              border: '1px solid var(--warning)',
               borderRadius: 6,
-              background: 'rgba(245,158,11,0.15)',
-              color: '#f59e0b',
+              background: 'var(--warning-light)',
+              color: 'var(--warning)',
               cursor: 'pointer',
               letterSpacing: 1,
             }}

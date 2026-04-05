@@ -26,7 +26,6 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
     position: 'ALL',
     draftDay: '',
     hideInjured: false,
-    breakoutMax: null,
     nameSearch: '',
   });
   const [sortBy, setSortBy] = useState('adp');
@@ -37,7 +36,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
   const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
 
-  const hasActiveFilters = filters.position !== 'ALL' || filters.draftDay || filters.hideInjured || filters.breakoutMax || filters.nameSearch;
+  const hasActiveFilters = filters.position !== 'ALL' || filters.draftDay || filters.hideInjured || filters.nameSearch;
 
   // ── Mobile: TikTok-style vertical feed ──
   if (isMobile) {
@@ -79,7 +78,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
             position: 'fixed',
             top: 50,
             left: 12,
-            zIndex: 101,
+            zIndex: 'var(--z-overlay)',
             padding: '6px 12px',
             borderRadius: 20,
             border: '1px solid var(--border-primary)',
@@ -111,7 +110,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
               onKeyDown={(e) => { if (e.key === 'Escape') setShowFilters(false); }}
               style={{
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                zIndex: 70,
+                zIndex: 'var(--z-overlay)',
               }}
             />
             <div className="sheet-panel" style={{
@@ -119,7 +118,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
               bottom: 0,
               left: 0,
               right: 0,
-              zIndex: 80,
+              zIndex: 'var(--z-modal)',
               background: 'var(--bg-primary)',
               borderRadius: '16px 16px 0 0',
               padding: '16px 16px 32px',

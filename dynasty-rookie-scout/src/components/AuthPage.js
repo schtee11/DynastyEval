@@ -33,7 +33,7 @@ const AuthPage = ({ onSuccess }) => {
     <div style={{
       maxWidth: 400, margin: '60px auto', padding: '32px 24px',
       background: 'var(--bg-secondary)', borderRadius: 12,
-      border: '1px solid var(--border-color)',
+      border: '1px solid var(--border-primary)',
     }}>
       <h2 style={{
         fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28,
@@ -79,8 +79,8 @@ const AuthPage = ({ onSuccess }) => {
 
         {error && (
           <div style={{
-            color: '#ef4444', fontSize: 13, padding: '8px 12px',
-            background: 'rgba(239,68,68,0.1)', borderRadius: 6,
+            color: 'var(--danger)', fontSize: 13, padding: '8px 12px',
+            background: 'var(--danger-light)', borderRadius: 6,
           }}>
             {error}
           </div>
@@ -121,7 +121,7 @@ const AuthPage = ({ onSuccess }) => {
 
 const inputStyle = {
   padding: '12px 14px', borderRadius: 8, fontSize: 15,
-  border: '1px solid var(--border-color)',
+  border: '1px solid var(--border-primary)',
   background: 'var(--bg-primary)', color: 'var(--text-primary)',
   outline: 'none',
 };

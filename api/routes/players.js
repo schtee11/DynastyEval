@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
       players: rookies,
       careerStats: stats,
       manualStats,
-      source: 'sleeper+cfbd+espn',
+      source: 'sleeper+cfbd',
     });
   } catch (err) {
     console.error('[Players] Fetch error:', err.message);
