@@ -28,16 +28,19 @@ const PlayerDiscussionPage = ({ players }) => {
       margin: '0 auto',
       padding: '20px 24px',
     }}>
-      {/* Header */}
+      {/* Breadcrumb navigation */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,
+        display: 'flex', alignItems: 'center', gap: 6,
+        marginBottom: 20,
+        fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
       }}>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/player/${playerId}`)}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+            fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit',
             color: 'var(--accent-text)', display: 'flex', alignItems: 'center', gap: 4,
+            padding: 0,
           }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -45,15 +48,33 @@ const PlayerDiscussionPage = ({ players }) => {
           </svg>
           {player.name}
         </button>
+
+        {activeThreadId && (
+          <>
+            <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+            <button
+              onClick={() => setActiveThreadId(null)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit',
+                color: 'var(--accent-text)', padding: 0,
+              }}
+            >
+              Discussions
+            </button>
+          </>
+        )}
       </div>
 
-      <h2 style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontSize: 24, fontWeight: 800,
-        color: 'var(--text-primary)', margin: '0 0 20px',
-      }}>
-        Discussions
-      </h2>
+      {!activeThreadId && (
+        <h2 style={{
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontSize: 24, fontWeight: 800,
+          color: 'var(--text-primary)', margin: '0 0 20px',
+        }}>
+          Discussions
+        </h2>
+      )}
 
       {activeThreadId ? (
         <DiscussionThread

@@ -117,22 +117,6 @@ const DiscussionThread = ({ discussionId, onBack }) => {
 
   return (
     <div>
-      {/* Back button */}
-      <button
-        onClick={onBack}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
-          color: 'var(--accent-text)', padding: '0 0 12px',
-          display: 'flex', alignItems: 'center', gap: 4,
-        }}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        Back to threads
-      </button>
-
       {/* Thread header */}
       <div style={{
         padding: '16px 0',
