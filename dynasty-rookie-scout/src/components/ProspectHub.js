@@ -138,7 +138,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
                 Show {sorted.length} prospect{sorted.length !== 1 ? 's' : ''}
               </button>
             </div>
-          </BottomSheet>}
+          </BottomSheet>
 
         {/* Vertical swipe feed */}
         {sorted.length > 0 ? (
