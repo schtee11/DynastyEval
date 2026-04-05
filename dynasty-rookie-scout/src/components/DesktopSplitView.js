@@ -44,6 +44,9 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
   const [perspective, setPerspective] = useState('overall');
   const rightPanelRef = useRef(null);
   const listRef = useRef(null);
+  const isKeyNavRef = useRef(false);   // suppress observer during rapid keyboard nav
+  const keyNavTimerRef = useRef(null);
+  const lastKeyTimeRef = useRef(0);    // timestamp of last arrow key press
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
   const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueType, perspective), [filtered, sortBy, leagueType, perspective]);
@@ -59,36 +62,50 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
   const showGate = !user && selectedIndex >= FREE_PREVIEW_LIMIT;
 
   // Navigate to a player by index
-  const goToIndex = useCallback((index) => {
+  const goToIndex = useCallback((index, { instant = false } = {}) => {
     if (index < 0 || index >= sorted.length) return;
     const player = sorted[index];
     setSelectedPlayerId(player.id);
 
-    // Scroll right panel to exact card position (avoids scrollIntoView fighting scroll-snap)
+    const behavior = instant ? 'instant' : 'smooth';
+
+    // Scroll right panel to exact card position
     const rightPanel = rightPanelRef.current;
     if (rightPanel) {
       const cardHeight = rightPanel.clientHeight;
-      rightPanel.scrollTo({ top: index * cardHeight, behavior: 'smooth' });
+      rightPanel.scrollTo({ top: index * cardHeight, behavior });
     }
 
     // Scroll left list to keep selected visible
     const listEl = listRef.current;
     if (listEl) {
       const row = listEl.querySelector(`[data-list-id="${player.id}"]`);
-      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (row) row.scrollIntoView({ behavior, block: 'nearest' });
     }
   }, [sorted]);
 
-  // Arrow key navigation
+  // Arrow key navigation — smooth for single presses, instant for rapid succession
   useEffect(() => {
+    const RAPID_THRESHOLD_MS = 400; // keys pressed faster than this = rapid nav
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      if (e.key === 'ArrowDown' || e.key === 'j') {
+      if (e.key === 'ArrowDown' || e.key === 'j' || e.key === 'ArrowUp' || e.key === 'k') {
         e.preventDefault();
-        goToIndex(selectedIndex + 1);
-      } else if (e.key === 'ArrowUp' || e.key === 'k') {
-        e.preventDefault();
-        goToIndex(selectedIndex - 1);
+        const now = Date.now();
+        const rapid = (now - lastKeyTimeRef.current) < RAPID_THRESHOLD_MS;
+        lastKeyTimeRef.current = now;
+
+        // During rapid nav, suppress observer so it doesn't fight the scroll
+        if (rapid) {
+          isKeyNavRef.current = true;
+          clearTimeout(keyNavTimerRef.current);
+        }
+        keyNavTimerRef.current = setTimeout(() => { isKeyNavRef.current = false; }, 350);
+
+        const nextIndex = (e.key === 'ArrowDown' || e.key === 'j')
+          ? selectedIndex + 1
+          : selectedIndex - 1;
+        goToIndex(nextIndex, { instant: rapid });
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -120,6 +137,8 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // Skip observer updates during keyboard navigation to prevent snap-back
+        if (isKeyNavRef.current) return;
         for (const entry of entries) {
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
             const idx = Number(entry.target.dataset.playerIndex);
