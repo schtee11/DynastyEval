@@ -166,7 +166,8 @@ router.post('/:id/vote', requireAuth, async (req, res) => {
           'UPDATE discussions SET upvote_count = upvote_count - $1 WHERE id = $2',
           [direction, id]
         );
-        return res.json({ vote: 0 });
+        const updated = await pool.query('SELECT upvote_count FROM discussions WHERE id = $1', [id]);
+        return res.json({ vote: 0, upvote_count: updated.rows[0].upvote_count });
       } else {
         // Change direction
         await pool.query('UPDATE votes SET direction = $1 WHERE id = $2', [direction, old.id]);
@@ -174,7 +175,8 @@ router.post('/:id/vote', requireAuth, async (req, res) => {
           'UPDATE discussions SET upvote_count = upvote_count + $1 WHERE id = $2',
           [direction * 2, id] // swing from -1 to +1 = net +2
         );
-        return res.json({ vote: direction });
+        const updated = await pool.query('SELECT upvote_count FROM discussions WHERE id = $1', [id]);
+        return res.json({ vote: direction, upvote_count: updated.rows[0].upvote_count });
       }
     }
 
@@ -187,8 +189,9 @@ router.post('/:id/vote', requireAuth, async (req, res) => {
       'UPDATE discussions SET upvote_count = upvote_count + $1 WHERE id = $2',
       [direction, id]
     );
+    const updated = await pool.query('SELECT upvote_count FROM discussions WHERE id = $1', [id]);
 
-    res.json({ vote: direction });
+    res.json({ vote: direction, upvote_count: updated.rows[0].upvote_count });
   } catch (err) {
     console.error('[Discussions] Vote error:', err.message);
     res.status(500).json({ error: 'Failed to vote' });

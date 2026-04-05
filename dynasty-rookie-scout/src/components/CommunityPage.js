@@ -60,9 +60,9 @@ const CommunityPage = ({ players = [] }) => {
   const handleVote = async (id, direction) => {
     if (!user) return;
     try {
-      const { upvote_count, userVote } = await voteDiscussion(id, direction);
+      const { upvote_count, vote } = await voteDiscussion(id, direction);
       setDiscussions(prev => prev.map(d =>
-        d.id === id ? { ...d, upvote_count, userVote } : d
+        d.id === id ? { ...d, upvote_count, userVote: vote } : d
       ));
     } catch { /* ignore */ }
   };
@@ -178,7 +178,7 @@ const CommunityPage = ({ players = [] }) => {
             {/* Vote */}
             <div style={{ flexShrink: 0 }} onClick={e => e.stopPropagation()}>
               <VoteButton
-                count={d.upvote_count}
+                upvoteCount={d.upvote_count}
                 userVote={d.userVote}
                 onVote={(dir) => handleVote(d.id, dir)}
               />

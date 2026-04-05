@@ -81,11 +81,10 @@ const DiscussionFeed = ({ playerId, onOpenThread }) => {
       const result = await voteDiscussion(discussionId, direction);
       setDiscussions(prev => prev.map(d => {
         if (d.id !== discussionId) return d;
-        const oldVote = d.userVote || 0;
-        const newVote = result.vote;
-        const delta = newVote - oldVote;
-        return { ...d, upvote_count: (d.upvote_count || 0) + delta, userVote: newVote };
+        return { ...d, upvote_count: result.upvote_count, userVote: result.vote };
       }));
+      // Clear stale cache so other pages see the updated count
+      try { sessionStorage.removeItem(`drs_disc_${playerId}_${sort}`); } catch {}
     } catch (err) {
       console.error('[DiscussionFeed] Vote error:', err);
     }
