@@ -135,8 +135,19 @@ router.post('/sync', requireAuth, async (req, res) => {
 
         // Build reverse map: roster_id → draft slot
         const rosterToSlot = {};
-        for (const [slot, rosterId] of Object.entries(slotToRoster)) {
-          rosterToSlot[rosterId] = Number(slot);
+        if (Object.keys(slotToRoster).length > 0) {
+          // Use slot_to_roster_id if available
+          for (const [slot, rosterId] of Object.entries(slotToRoster)) {
+            rosterToSlot[rosterId] = Number(slot);
+          }
+        } else if (currentDraft?.draft_order) {
+          // Fallback: build from draft_order (user_id → slot) + rosters (roster_id → owner_id)
+          const draftOrder = currentDraft.draft_order;
+          for (const roster of rosters) {
+            if (roster.owner_id && draftOrder[roster.owner_id] !== undefined) {
+              rosterToSlot[roster.roster_id] = draftOrder[roster.owner_id];
+            }
+          }
         }
 
         const totalRounds = league.settings?.draft_rounds || 4;
@@ -174,6 +185,7 @@ router.post('/sync', requireAuth, async (req, res) => {
         }
 
         draftPicks = ownedPicks.sort((a, b) => a.round - b.round || a.slot - b.slot);
+        console.log('[Sleeper] User roster_id:', userRoster.roster_id, 'rosterToSlot:', JSON.stringify(rosterToSlot), 'picks:', draftPicks.map(p => `${p.round}.${String(p.slot).padStart(2, '0')}`));
       } catch (err) {
         console.error('[Sleeper] Draft picks error:', err.message);
       }
