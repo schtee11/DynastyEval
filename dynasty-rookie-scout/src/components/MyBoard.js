@@ -1,5 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { getPlayers } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchMyBoards, createBoard, updateBoard, shareBoard } from '../services/apiClient';
@@ -7,6 +22,142 @@ import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk 
 
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
+
+/* ── Sortable row extracted so useSortable hook works per-item ── */
+const SortableRow = ({ player, index, activeFormat }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: String(player.id) });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    background: isDragging ? 'var(--bg-hover)' : 'var(--bg-card)',
+    borderRadius: 6,
+    borderLeft: `3px solid ${(positionColors[player.position] || positionColors.WR).border}`,
+    padding: '10px 16px',
+    marginBottom: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    opacity: isDragging ? 0.85 : 1,
+    zIndex: isDragging ? 50 : 'auto',
+    position: 'relative',
+  };
+
+  const posColor = positionColors[player.position] || positionColors.WR;
+  const capital = getDraftCapitalInfo(player.draftPick);
+  const injured = hasInjuryRisk(player);
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      {/* Rank number */}
+      <div style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 18,
+        fontWeight: 700,
+        color: 'var(--text-tertiary)',
+        width: 32,
+        textAlign: 'center',
+        flexShrink: 0,
+      }}>
+        {index + 1}
+      </div>
+
+      {/* Drag handle */}
+      <div
+        {...listeners}
+        style={{
+          color: 'var(--text-tertiary)',
+          fontSize: 16,
+          cursor: 'grab',
+          flexShrink: 0,
+          lineHeight: 1,
+          touchAction: 'none',
+        }}
+      >
+        ⋮⋮
+      </div>
+
+      {/* Player info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 700,
+            fontSize: 16,
+            color: 'var(--text-primary)',
+          }}>
+            {player.name}
+          </span>
+          <span style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 600,
+            fontSize: 12,
+            color: posColor.text,
+            background: posColor.bg,
+            padding: '1px 6px',
+            borderRadius: 3,
+          }}>
+            {player.position}
+          </span>
+          {injured && (
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 10,
+              fontWeight: 700,
+              color: 'var(--danger)',
+              background: 'var(--danger-light)',
+              padding: '1px 6px',
+              borderRadius: 3,
+            }}>
+              🚨 INJURY
+            </span>
+          )}
+        </div>
+        <div style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+          color: 'var(--text-tertiary)',
+        }}>
+          {[player.college, player.draftRound ? `${capital.emoji} ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}` : null].filter(Boolean).join(' · ') || 'TBD'}
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="myboard-row-stats" style={{
+        display: 'flex',
+        gap: 16,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        flexShrink: 0,
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>
+            {activeFormat === 'oneQB' ? '1QB' : 'SF'} ADP
+          </div>
+          <div style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+            {player.dynastyADP?.[activeFormat] != null ? `#${player.dynastyADP[activeFormat]}` : '—'}
+          </div>
+        </div>
+        {player.breakoutAge && (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>
+            <div style={{
+              color: player.breakoutAge <= 20 ? 'var(--warning)' : player.breakoutAge <= 21 ? 'var(--success)' : 'var(--text-tertiary)',
+              fontWeight: 700,
+            }}>{player.breakoutAge}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const MyBoard = () => {
   const { user } = useAuth();
@@ -192,18 +343,27 @@ const MyBoard = () => {
 
   const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
 
-  const handleDragEnd = (result) => {
-    if (!result.destination || result.source.index === result.destination.index) return;
-    const items = Array.from(currentBoard);
-    const [reordered] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reordered);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = currentBoard.findIndex(p => String(p.id) === active.id);
+    const newIndex = currentBoard.findIndex(p => String(p.id) === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(currentBoard, oldIndex, newIndex);
 
     if (activeFormat === 'oneQB') {
-      setBoard1QB([...items]);
+      setBoard1QB(reordered);
     } else {
-      setBoardSF([...items]);
+      setBoardSF(reordered);
     }
-    persist(activeFormat, items);
+    persist(activeFormat, reordered);
   };
 
   const exportBoard = () => {
@@ -396,141 +556,34 @@ const MyBoard = () => {
       )}
 
       {/* Drag-and-drop list */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId={`board-${activeFormat}`}>
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="board-list"
-              style={{
-                background: 'var(--bg-secondary)',
-                borderRadius: 8,
-                padding: 8,
-                minHeight: 200,
-                counterReset: 'board-rank',
-              }}
-            >
-              {currentBoard.map((player, index) => {
-                const posColor = positionColors[player.position] || positionColors.WR;
-                const capital = getDraftCapitalInfo(player.draftPick);
-                const injured = hasInjuryRisk(player);
-
-                return (
-                  <Draggable key={String(player.id)} draggableId={String(player.id)} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          background: snapshot.isDragging ? 'var(--bg-hover)' : 'var(--bg-card)',
-                          borderRadius: 6,
-                          borderLeft: `3px solid ${posColor.border}`,
-                          padding: '10px 16px',
-                          marginBottom: 4,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 16,
-                          transition: snapshot.isDragging ? 'none' : 'background 0.15s',
-                        }}
-                      >
-                        {/* Rank number — uses CSS counter so it always reflects DOM order */}
-                        <div className="board-rank-num" />
-
-                        {/* Drag handle dots */}
-                        <div style={{
-                          color: 'var(--text-tertiary)',
-                          fontSize: 16,
-                          cursor: 'grab',
-                          flexShrink: 0,
-                          lineHeight: 1,
-                        }}>
-                          ⋮⋮
-                        </div>
-
-                        {/* Player info */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{
-                              fontFamily: "'Barlow Condensed', sans-serif",
-                              fontWeight: 700,
-                              fontSize: 16,
-                              color: 'var(--text-primary)',
-                            }}>
-                              {player.name}
-                            </span>
-                            <span style={{
-                              fontFamily: "'Barlow Condensed', sans-serif",
-                              fontWeight: 600,
-                              fontSize: 12,
-                              color: posColor.text,
-                              background: posColor.bg,
-                              padding: '1px 6px',
-                              borderRadius: 3,
-                            }}>
-                              {player.position}
-                            </span>
-                            {injured && (
-                              <span style={{
-                                fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 10,
-                                fontWeight: 700,
-                                color: 'var(--danger)',
-                                background: 'var(--danger-light)',
-                                padding: '1px 6px',
-                                borderRadius: 3,
-                              }}>
-                                🚨 INJURY
-                              </span>
-                            )}
-                          </div>
-                          <div style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 11,
-                            color: 'var(--text-tertiary)',
-                          }}>
-                            {[player.college, player.draftRound ? `${capital.emoji} ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}` : null].filter(Boolean).join(' · ') || 'TBD'}
-                          </div>
-                        </div>
-
-                        {/* Quick stats */}
-                        <div className="myboard-row-stats" style={{
-                          display: 'flex',
-                          gap: 16,
-                          fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: 11,
-                          flexShrink: 0,
-                        }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>
-                              {activeFormat === 'oneQB' ? '1QB' : 'SF'} ADP
-                            </div>
-                            <div style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-                              {player.dynastyADP?.[activeFormat] != null ? `#${player.dynastyADP[activeFormat]}` : '—'}
-                            </div>
-                          </div>
-                          {player.breakoutAge && (
-                            <div style={{ textAlign: 'center' }}>
-                              <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>
-                              <div style={{
-                                color: player.breakoutAge <= 20 ? 'var(--warning)' : player.breakoutAge <= 21 ? 'var(--success)' : 'var(--text-tertiary)',
-                                fontWeight: 700,
-                              }}>{player.breakoutAge}</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                );
-              })}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={currentBoard.map(p => String(p.id))}
+          strategy={verticalListSortingStrategy}
+        >
+          <div
+            style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: 8,
+              padding: 8,
+              minHeight: 200,
+            }}
+          >
+            {currentBoard.map((player, index) => (
+              <SortableRow
+                key={String(player.id)}
+                player={player}
+                index={index}
+                activeFormat={activeFormat}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Export modal */}
       {showExport && (
