@@ -57,7 +57,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Debug & image proxy endpoints (dev only)
+// Debug endpoints (dev only)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/debug/espn-search/:name', async (req, res) => {
     try {
@@ -70,49 +70,49 @@ if (process.env.NODE_ENV !== 'production') {
       res.json({ error: err.message });
     }
   });
+}
 
-  // Player image proxy — searches ESPN for player, caches ESPN athlete ID, serves headshot
-  const imgCache = {}; // in-memory: playerName -> espnAthleteId
-  app.get('/api/img/player/:name.png', async (req, res) => {
-    try {
-      const name = decodeURIComponent(req.params.name);
-      let athleteId = imgCache[name]?.id || null;
+// Player image proxy — searches ESPN for player, caches ESPN athlete ID, serves headshot
+const imgCache = {};
+app.get('/api/img/player/:name.png', async (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    let athleteId = imgCache[name]?.id || null;
 
-      if (!athleteId) {
-        const searchUrl = `https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(name)}&limit=1&type=player&sport=football&league=college-football`;
-        const searchRes = await fetch(searchUrl);
-        if (searchRes.ok) {
-          const data = await searchRes.json();
-          const contents = data?.results?.[0]?.contents || [];
-          if (contents.length > 0) {
-            const webLink = contents[0].link?.web || '';
-            const match = webLink.match(/id\/(\d+)/);
-            athleteId = match ? match[1] : null;
-            if (contents[0].image?.default) {
-              imgCache[name] = { id: athleteId, imgUrl: contents[0].image.default };
-            }
+    if (!athleteId) {
+      const searchUrl = `https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(name)}&limit=1&type=player&sport=football&league=college-football`;
+      const searchRes = await fetch(searchUrl);
+      if (searchRes.ok) {
+        const data = await searchRes.json();
+        const contents = data?.results?.[0]?.contents || [];
+        if (contents.length > 0) {
+          const webLink = contents[0].link?.web || '';
+          const match = webLink.match(/id\/(\d+)/);
+          athleteId = match ? match[1] : null;
+          if (contents[0].image?.default) {
+            imgCache[name] = { id: athleteId, imgUrl: contents[0].image.default };
           }
         }
-        if (athleteId && !imgCache[name]?.imgUrl) {
-          imgCache[name] = { id: athleteId, imgUrl: `https://a.espncdn.com/i/headshots/college-football/players/full/${athleteId}.png` };
-        }
       }
-
-      const cached = imgCache[name];
-      if (!cached?.imgUrl) return res.status(404).end();
-
-      const imgRes = await fetch(cached.imgUrl);
-      if (!imgRes.ok) return res.status(404).end();
-
-      res.set('Content-Type', 'image/png');
-      res.set('Cache-Control', 'public, max-age=2592000'); // 30 days
-      const buffer = await imgRes.arrayBuffer();
-      res.send(Buffer.from(buffer));
-    } catch {
-      res.status(404).end();
+      if (athleteId && !imgCache[name]?.imgUrl) {
+        imgCache[name] = { id: athleteId, imgUrl: `https://a.espncdn.com/i/headshots/college-football/players/full/${athleteId}.png` };
+      }
     }
-  });
-} // end dev-only block
+
+    const cached = imgCache[name];
+    if (!cached?.imgUrl) return res.status(404).end();
+
+    const imgRes = await fetch(cached.imgUrl);
+    if (!imgRes.ok) return res.status(404).end();
+
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=2592000'); // 30 days
+    const buffer = await imgRes.arrayBuffer();
+    res.send(Buffer.from(buffer));
+  } catch {
+    res.status(404).end();
+  }
+});
 
 // Error handler
 app.use((err, req, res, _next) => {
