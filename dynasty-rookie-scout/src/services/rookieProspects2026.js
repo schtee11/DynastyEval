@@ -22,6 +22,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Notre Dame", year: 2025 },
+    stats: { rushingYards: 1462, rushingTDs: 18, yardsPerCarry: 6.8, receptions: 28, receivingYards: 312, receivingTDs: 2, epa: 0.31 },
   },
   {
     id: 2,
@@ -42,6 +43,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
+    stats: { passingYards: 4088, passingTDs: 31, interceptions: 9, completionPct: 68.2, rushingYards: 142, rushingTDs: 3, epa: 0.18 },
   },
   {
     id: 3,
@@ -62,6 +64,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 2.48 },
     cfbdLookup: { team: "Ohio State", year: 2025 },
+    stats: { receptions: 78, receivingYards: 1152, receivingTDs: 10, targets: 112, epa: 0.25 },
   },
   {
     id: 4,
@@ -82,6 +85,7 @@ const prospects2026Raw = [
     injuries: [{ type: "Knee", date: "2025-10", severity: "Moderate", gamesOut: 3 }],
     advancedStats: { yprr: 2.71 },
     cfbdLookup: { team: "Arizona State", year: 2025 },
+    stats: { receptions: 84, receivingYards: 1218, receivingTDs: 12, targets: 118, epa: 0.29 },
   },
   {
     id: 5,
@@ -102,6 +106,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 3.22 },
     cfbdLookup: { team: "USC", year: 2025 },
+    stats: { receptions: 68, receivingYards: 1040, receivingTDs: 9, targets: 95, epa: 0.27 },
   },
   {
     id: 6,
@@ -143,6 +148,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
+    stats: { rushingYards: 1205, rushingTDs: 14, yardsPerCarry: 5.9, receptions: 18, receivingYards: 195, receivingTDs: 1, epa: 0.19 },
   },
   {
     id: 8,
@@ -163,6 +169,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 2.64 },
     cfbdLookup: { team: "Texas A&M", year: 2025 },
+    stats: { receptions: 72, receivingYards: 1085, receivingTDs: 11, targets: 105, epa: 0.24 },
   },
   {
     id: 9,
@@ -183,6 +190,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Arkansas", year: 2025 },
+    stats: { rushingYards: 1340, rushingTDs: 15, yardsPerCarry: 5.6, receptions: 22, receivingYards: 240, receivingTDs: 2, epa: 0.21 },
   },
   {
     id: 10,
@@ -203,6 +211,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Alabama", year: 2025 },
+    stats: { passingYards: 3250, passingTDs: 24, interceptions: 7, completionPct: 64.8, rushingYards: 485, rushingTDs: 8, epa: 0.14 },
   },
   {
     id: 11,
@@ -223,6 +232,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 2.37 },
     cfbdLookup: { team: "Washington", year: 2025 },
+    stats: { receptions: 65, receivingYards: 980, receivingTDs: 8, targets: 98, epa: 0.20 },
   },
   {
     id: 12,
@@ -243,6 +253,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Washington", year: 2025 },
+    stats: { rushingYards: 1180, rushingTDs: 12, yardsPerCarry: 5.3, receptions: 16, receivingYards: 165, receivingTDs: 1, epa: 0.15 },
   },
   {
     id: 13,
@@ -263,6 +274,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 2.57 },
     cfbdLookup: { team: "Indiana", year: 2025 },
+    stats: { receptions: 70, receivingYards: 1020, receivingTDs: 9, targets: 100, epa: 0.22 },
   },
   {
     id: 14,
@@ -283,6 +295,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Notre Dame", year: 2025 },
+    stats: { rushingYards: 890, rushingTDs: 9, yardsPerCarry: 5.1, receptions: 30, receivingYards: 310, receivingTDs: 3, epa: 0.16 },
   },
   {
     id: 15,
@@ -303,6 +316,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Nebraska", year: 2025 },
+    stats: { rushingYards: 1150, rushingTDs: 13, yardsPerCarry: 5.7, receptions: 24, receivingYards: 260, receivingTDs: 2, epa: 0.18 },
   },
   {
     id: 16,
@@ -322,6 +336,7 @@ const prospects2026Raw = [
     injuries: [{ type: "Shoulder", date: "2025-11", severity: "Minor", gamesOut: 1 }],
     advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
+    stats: { passingYards: 3810, passingTDs: 30, interceptions: 10, completionPct: 66.5, rushingYards: 180, rushingTDs: 4, epa: 0.16 },
   },
   {
     id: 17,
@@ -341,6 +356,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 1.42 },
     cfbdLookup: { team: "Florida", year: 2025 },
+    stats: { receptions: 58, receivingYards: 840, receivingTDs: 7, targets: 88, epa: 0.15 },
   },
   {
     id: 18,
@@ -382,6 +398,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: { yprr: 1.80 },
     cfbdLookup: { team: "Missouri", year: 2025 },
+    stats: { receptions: 52, receivingYards: 760, receivingTDs: 6, targets: 80, epa: 0.14 },
   },
   {
     id: 20,
@@ -402,6 +419,7 @@ const prospects2026Raw = [
     injuries: [{ type: "Elbow (UCL)", date: "2025-01", severity: "Severe", gamesOut: 8 }],
     advancedStats: null,
     cfbdLookup: { team: "Miami", year: 2025 },
+    stats: { passingYards: 3942, passingTDs: 28, interceptions: 12, completionPct: 67.1, rushingYards: 95, rushingTDs: 2, epa: 0.12 },
   },
   {
     id: 21,
@@ -422,6 +440,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
+    stats: { passingYards: 3100, passingTDs: 22, interceptions: 8, completionPct: 63.4, rushingYards: 210, rushingTDs: 5, epa: 0.10 },
   },
   {
     id: 22,
@@ -441,6 +460,7 @@ const prospects2026Raw = [
     injuries: [],
     advancedStats: null,
     cfbdLookup: { team: "Clemson", year: 2025 },
+    stats: { passingYards: 3580, passingTDs: 26, interceptions: 9, completionPct: 65.8, rushingYards: 320, rushingTDs: 6, epa: 0.13 },
   },
   {
     id: 23,

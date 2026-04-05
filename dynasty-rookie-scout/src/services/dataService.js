@@ -40,6 +40,7 @@ const mapProspectToPlayer = (p) => ({
   rank: p.rank,
   playerComps: p.playerComps,
   advancedStats: p.advancedStats,
+  stats: p.stats || null,
   _prospect: p,
 });
 

@@ -193,7 +193,18 @@ export const attachCollegeStats = (playerName, position, prospect) => {
   const live = getCFBDStats(playerName)
     || (prospect?.name && prospect.name !== playerName ? getCFBDStats(prospect.name) : null);
 
-  if (!live) return {};
+  if (!live) {
+    // Fall back to static stats from prospect data if available
+    if (prospect?.stats) {
+      return {
+        stats: prospect.stats,
+        ppa: prospect.ppa ?? null,
+        gamesPlayed: null,
+        _dataSource: 'static',
+      };
+    }
+    return {};
+  }
 
   let stats;
   switch (position) {
