@@ -171,7 +171,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
 
         {/* Vertical swipe feed */}
         {sorted.length > 0 ? (
-          <VerticalFeed>
+          <VerticalFeed players={sorted}>
             {sorted.map((player, i) => (
               <PlayerHeroCard
                 key={player.id}
