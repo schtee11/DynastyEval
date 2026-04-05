@@ -117,4 +117,22 @@ export const forkBoard = (id) =>
 export const deleteBoard = (id) =>
   apiFetch(`/api/boards/${id}`, { method: 'DELETE' });
 
+// Sleeper integration
+export const lookupSleeperUser = (username) =>
+  apiFetch(`/api/sleeper/user/${encodeURIComponent(username)}`);
+
+export const fetchSleeperLeagues = (sleeperUserId, season = '2025') =>
+  apiFetch(`/api/sleeper/leagues/${sleeperUserId}/${season}`);
+
+export const syncSleeperLeague = (data) =>
+  apiFetch('/api/sleeper/sync', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const fetchMySleeperLeagues = () => apiFetch('/api/sleeper/my-leagues');
+
+export const unlinkSleeperLeague = (leagueId) =>
+  apiFetch(`/api/sleeper/league/${leagueId}`, { method: 'DELETE' });
+
 export default apiFetch;

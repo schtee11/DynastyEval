@@ -19,6 +19,7 @@ import { getPlayers } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchMyBoards, createBoard, updateBoard, shareBoard } from '../services/apiClient';
 import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk } from '../utils/helpers';
+import SleeperSync from './SleeperSync';
 
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
@@ -526,6 +527,9 @@ const MyBoard = () => {
           </button>
         </div>
       )}
+
+      {/* Sleeper sync */}
+      {user && <SleeperSync />}
 
       {/* Drag-and-drop list */}
       <DndContext
