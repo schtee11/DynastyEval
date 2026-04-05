@@ -51,6 +51,18 @@ export const login = (email, password) =>
 
 export const fetchMe = () => apiFetch('/api/auth/me');
 
+export const updateProfile = (data) =>
+  apiFetch('/api/auth/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+export const changePassword = (currentPassword, newPassword) =>
+  apiFetch('/api/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+
 // Players
 export const fetchPlayers = () => apiFetch('/api/players');
 export const fetchPlayerStats = (name) =>

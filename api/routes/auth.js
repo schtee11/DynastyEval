@@ -99,4 +99,94 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+// PATCH /api/auth/profile — update profile fields
+router.patch('/profile', requireAuth, async (req, res) => {
+  try {
+    const { username, bio, avatar_url } = req.body;
+    const updates = [];
+    const values = [];
+    let idx = 1;
+
+    if (username !== undefined) {
+      if (!USERNAME_RE.test(username)) {
+        return res.status(400).json({ error: 'Username must be 3-30 characters (letters, numbers, underscores)' });
+      }
+      updates.push(`username = $${idx++}`);
+      values.push(username.trim());
+    }
+    if (bio !== undefined) {
+      if (bio && bio.length > 500) {
+        return res.status(400).json({ error: 'Bio must be 500 characters or less' });
+      }
+      updates.push(`bio = $${idx++}`);
+      values.push(bio || null);
+    }
+    if (avatar_url !== undefined) {
+      updates.push(`avatar_url = $${idx++}`);
+      values.push(avatar_url || null);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    updates.push(`updated_at = NOW()`);
+    values.push(req.user.id);
+
+    const result = await pool.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}
+       RETURNING id, email, username, avatar_url, bio, created_at`,
+      values
+    );
+
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'That username is already taken' });
+    }
+    console.error('[Auth] Profile update error:', err.message);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// POST /api/auth/change-password
+router.post('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new password are required' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    }
+
+    const result = await pool.query(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await pool.query(
+      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+      [newHash, req.user.id]
+    );
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('[Auth] Change password error:', err.message);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 module.exports = router;

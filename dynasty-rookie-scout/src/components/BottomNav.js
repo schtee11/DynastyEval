@@ -45,7 +45,7 @@ const BottomNav = () => {
     { path: '/', label: 'Feed', Icon: FeedIcon },
     { path: '/compare', label: 'Compare', Icon: CompareIcon },
     { path: '/board', label: 'Board', Icon: BoardIcon },
-    { path: user ? '/admin' : '/login', label: 'Profile', Icon: ProfileIcon },
+    { path: user ? '/profile' : '/login', label: 'Profile', Icon: ProfileIcon },
   ];
 
   return (
@@ -67,7 +67,9 @@ const BottomNav = () => {
       {tabs.map(({ path, label, Icon }) => {
         const active = path === '/'
           ? location.pathname === '/' || location.pathname.startsWith('/player/')
-          : location.pathname === path;
+          : path === '/profile'
+            ? location.pathname === '/profile' || location.pathname === '/admin'
+            : location.pathname === path;
 
         return (
           <button

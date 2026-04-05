@@ -66,11 +66,11 @@ const UserMenu = ({ user, logout, navigate }) => {
           animation: 'scaleIn 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
           transformOrigin: 'top right',
         }}>
+          <button className="dropdown-item" onClick={() => { navigate('/profile'); setOpen(false); }} style={menuItemStyle}>
+            Settings
+          </button>
           <button className="dropdown-item" onClick={() => { navigate('/admin'); setOpen(false); }} style={menuItemStyle}>
             Admin
-          </button>
-          <button className="dropdown-item" onClick={() => { navigate('/pricing'); setOpen(false); }} style={menuItemStyle}>
-            Pricing
           </button>
           <div style={{ height: 1, background: 'var(--border-primary)' }} />
           <button className="dropdown-item" onClick={() => { logout(); setOpen(false); }} style={{ ...menuItemStyle, color: 'var(--danger)' }}>

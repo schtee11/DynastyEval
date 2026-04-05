@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { fetchMe, login as apiLogin, register as apiRegister } from '../services/apiClient';
+import { fetchMe, login as apiLogin, register as apiRegister, updateProfile as apiUpdateProfile } from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -43,13 +43,19 @@ export const AuthProvider = ({ children }) => {
     return userData;
   }, []);
 
+  const updateProfile = useCallback(async (data) => {
+    const { user: updatedUser } = await apiUpdateProfile(data);
+    setUser(updatedUser);
+    return updatedUser;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
