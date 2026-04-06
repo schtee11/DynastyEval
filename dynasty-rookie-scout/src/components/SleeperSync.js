@@ -116,7 +116,7 @@ const SleeperSync = ({ onSynced }) => {
       });
       setActiveLeagueId(league.league_id);
       try { localStorage.setItem('drs_active_league', league.league_id); } catch {}
-      setStep('idle');
+      setStep('leagues'); // Stay on league list so user can sync more
       notifyParent(newLeague);
     } catch (err) {
       setError(err.message || 'Sync failed');
@@ -401,12 +401,18 @@ const SleeperSync = ({ onSynced }) => {
             onClick={reset}
             style={{
               marginTop: 8,
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
-              color: 'var(--text-tertiary)',
+              padding: '6px 16px',
+              borderRadius: 6,
+              border: 'none',
+              background: 'var(--accent)',
+              color: '#fff',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700, fontSize: 13, letterSpacing: 0.5,
+              textTransform: 'uppercase',
+              cursor: 'pointer',
             }}
           >
-            ← Back
+            Done
           </button>
           {error && (
             <div style={{
