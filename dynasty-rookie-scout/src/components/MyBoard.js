@@ -25,16 +25,25 @@ const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
 const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
 /**
- * Check if a board position (1-indexed) matches one of the user's draft picks.
- * Each pick has { round, slot } — the overall pick number is (round-1)*totalTeams + slot.
- * Returns a label like "YOUR PICK · 1.03" or null.
+ * Check if a board position should show a pick marker.
+ * We know which rounds the user has picks in but NOT the exact slot
+ * (draft order isn't set until closer to draft day).
+ * Places markers at evenly-spaced positions within each round.
  */
 function getPickLabel(position, picks, totalTeams) {
   if (!picks || picks.length === 0 || !totalTeams) return null;
-  for (const pick of picks) {
-    const overallPos = (pick.round - 1) * totalTeams + (pick.slot || 1);
-    if (overallPos === position) {
-      return `YOUR PICK · ${pick.round}.${String(pick.slot || 1).padStart(2, '0')}`;
+  const round = Math.ceil(position / totalTeams);
+  const posInRound = position - (round - 1) * totalTeams; // 1-indexed within round
+
+  // Count picks the user has in this round
+  const picksInRound = picks.filter(p => p.round === round);
+  if (picksInRound.length === 0) return null;
+
+  // Place markers at evenly-spaced positions within the round
+  const spacing = Math.floor(totalTeams / (picksInRound.length + 1));
+  for (let i = 0; i < picksInRound.length; i++) {
+    if (posInRound === spacing * (i + 1)) {
+      return `YOUR PICK · RD ${round}`;
     }
   }
   return null;

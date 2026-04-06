@@ -128,30 +128,7 @@ router.post('/sync', requireAuth, async (req, res) => {
       try {
         const tradedPicks = await sleeperFetch(`/league/${league_id}/traded_picks`);
 
-        // Fetch draft order to determine pick slots
-        const drafts = await sleeperFetch(`/league/${league_id}/drafts`);
-        const currentDraft = (drafts || []).find(d => d.season === yr) || (drafts || [])[0];
-        const slotToRoster = currentDraft?.slot_to_roster_id || {};
-
-        // Build reverse map: roster_id → draft slot
-        const rosterToSlot = {};
-        if (Object.keys(slotToRoster).length > 0) {
-          // Use slot_to_roster_id if available
-          for (const [slot, rosterId] of Object.entries(slotToRoster)) {
-            rosterToSlot[rosterId] = Number(slot);
-          }
-        } else if (currentDraft?.draft_order) {
-          // Fallback: build from draft_order (user_id → slot) + rosters (roster_id → owner_id)
-          const draftOrder = currentDraft.draft_order;
-          for (const roster of rosters) {
-            if (roster.owner_id && draftOrder[roster.owner_id] !== undefined) {
-              rosterToSlot[roster.roster_id] = draftOrder[roster.owner_id];
-            }
-          }
-        }
-
         const totalRounds = league.settings?.draft_rounds || 4;
-        const totalTeams = league.total_rosters || rosters.length || 12;
 
         // Build ownership map for all picks: key = "round-roster_id" → current owner
         // Default: every team owns their own picks
@@ -170,22 +147,21 @@ router.post('/sync', requireAuth, async (req, res) => {
         }
 
         // Filter to picks owned by the user
+        // We only store the round — exact draft slot isn't known until draft order is set
         const ownedPicks = [];
         for (const [key, ownerId] of Object.entries(pickOwnership)) {
           if (ownerId === userRoster.roster_id) {
             const [round, originalRosterId] = key.split('-').map(Number);
-            const slot = rosterToSlot[originalRosterId] || originalRosterId;
             ownedPicks.push({
               round,
-              slot,
               original_owner_id: originalRosterId,
               season: yr,
             });
           }
         }
 
-        draftPicks = ownedPicks.sort((a, b) => a.round - b.round || a.slot - b.slot);
-        console.log('[Sleeper] User roster_id:', userRoster.roster_id, 'rosterToSlot:', JSON.stringify(rosterToSlot), 'picks:', draftPicks.map(p => `${p.round}.${String(p.slot).padStart(2, '0')}`));
+        draftPicks = ownedPicks.sort((a, b) => a.round - b.round);
+        console.log('[Sleeper] User roster_id:', userRoster.roster_id, 'picks by round:', draftPicks.map(p => `Rd${p.round}`));
       } catch (err) {
         console.error('[Sleeper] Draft picks error:', err.message);
       }

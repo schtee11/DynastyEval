@@ -190,11 +190,17 @@ const SleeperSync = ({ onSynced }) => {
               display: 'flex', gap: 8, marginTop: 2,
             }}>
               <span>{league.format === 'SF' ? 'Superflex' : '1QB'}</span>
-              {league.draft_picks && (
-                <span>
-                  {(Array.isArray(league.draft_picks) ? league.draft_picks : JSON.parse(league.draft_picks || '[]')).length} picks
-                </span>
-              )}
+              {league.draft_picks && (() => {
+                const picks = Array.isArray(league.draft_picks) ? league.draft_picks : JSON.parse(league.draft_picks || '[]');
+                // Group by round: "2×Rd1, 1×Rd3"
+                const byRound = {};
+                for (const p of picks) { byRound[p.round] = (byRound[p.round] || 0) + 1; }
+                const label = Object.entries(byRound)
+                  .sort(([a], [b]) => a - b)
+                  .map(([rd, cnt]) => `${cnt}×Rd${rd}`)
+                  .join(', ');
+                return <span>{label || `${picks.length} picks`}</span>;
+              })()}
               <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--success)' }}>
                 <CheckIcon /> Synced
               </span>
