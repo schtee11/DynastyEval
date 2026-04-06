@@ -73,8 +73,8 @@ const getHeroStats = (player, allPlayers) => {
     ];
   }
 
-  // WR and TE — YPRR only for WR (TE data is inaccurate)
-  const showYprr = position === 'WR' && player.advancedStats?.yprr;
+  // WR and TE — show YPRR value for both, percentile tier only for WR
+  const yprr = player.advancedStats?.yprr;
   const yprrPeers = allPlayers.filter(p => p.position === 'WR');
   const result = [
     {
@@ -94,11 +94,11 @@ const getHeroStats = (player, allPlayers) => {
     },
   ];
 
-  if (showYprr) {
+  if (yprr) {
     result.push({
       label: 'YPRR',
-      value: player.advancedStats.yprr.toFixed(2),
-      tier: tier(player.advancedStats.yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)),
+      value: yprr.toFixed(2),
+      tier: position === 'WR' ? tier(yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)) : null,
     });
   } else {
     result.push({

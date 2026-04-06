@@ -36,15 +36,15 @@ const getHeroStats = (player, allPlayers) => {
       { label: 'Rec', value: stats?.receptions, tier: tier(stats?.receptions, peers.map(p => p.stats?.receptions)) },
     ];
   }
-  // WR: show YPRR if available; TE: skip YPRR (data is inaccurate for TEs)
-  const showYprr = position === 'WR' && player.advancedStats?.yprr;
+  // YPRR: show value for both WR and TE, but only show percentile tier for WR
+  const yprr = player.advancedStats?.yprr;
   const yprrPeers = allPlayers.filter(p => p.position === 'WR');
   return [
     { label: 'Rec Yds', value: stats?.receivingYards ? stats.receivingYards.toLocaleString() : null, tier: tier(stats?.receivingYards, peers.map(p => p.stats?.receivingYards)) },
     { label: 'Rec', value: stats?.receptions, tier: tier(stats?.receptions, peers.map(p => p.stats?.receptions)) },
     { label: 'TDs', value: stats?.receivingTDs, tier: tier(stats?.receivingTDs, peers.map(p => p.stats?.receivingTDs)) },
-    showYprr
-      ? { label: 'YPRR', value: player.advancedStats.yprr.toFixed(2), tier: tier(player.advancedStats.yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)) }
+    yprr
+      ? { label: 'YPRR', value: yprr.toFixed(2), tier: position === 'WR' ? tier(yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)) : null }
       : { label: 'Yds/Rec', value: stats?.receptions > 0 ? (stats.receivingYards / stats.receptions).toFixed(1) : null, tier: tier(stats?.receptions > 0 ? stats.receivingYards / stats.receptions : null, peers.map(p => p.stats?.receptions > 0 ? p.stats.receivingYards / p.stats.receptions : 0)) },
   ];
 };

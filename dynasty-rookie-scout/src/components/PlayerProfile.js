@@ -460,10 +460,10 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
                 <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
-                {player.position === 'WR' && player.advancedStats?.yprr && (
+                {player.advancedStats?.yprr && (
                   <>
                     <SectionLabel>Efficiency</SectionLabel>
-                    <StatRow label="YPRR" value={player.advancedStats.yprr.toFixed(2)} allValues={peerVals(p => p.advancedStats?.yprr)} />
+                    <StatRow label="YPRR" value={player.advancedStats.yprr.toFixed(2)} allValues={player.position === 'WR' ? peerVals(p => p.advancedStats?.yprr) : undefined} />
                   </>
                 )}
               </>
@@ -475,10 +475,10 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
                 <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
-                {player.position === 'WR' && player.advancedStats?.yprr && (
+                {player.advancedStats?.yprr && (
                   <>
                     <SectionLabel>Efficiency</SectionLabel>
-                    <StatRow label="YPRR" value={player.advancedStats.yprr.toFixed(2)} allValues={peerVals(p => p.advancedStats?.yprr)} />
+                    <StatRow label="YPRR" value={player.advancedStats.yprr.toFixed(2)} allValues={player.position === 'WR' ? peerVals(p => p.advancedStats?.yprr) : undefined} />
                   </>
                 )}
               </>

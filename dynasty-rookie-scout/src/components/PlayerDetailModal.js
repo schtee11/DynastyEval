@@ -400,6 +400,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                   <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
                   <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" allValues={peerVals(p => p.targetShare)} />
                   <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
                   <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} allValues={peerVals(p => p.recGrade)} />
                   <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} allValues={peerVals(p => p.tgtPerRR)} />
                   <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} allValues={peerVals(p => p.yardsAfterCatchPerRec)} />
@@ -481,6 +482,7 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                         <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} />
                         <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                         <SectionLabel>Efficiency</SectionLabel>
+                        <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
                         <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
                         <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
                         <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />
