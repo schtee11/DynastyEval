@@ -186,12 +186,12 @@ export const computeHeadlineScore = (player, allPlayers) => {
 
 const strengthStatDefs = {
   QB: [
-    { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
     { label: 'Passing TDs', key: 'passingTDs', unit: '', getValue: p => p.stats?.passingTDs, desc: 'touchdown production' },
     { label: 'Passing Yards', key: 'passingYards', unit: '', getValue: p => p.stats?.passingYards, desc: 'passing volume' },
+    { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
     { label: 'Y/A', key: 'yardsPerAttempt', unit: '', getValue: p => p.stats?.yardsPerAttempt, desc: 'yards per attempt' },
-    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing production' },
-    { label: 'Rushing TDs', key: 'rushingTDs', unit: '', getValue: p => p.stats?.rushingTDs, desc: 'rushing touchdowns' },
+    { label: 'TD/INT Ratio', key: 'tdIntRatio', unit: '', getValue: p => p.stats?.tdIntRatio, desc: 'decision-making (TD/INT)' },
+    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'dual-threat rushing ability' },
   ],
   RB: [
     { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing volume' },
@@ -215,9 +215,10 @@ const strengthStatDefs = {
 
 const concernStatDefs = {
   QB: [
-    { label: 'INTs', key: 'interceptions', unit: '', getValue: p => p.stats?.interceptions, desc: 'interception count', invert: true },
+    { label: 'Passing TDs', key: 'passingTDs', unit: '', getValue: p => p.stats?.passingTDs, desc: 'passing touchdown production' },
+    { label: 'Passing Yards', key: 'passingYards', unit: '', getValue: p => p.stats?.passingYards, desc: 'passing volume' },
     { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
-    { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing production' },
+    { label: 'INTs', key: 'interceptions', unit: '', getValue: p => p.stats?.interceptions, desc: 'interception count', invert: true },
   ],
   RB: [
     { label: 'Receiving Yards', key: 'receivingYards', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
