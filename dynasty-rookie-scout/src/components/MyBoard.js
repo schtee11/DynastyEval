@@ -248,6 +248,7 @@ const MyBoard = () => {
   const [boardIdSF, setBoardIdSF] = useState(null);
   const [shareUrl, setShareUrl] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
   const shareCopiedTimer = useRef(null);
   const boardListRef = useRef(null);
   const [sleeperPicks, setSleeperPicks] = useState([]); // [{round, roster_id, ...}]
@@ -278,6 +279,11 @@ const MyBoard = () => {
           const boards = boardsRes.boards || boardsRes || [];
           const api1QB = boards.find(b => b.format === '1QB') || boards.find(b => b.format === 'oneQB');
           const apiSF = boards.find(b => b.format === 'SF') || boards.find(b => b.format === 'superflex');
+
+          // Detect published state from current format's board
+          const activeBoard = activeFormat === 'oneQB' ? api1QB : apiSF;
+          if (activeBoard?.visibility === 'public') setIsPublished(true);
+          if (activeBoard?.share_token) setShareUrl(`${window.location.origin}/board/shared/${activeBoard.share_token}`);
 
           if (api1QB) {
             setBoardId1QB(api1QB.id);
@@ -340,7 +346,7 @@ const MyBoard = () => {
       }
     };
     loadPlayers();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const persist = useCallback((format, board) => {
     const key = format === 'oneQB' ? STORAGE_KEY_1QB : STORAGE_KEY_SF;
@@ -565,48 +571,70 @@ const MyBoard = () => {
         </div>
       </div>
 
-      {/* Share URL display */}
+      {/* Share URL display + publish toggle */}
       {shareUrl && (
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 12,
-          padding: '8px 12px',
+          marginBottom: 12, padding: '10px 12px',
           background: 'var(--bg-tertiary)',
           border: '1px solid var(--border-primary)',
           borderRadius: 6,
         }}>
-          <input
-            readOnly
-            value={shareUrl}
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: 'var(--text-secondary)',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 12,
-            }}
-          />
-          <button
-            onClick={handleCopyShareUrl}
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: 12,
-              padding: '4px 12px',
-              border: '1px solid var(--warning)',
-              borderRadius: 4,
-              background: 'var(--warning-light)',
-              color: 'var(--warning)',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {shareCopied ? 'Copied!' : 'Copy'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <input
+              readOnly
+              value={shareUrl}
+              style={{
+                flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                color: 'var(--text-secondary)',
+                fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+              }}
+            />
+            <button
+              onClick={handleCopyShareUrl}
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700, fontSize: 12, padding: '4px 12px',
+                border: '1px solid var(--warning)', borderRadius: 4,
+                background: 'var(--warning-light)', color: 'var(--warning)',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              {shareCopied ? 'Copied!' : 'Copy Link'}
+            </button>
+          </div>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            paddingTop: 8, borderTop: '1px solid var(--border-primary)',
+          }}>
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 12,
+              color: 'var(--text-tertiary)',
+            }}>
+              {isPublished ? 'Visible on Community Boards' : 'Only accessible via link'}
+            </span>
+            <button
+              onClick={async () => {
+                const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
+                if (!boardId) return;
+                const newVisibility = isPublished ? 'shared' : 'public';
+                try {
+                  await updateBoard(boardId, { visibility: newVisibility });
+                  setIsPublished(!isPublished);
+                  showToast(isPublished ? 'Removed from Community Boards' : 'Published to Community Boards!');
+                } catch { showToast('Failed to update'); }
+              }}
+              style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+                padding: '4px 12px', borderRadius: 4,
+                border: `1px solid ${isPublished ? 'var(--success)' : 'var(--accent)'}`,
+                background: isPublished ? 'var(--success-light)' : 'var(--accent-light)',
+                color: isPublished ? 'var(--success)' : 'var(--accent-text)',
+                cursor: 'pointer',
+              }}
+            >
+              {isPublished ? '✓ Published' : 'Publish to Community'}
+            </button>
+          </div>
         </div>
       )}
 
