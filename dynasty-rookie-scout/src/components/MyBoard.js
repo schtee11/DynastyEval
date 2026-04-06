@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { getPlayers } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchMyBoards, createBoard, updateBoard, shareBoard } from '../services/apiClient';
+import { useNavigate } from 'react-router-dom';
 import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk } from '../utils/helpers';
 import SleeperSync from './SleeperSync';
 
@@ -193,14 +194,32 @@ const SortableRow = ({ player, index, activeFormat, pickLabel }) => {
         fontSize: 11,
         flexShrink: 0,
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>
-            {activeFormat === 'oneQB' ? '1QB' : 'SF'} ADP
-          </div>
-          <div style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-            {player.dynastyADP?.[activeFormat] != null ? `#${player.dynastyADP[activeFormat]}` : '—'}
-          </div>
-        </div>
+        {(() => {
+          const adpKey = activeFormat === 'oneQB' ? 'oneQB' : 'superflex';
+          const adp = player.dynastyADP?.[adpKey];
+          const userRank = index + 1;
+          const diff = adp != null ? adp - userRank : null;
+          return (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>
+                {activeFormat === 'oneQB' ? '1QB' : 'SF'} ADP
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>
+                  {adp != null ? `#${adp}` : '—'}
+                </span>
+                {diff != null && diff !== 0 && (
+                  <span style={{
+                    fontSize: 9, fontWeight: 700,
+                    color: diff > 0 ? 'var(--success)' : 'var(--danger)',
+                  }}>
+                    {diff > 0 ? `▲${diff}` : `▼${Math.abs(diff)}`}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
         {player.breakoutAge && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ color: 'var(--text-tertiary)', fontSize: 9, textTransform: 'uppercase' }}>BO AGE</div>
@@ -217,6 +236,7 @@ const SortableRow = ({ player, index, activeFormat, pickLabel }) => {
 
 const MyBoard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeFormat, setActiveFormat] = useState('oneQB');
   const [board1QB, setBoard1QB] = useState([]);
   const [boardSF, setBoardSF] = useState([]);
@@ -530,6 +550,19 @@ const MyBoard = () => {
             }}
           >
             Export Board
+          </button>
+          <button
+            onClick={() => navigate('/boards')}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700, fontSize: 13, letterSpacing: 1,
+              textTransform: 'uppercase', padding: '8px 16px',
+              border: '1px solid var(--border-primary)', borderRadius: 4,
+              cursor: 'pointer', background: 'var(--bg-tertiary)',
+              color: 'var(--text-tertiary)', transition: 'all 0.15s',
+            }}
+          >
+            Browse Boards
           </button>
         </div>
       </div>

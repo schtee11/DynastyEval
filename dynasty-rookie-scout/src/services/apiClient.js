@@ -142,4 +142,19 @@ export const fetchMySleeperLeagues = () => apiFetch('/api/sleeper/my-leagues');
 export const unlinkSleeperLeague = (leagueId) =>
   apiFetch(`/api/sleeper/league/${leagueId}`, { method: 'DELETE' });
 
+// Notes
+export const fetchAllNotes = () => apiFetch('/api/notes');
+export const fetchNote = (playerId) => apiFetch(`/api/notes/${playerId}`);
+export const upsertNote = (playerId, content) =>
+  apiFetch(`/api/notes/${playerId}`, { method: 'PUT', body: JSON.stringify({ content }) });
+export const deleteNote = (playerId) =>
+  apiFetch(`/api/notes/${playerId}`, { method: 'DELETE' });
+
+// Bookmarks (watchlist)
+export const fetchBookmarks = () => apiFetch('/api/bookmarks');
+export const addBookmark = (playerId) =>
+  apiFetch(`/api/bookmarks/${playerId}`, { method: 'POST' });
+export const removeBookmark = (playerId) =>
+  apiFetch(`/api/bookmarks/${playerId}`, { method: 'DELETE' });
+
 export default apiFetch;

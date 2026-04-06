@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { UserDataProvider } from './contexts/UserDataContext';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Footer from './components/Footer';
@@ -29,6 +30,7 @@ const CompareView = lazy(() => import('./components/CompareView'));
 const CommunityPage = lazy(() => import('./components/CommunityPage'));
 const SharedBoardView = lazy(() => import('./components/SharedBoardView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
+const BrowseBoards = lazy(() => import('./components/BrowseBoards'));
 const AuthPage = lazy(() => import('./components/AuthPage'));
 const AdminPage = lazy(() => import('./components/AdminPage'));
 const ProfileSettings = lazy(() => import('./components/ProfileSettings'));
@@ -203,6 +205,9 @@ function AppInner() {
               <Route path="/board/shared/:token" element={
                 <SharedBoardView players={players} />
               } />
+              <Route path="/boards" element={
+                <BrowseBoards players={players} />
+              } />
               <Route path="/login" element={
                 <AuthPage onSuccess={() => navigate('/')} />
               } />
@@ -229,7 +234,9 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <AppInner />
+          <UserDataProvider>
+            <AppInner />
+          </UserDataProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

@@ -11,6 +11,8 @@ const adminRoutes = require('./routes/admin');
 const boardRoutes = require('./routes/boards');
 const subscriptionRoutes = require('./routes/subscriptions');
 const sleeperRoutes = require('./routes/sleeper');
+const notesRoutes = require('./routes/notes');
+const bookmarkRoutes = require('./routes/bookmarks');
 
 // Environment validation
 if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
@@ -53,6 +55,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/sleeper', sleeperRoutes);
+app.use('/api/notes', notesRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -5,6 +5,8 @@ import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRis
 import { generateScoutingSummary } from '../services/scoutingSummary';
 import { fetchDiscussions } from '../services/apiClient';
 import { useTheme } from '../ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useUserData } from '../contexts/UserDataContext';
 import DraftBadge from './DraftBadge';
 import PlayerCompChip from './PlayerCompChip';
 import ValueDelta from './ValueDelta';
@@ -122,10 +124,14 @@ const SectionLabel = ({ children }) => (
 
 const PlayerDetailModal = ({ player, allPlayers = [], onClose, isDesktopPanel = false }) => {
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const { getNote, saveNote, isBookmarked, toggleBookmark } = useUserData();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [slideIn, setSlideIn] = useState(false);
   const [recentThreads, setRecentThreads] = useState([]);
+  const [noteText, setNoteText] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const isDesktop = isDesktopPanel || winWidth >= 1025;
   const isTabletLandscape = winWidth >= 1025 && winWidth <= 1400;
@@ -150,7 +156,8 @@ const PlayerDetailModal = ({ player, allPlayers = [], onClose, isDesktopPanel = 
   useEffect(() => {
     setSummary(null);
     setLoadingSummary(false);
-  }, [player]);
+    setNoteText(getNote(player.id));
+  }, [player, getNote]);
 
   useEffect(() => {
     const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
@@ -641,6 +648,61 @@ const PlayerDetailModal = ({ player, allPlayers = [], onClose, isDesktopPanel = 
             )}
           </div>
         </div>
+
+        {/* Notes + Watchlist */}
+        {user && (
+          <div style={{ padding: isDesktop ? '0 24px 16px' : '0 28px 16px' }}>
+            {/* Bookmark toggle */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: 10,
+            }}>
+              <h4 style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700, fontSize: 14, letterSpacing: 1,
+                textTransform: 'uppercase',
+                color: 'var(--text-primary)', margin: 0,
+              }}>
+                My Notes
+              </h4>
+              <button
+                onClick={() => toggleBookmark(player.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+                  color: isBookmarked(player.id) ? 'var(--warning)' : 'var(--text-tertiary)',
+                }}
+              >
+                {isBookmarked(player.id) ? '★ Watching' : '☆ Watch'}
+              </button>
+            </div>
+            <textarea
+              value={noteText}
+              onChange={e => setNoteText(e.target.value)}
+              onBlur={() => {
+                if (noteText !== getNote(player.id)) {
+                  setNoteSaving(true);
+                  saveNote(player.id, noteText).then(() => setNoteSaving(false));
+                }
+              }}
+              placeholder="Add private notes about this prospect..."
+              rows={2}
+              style={{
+                width: '100%', padding: '8px 10px', borderRadius: 6,
+                border: '1px solid var(--border-primary)',
+                background: 'var(--bg-input)', color: 'var(--text-primary)',
+                fontFamily: "'Inter', sans-serif", fontSize: 12,
+                resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            {noteSaving && (
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                Saving...
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Discussion preview */}
         <div style={{ padding: isDesktop ? '16px 24px 24px' : '16px 28px 28px' }}>
