@@ -26,20 +26,28 @@ const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
 /**
  * Check if a board position should show a pick marker.
- * We know which rounds the user has picks in but NOT the exact slot
- * (draft order isn't set until closer to draft day).
- * Places markers at evenly-spaced positions within each round.
+ * If picks have exact slot info, matches on exact overall position.
+ * Otherwise, places markers at evenly-spaced positions within each round.
  */
 function getPickLabel(position, picks, totalTeams) {
   if (!picks || picks.length === 0 || !totalTeams) return null;
-  const round = Math.ceil(position / totalTeams);
-  const posInRound = position - (round - 1) * totalTeams; // 1-indexed within round
 
-  // Count picks the user has in this round
-  const picksInRound = picks.filter(p => p.round === round);
+  // Try exact slot match first
+  for (const pick of picks) {
+    if (pick.slot) {
+      const overallPos = (pick.round - 1) * totalTeams + pick.slot;
+      if (overallPos === position) {
+        return `YOUR PICK · ${pick.round}.${String(pick.slot).padStart(2, '0')}`;
+      }
+    }
+  }
+
+  // Fall back to round-based markers for picks without slot info
+  const round = Math.ceil(position / totalTeams);
+  const posInRound = position - (round - 1) * totalTeams;
+  const picksInRound = picks.filter(p => p.round === round && !p.slot);
   if (picksInRound.length === 0) return null;
 
-  // Place markers at evenly-spaced positions within the round
   const spacing = Math.floor(totalTeams / (picksInRound.length + 1));
   for (let i = 0; i < picksInRound.length; i++) {
     if (posInRound === spacing * (i + 1)) {

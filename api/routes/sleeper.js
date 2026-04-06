@@ -6,6 +6,13 @@ const router = express.Router();
 
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
+// NFL season: current year, but before March use previous year
+function getCurrentNflSeason() {
+  const now = new Date();
+  const year = now.getMonth() < 2 ? now.getFullYear() - 1 : now.getFullYear();
+  return String(year);
+}
+
 // Auto-create table on first load
 (async () => {
   try {
@@ -108,7 +115,7 @@ router.post('/sync', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'sleeper_user_id and league_id are required' });
     }
 
-    const yr = season || '2025';
+    const yr = season || getCurrentNflSeason();
 
     // Fetch league details
     const league = await sleeperFetch(`/league/${league_id}`);
@@ -128,10 +135,33 @@ router.post('/sync', requireAuth, async (req, res) => {
       try {
         const tradedPicks = await sleeperFetch(`/league/${league_id}/traded_picks`);
 
+        // Try to get draft order for exact slot positions
+        const drafts = await sleeperFetch(`/league/${league_id}/drafts`);
+        const currentDraft = (drafts || []).find(d => d.season === yr && d.status !== 'complete')
+          || (drafts || []).find(d => d.season === yr)
+          || (drafts || [])[0];
+
+        // Build roster_id → draft slot mapping
+        const rosterToSlot = {};
+        const slotToRoster = currentDraft?.slot_to_roster_id || {};
+        if (Object.keys(slotToRoster).length > 0) {
+          for (const [slot, rosterId] of Object.entries(slotToRoster)) {
+            rosterToSlot[rosterId] = Number(slot);
+          }
+        } else if (currentDraft?.draft_order) {
+          // draft_order maps user_id → slot; combine with rosters for roster_id → slot
+          const draftOrder = currentDraft.draft_order;
+          for (const roster of rosters) {
+            if (roster.owner_id && draftOrder[roster.owner_id] !== undefined) {
+              rosterToSlot[roster.roster_id] = draftOrder[roster.owner_id];
+            }
+          }
+        }
+        const hasSlotInfo = Object.keys(rosterToSlot).length > 0;
+
         const totalRounds = league.settings?.draft_rounds || 4;
 
         // Build ownership map for all picks: key = "round-roster_id" → current owner
-        // Default: every team owns their own picks
         const pickOwnership = {};
         for (const roster of rosters) {
           for (let round = 1; round <= totalRounds; round++) {
@@ -142,26 +172,25 @@ router.post('/sync', requireAuth, async (req, res) => {
         // Apply trades to reassign ownership
         for (const trade of (tradedPicks || [])) {
           if (trade.season !== yr) continue;
-          // trade.roster_id = the original team, trade.owner_id = current owner
           pickOwnership[`${trade.round}-${trade.roster_id}`] = trade.owner_id;
         }
 
         // Filter to picks owned by the user
-        // We only store the round — exact draft slot isn't known until draft order is set
         const ownedPicks = [];
         for (const [key, ownerId] of Object.entries(pickOwnership)) {
           if (ownerId === userRoster.roster_id) {
             const [round, originalRosterId] = key.split('-').map(Number);
-            ownedPicks.push({
-              round,
-              original_owner_id: originalRosterId,
-              season: yr,
-            });
+            const pick = { round, original_owner_id: originalRosterId, season: yr };
+            // Add exact slot if draft order is known
+            if (hasSlotInfo && rosterToSlot[originalRosterId]) {
+              pick.slot = rosterToSlot[originalRosterId];
+            }
+            ownedPicks.push(pick);
           }
         }
 
-        draftPicks = ownedPicks.sort((a, b) => a.round - b.round);
-        console.log('[Sleeper] User roster_id:', userRoster.roster_id, 'picks by round:', draftPicks.map(p => `Rd${p.round}`));
+        draftPicks = ownedPicks.sort((a, b) => a.round - b.round || (a.slot || 99) - (b.slot || 99));
+        console.log('[Sleeper] User roster_id:', userRoster.roster_id, 'hasSlotInfo:', hasSlotInfo, 'picks:', draftPicks.map(p => p.slot ? `${p.round}.${String(p.slot).padStart(2, '0')}` : `Rd${p.round}`));
       } catch (err) {
         console.error('[Sleeper] Draft picks error:', err.message);
       }
@@ -217,7 +246,7 @@ router.post('/sync', requireAuth, async (req, res) => {
 router.get('/debug/:leagueId/:sleeperUserId', requireAuth, async (req, res) => {
   try {
     const { leagueId, sleeperUserId } = req.params;
-    const yr = '2025';
+    const yr = getCurrentNflSeason();
 
     const league = await sleeperFetch(`/league/${leagueId}`);
     const rosters = await sleeperFetch(`/league/${leagueId}/rosters`);

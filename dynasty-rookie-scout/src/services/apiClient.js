@@ -121,8 +121,15 @@ export const deleteBoard = (id) =>
 export const lookupSleeperUser = (username) =>
   apiFetch(`/api/sleeper/user/${encodeURIComponent(username)}`);
 
-export const fetchSleeperLeagues = (sleeperUserId, season = '2025') =>
-  apiFetch(`/api/sleeper/leagues/${sleeperUserId}/${season}`);
+// NFL season: use current year, but before March use previous year (league renewal window)
+const getNflSeason = () => {
+  const now = new Date();
+  const year = now.getMonth() < 2 ? now.getFullYear() - 1 : now.getFullYear();
+  return String(year);
+};
+
+export const fetchSleeperLeagues = (sleeperUserId, season) =>
+  apiFetch(`/api/sleeper/leagues/${sleeperUserId}/${season || getNflSeason()}`);
 
 export const syncSleeperLeague = (data) =>
   apiFetch('/api/sleeper/sync', {
