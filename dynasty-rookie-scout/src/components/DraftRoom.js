@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchMySleeperLeagues } from '../services/apiClient';
+import { fetchMySleeperLeagues, fetchMyBoards } from '../services/apiClient';
 import { getPlayers } from '../services/dataService';
 import { positionColors } from '../utils/helpers';
 
@@ -230,20 +230,46 @@ const DraftRoom = () => {
   const [loading, setLoading] = useState(true);
   const [liveSearch, setLiveSearch] = useState('');
 
-  // Load players and leagues
+  // Load players, leagues, and board order
   useEffect(() => {
     const load = async () => {
       try {
-        const [playerData, leagueData] = await Promise.all([
+        const [playerData, leagueData, boardData] = await Promise.all([
           getPlayers(),
           user ? fetchMySleeperLeagues().catch(() => ({ leagues: [] })) : { leagues: [] },
+          user ? fetchMyBoards().catch(() => ({ boards: [] })) : { boards: [] },
         ]);
-        setPlayers(playerData);
+
+        // Order players by the user's board (1QB by default, match active league format)
+        const boards = boardData.boards || boardData || [];
         const lg = leagueData.leagues || [];
+        const savedLeague = localStorage.getItem('drs_active_league');
+        const activeLg = lg.find(l => l.league_id === savedLeague) || lg[0];
+        const isSF = activeLg?.format === 'SF';
+        const board = boards.find(b => isSF ? (b.format === 'SF' || b.format === 'superflex') : (b.format === '1QB' || b.format === 'oneQB'))
+          || boards[0];
+
+        let orderedPlayers;
+        if (board?.player_ids?.length > 0) {
+          // Build lookup and order by board position
+          const playerMap = {};
+          for (const p of playerData) playerMap[String(p.id)] = p;
+          const boardOrdered = board.player_ids.map(id => playerMap[String(id)]).filter(Boolean);
+          // Add any players not on the board at the end
+          const boardIdSet = new Set(board.player_ids.map(String));
+          const remaining = playerData.filter(p => !boardIdSet.has(String(p.id)));
+          orderedPlayers = [...boardOrdered, ...remaining];
+        } else {
+          // Fallback: order by ADP
+          orderedPlayers = [...playerData].sort((a, b) =>
+            (a.dynastyADP?.oneQB ?? 999) - (b.dynastyADP?.oneQB ?? 999)
+          );
+        }
+
+        setPlayers(orderedPlayers);
         setLeagues(lg);
         if (lg.length > 0) {
-          const saved = localStorage.getItem('drs_active_league');
-          setActiveLeagueId(saved && lg.find(l => l.league_id === saved) ? saved : lg[0].league_id);
+          setActiveLeagueId(activeLg?.league_id || lg[0].league_id);
         }
       } catch { /* ignore */ }
       setLoading(false);
@@ -541,7 +567,7 @@ const DraftRoom = () => {
           <input
             value={liveSearch}
             onChange={e => setLiveSearch(e.target.value)}
-            placeholder="Search available players or click to pick..."
+            placeholder="Search players or tap to mark as picked..."
             style={{
               width: '100%', padding: '10px 12px', borderRadius: 8,
               border: '1px solid var(--border-primary)',
@@ -555,8 +581,9 @@ const DraftRoom = () => {
             background: 'var(--bg-secondary)', borderRadius: 8,
             padding: 4,
           }}>
-            {liveSearchResults.map(p => {
+            {liveSearchResults.map((p, i) => {
               const posColor = positionColors[p.position] || positionColors.WR;
+              const boardRank = players.indexOf(p) + 1;
               return (
                 <div
                   key={p.id}
@@ -569,6 +596,13 @@ const DraftRoom = () => {
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 13, fontWeight: 700, color: 'var(--text-tertiary)',
+                    width: 24, textAlign: 'center', flexShrink: 0,
+                  }}>
+                    {boardRank}
+                  </span>
                   <span style={{
                     fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
                     color: 'var(--text-primary)', flex: 1,
