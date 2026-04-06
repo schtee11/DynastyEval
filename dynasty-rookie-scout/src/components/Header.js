@@ -100,6 +100,7 @@ const Header = () => {
     { path: '/', label: 'Prospects' },
     { path: '/community', label: 'Community' },
     { path: '/board', label: 'My Board' },
+    { path: '/draft', label: 'Draft Room' },
   ];
 
   return (

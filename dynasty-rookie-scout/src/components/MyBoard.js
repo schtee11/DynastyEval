@@ -17,14 +17,13 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { getPlayers } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchMyBoards, createBoard, updateBoard, shareBoard } from '../services/apiClient';
+import { fetchMyBoards, createBoard, updateBoard, shareBoard, deleteBoard } from '../services/apiClient';
 import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk } from '../utils/helpers';
 import SleeperSync from './SleeperSync';
 
 const STORAGE_KEY_1QB = 'dynasty_myboard_1qb';
-const STORAGE_KEY_SF = 'dynasty_myboard_sf';
 
 /**
  * Check if a board position should show a pick marker.
@@ -238,21 +237,27 @@ const SortableRow = ({ player, index, activeFormat, pickLabel }) => {
 const MyBoard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeFormat, setActiveFormat] = useState('oneQB');
-  const [board1QB, setBoard1QB] = useState([]);
-  const [boardSF, setBoardSF] = useState([]);
-  const [allPlayers, setAllPlayers] = useState([]); // eslint-disable-line no-unused-vars
+  const [allBoards, setAllBoards] = useState([]); // [{id, name, format, player_ids, visibility, share_token, players:[]}]
+  const [activeBoardId, setActiveBoardId] = useState(null);
+  const [allPlayers, setAllPlayers] = useState([]);
   const [showExport, setShowExport] = useState(false);
   const [error, setError] = useState(null);
-  const [boardId1QB, setBoardId1QB] = useState(null);
-  const [boardIdSF, setBoardIdSF] = useState(null);
   const [shareUrl, setShareUrl] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const shareCopiedTimer = useRef(null);
   const boardListRef = useRef(null);
-  const [sleeperPicks, setSleeperPicks] = useState([]); // [{round, roster_id, ...}]
-  const [sleeperLeagueCount, setSleeperLeagueCount] = useState(null); // total teams in league
+  const [sleeperPicks, setSleeperPicks] = useState([]);
+  const [sleeperLeagueCount, setSleeperLeagueCount] = useState(null);
+  const [showNewBoard, setShowNewBoard] = useState(false);
+  const [newBoardName, setNewBoardName] = useState('');
+  const [newBoardFormat, setNewBoardFormat] = useState('oneQB');
+  const [renamingBoardId, setRenamingBoardId] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  const activeBoard = allBoards.find(b => b.id === activeBoardId);
+  const currentBoard = activeBoard?.players || [];
+  const activeFormat = activeBoard?.format === 'SF' || activeBoard?.format === 'superflex' ? 'superflex' : 'oneQB';
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -268,99 +273,78 @@ const MyBoard = () => {
 
       const safeAdp = (p, key) => { const a = p.dynastyADP?.[key]; return (a == null || a === 'UNR') ? 999 : a; };
       const default1QB = [...data].sort((a, b) => safeAdp(a, 'oneQB') - safeAdp(b, 'oneQB'));
-      const defaultSF = [...data].sort((a, b) => safeAdp(a, 'superflex') - safeAdp(b, 'superflex'));
-
       const boardFromIds = (ids) => ids.map(id => data.find(p => p.id === id)).filter(Boolean);
 
-      // If logged in, try fetching from API first
       if (user) {
         try {
           const boardsRes = await fetchMyBoards();
-          const boards = boardsRes.boards || boardsRes || [];
-          const api1QB = boards.find(b => b.format === '1QB') || boards.find(b => b.format === 'oneQB');
-          const apiSF = boards.find(b => b.format === 'SF') || boards.find(b => b.format === 'superflex');
+          const boards = (boardsRes.boards || boardsRes || []).map(b => ({
+            ...b,
+            players: boardFromIds(b.player_ids),
+          }));
 
-          // Detect published state from current format's board
-          const activeBoard = activeFormat === 'oneQB' ? api1QB : apiSF;
-          if (activeBoard?.visibility === 'public') setIsPublished(true);
-          if (activeBoard?.share_token) setShareUrl(`${window.location.origin}/board/shared/${activeBoard.share_token}`);
-
-          if (api1QB) {
-            setBoardId1QB(api1QB.id);
-            setBoard1QB(boardFromIds(api1QB.player_ids));
-            localStorage.setItem(STORAGE_KEY_1QB, JSON.stringify(api1QB.player_ids));
+          if (boards.length === 0) {
+            // Create a default board
+            const ids = default1QB.map(p => p.id);
+            const created = await createBoard('My 1QB Board', 'oneQB', ids, 'private');
+            const newBoard = {
+              id: created.board?.id || created.id,
+              name: 'My 1QB Board',
+              format: 'oneQB',
+              player_ids: ids,
+              players: default1QB,
+              visibility: 'private',
+            };
+            setAllBoards([newBoard]);
+            setActiveBoardId(newBoard.id);
           } else {
-            const ids1QB = default1QB.map(p => p.id);
-            const created1QB = await createBoard('My 1QB Board', 'oneQB', ids1QB, 'private');
-            setBoardId1QB(created1QB.board?.id || created1QB.id);
-            setBoard1QB(default1QB);
-            localStorage.setItem(STORAGE_KEY_1QB, JSON.stringify(ids1QB));
-          }
-
-          if (apiSF) {
-            setBoardIdSF(apiSF.id);
-            setBoardSF(boardFromIds(apiSF.player_ids));
-            localStorage.setItem(STORAGE_KEY_SF, JSON.stringify(apiSF.player_ids));
-          } else {
-            const idsSF = defaultSF.map(p => p.id);
-            const createdSF = await createBoard('My SF Board', 'superflex', idsSF, 'private');
-            setBoardIdSF(createdSF.board?.id || createdSF.id);
-            setBoardSF(defaultSF);
-            localStorage.setItem(STORAGE_KEY_SF, JSON.stringify(idsSF));
+            setAllBoards(boards);
+            // Restore last active or pick first
+            const savedId = localStorage.getItem('drs_active_board');
+            const restored = boards.find(b => String(b.id) === savedId);
+            const active = restored || boards[0];
+            setActiveBoardId(active.id);
+            setShareUrl(active.share_token ? `${window.location.origin}/board/shared/${active.share_token}` : null);
+            setIsPublished(active.visibility === 'public');
           }
           return;
         } catch (err) {
-          console.warn('[MyBoard] API board fetch failed, falling back to localStorage:', err.message);
+          console.warn('[MyBoard] API board fetch failed:', err.message);
         }
       }
 
-      // Anonymous or API fallback: load from localStorage or default to rank order
-      let saved1QB, savedSF;
-      try { saved1QB = localStorage.getItem(STORAGE_KEY_1QB); } catch { /* ignore */ }
-      try { savedSF = localStorage.getItem(STORAGE_KEY_SF); } catch { /* ignore */ }
-
-      if (saved1QB) {
-        try {
-          const ids = JSON.parse(saved1QB);
-          setBoard1QB(boardFromIds(ids));
-        } catch (err) {
-          console.warn('[MyBoard] Corrupted 1QB board in localStorage, resetting:', err.message);
-          localStorage.removeItem(STORAGE_KEY_1QB);
-          setBoard1QB(default1QB);
-        }
-      } else {
-        setBoard1QB(default1QB);
-      }
-
-      if (savedSF) {
-        try {
-          const ids = JSON.parse(savedSF);
-          setBoardSF(boardFromIds(ids));
-        } catch (err) {
-          console.warn('[MyBoard] Corrupted SF board in localStorage, resetting:', err.message);
-          localStorage.removeItem(STORAGE_KEY_SF);
-          setBoardSF(defaultSF);
-        }
-      } else {
-        setBoardSF(defaultSF);
-      }
+      // Anonymous fallback
+      const savedIds = localStorage.getItem(STORAGE_KEY_1QB);
+      const boardPlayers = savedIds ? boardFromIds(JSON.parse(savedIds)) : default1QB;
+      setAllBoards([{ id: 'local', name: 'My Board', format: 'oneQB', players: boardPlayers, player_ids: boardPlayers.map(p => p.id) }]);
+      setActiveBoardId('local');
     };
     loadPlayers();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const persist = useCallback((format, board) => {
-    const key = format === 'oneQB' ? STORAGE_KEY_1QB : STORAGE_KEY_SF;
-    const ids = board.map(p => p.id);
-    localStorage.setItem(key, JSON.stringify(ids));
+  // Save active board ID
+  useEffect(() => {
+    if (activeBoardId) {
+      try { localStorage.setItem('drs_active_board', String(activeBoardId)); } catch {}
+      // Update share state for new active board
+      const board = allBoards.find(b => b.id === activeBoardId);
+      if (board) {
+        setShareUrl(board.share_token ? `${window.location.origin}/board/shared/${board.share_token}` : null);
+        setIsPublished(board.visibility === 'public');
+      }
+    }
+  }, [activeBoardId, allBoards]);
 
-    // Sync to API when logged in
-    const boardId = format === 'oneQB' ? boardId1QB : boardIdSF;
-    if (user && boardId) {
+  const persist = useCallback((boardId, players) => {
+    const ids = players.map(p => p.id);
+    if (user && boardId && boardId !== 'local') {
       updateBoard(boardId, { player_ids: ids }).catch(err =>
         console.warn('[MyBoard] API persist failed:', err.message)
       );
+    } else {
+      localStorage.setItem(STORAGE_KEY_1QB, JSON.stringify(ids));
     }
-  }, [user, boardId1QB, boardIdSF]);
+  }, [user]);
 
   const [toastMsg, setToastMsg] = useState(null);
 
@@ -370,40 +354,67 @@ const MyBoard = () => {
   };
 
   const handleShareBoard = async () => {
-    let boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
-
-    // Auto-create board if it doesn't exist yet
-    if (!boardId && user) {
-      try {
-        const ids = currentBoard.map(p => p.id);
-        const name = activeFormat === 'oneQB' ? 'My 1QB Board' : 'My SF Board';
-        const format = activeFormat === 'oneQB' ? 'oneQB' : 'superflex';
-        const created = await createBoard(name, format, ids, 'shared');
-        boardId = created.board?.id || created.id;
-        if (activeFormat === 'oneQB') setBoardId1QB(boardId);
-        else setBoardIdSF(boardId);
-      } catch (err) {
-        showToast('Failed to create board');
-        return;
-      }
-    }
-
-    if (!boardId) {
+    if (!activeBoardId || activeBoardId === 'local') {
       showToast('Sign in to share your board');
       return;
     }
-
     try {
-      const result = await shareBoard(boardId);
+      const result = await shareBoard(activeBoardId);
       const token = result.shareToken || result.share_token;
       if (!token) { showToast('Failed to generate share link'); return; }
       const url = `${window.location.origin}/board/shared/${token}`;
       setShareUrl(url);
+      setAllBoards(prev => prev.map(b => b.id === activeBoardId ? { ...b, share_token: token } : b));
       navigator.clipboard.writeText(url).then(() => showToast('Share link copied!'));
     } catch (err) {
       showToast('Failed to share board');
-      console.error('[MyBoard] Share failed:', err.message);
     }
+  };
+
+  const handleCreateBoard = async () => {
+    if (!newBoardName.trim() || !user) return;
+    try {
+      const defaultPlayers = [...allPlayers].sort((a, b) =>
+        (a.dynastyADP?.oneQB ?? 999) - (b.dynastyADP?.oneQB ?? 999)
+      );
+      const ids = defaultPlayers.map(p => p.id);
+      const created = await createBoard(newBoardName.trim(), newBoardFormat, ids, 'private');
+      const newBoard = {
+        id: created.board?.id || created.id,
+        name: newBoardName.trim(),
+        format: newBoardFormat,
+        player_ids: ids,
+        players: defaultPlayers,
+        visibility: 'private',
+      };
+      setAllBoards(prev => [...prev, newBoard]);
+      setActiveBoardId(newBoard.id);
+      setNewBoardName('');
+      setShowNewBoard(false);
+      showToast('Board created!');
+    } catch { showToast('Failed to create board'); }
+  };
+
+  const handleRenameBoard = async (boardId, name) => {
+    if (!name.trim()) return;
+    try {
+      await updateBoard(boardId, { name: name.trim() });
+      setAllBoards(prev => prev.map(b => b.id === boardId ? { ...b, name: name.trim() } : b));
+      setRenamingBoardId(null);
+    } catch { showToast('Failed to rename'); }
+  };
+
+  const handleDeleteBoard = async (boardId) => {
+    if (!window.confirm('Delete this board?')) return;
+    try {
+      await deleteBoard(boardId);
+      setAllBoards(prev => prev.filter(b => b.id !== boardId));
+      if (activeBoardId === boardId) {
+        const remaining = allBoards.filter(b => b.id !== boardId);
+        setActiveBoardId(remaining[0]?.id || null);
+      }
+      showToast('Board deleted');
+    } catch { showToast('Failed to delete'); }
   };
 
   const handleCopyShareUrl = () => {
@@ -413,8 +424,6 @@ const MyBoard = () => {
     if (shareCopiedTimer.current) clearTimeout(shareCopiedTimer.current);
     shareCopiedTimer.current = setTimeout(() => setShareCopied(false), 2000);
   };
-
-  const currentBoard = activeFormat === 'oneQB' ? board1QB : boardSF;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -430,20 +439,15 @@ const MyBoard = () => {
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reordered = arrayMove(currentBoard, oldIndex, newIndex);
-
-    if (activeFormat === 'oneQB') {
-      setBoard1QB(reordered);
-    } else {
-      setBoardSF(reordered);
-    }
-    persist(activeFormat, reordered);
+    setAllBoards(prev => prev.map(b => b.id === activeBoardId ? { ...b, players: reordered } : b));
+    persist(activeBoardId, reordered);
   };
 
   const exportBoard = () => {
     const lines = currentBoard.map((p, i) =>
       `${i + 1}. ${p.name} (${p.position})${p.college ? ` - ${p.college}` : ''}${p.draftRound ? ` | ${getDraftRangeLabel(p.draftRound, p.draftPick) || 'TBD'}` : ''}${hasInjuryRisk(p) ? ' ⚠️ INJURY' : ''}`
     );
-    const header = activeFormat === 'oneQB' ? '=== MY 1QB ROOKIE BOARD ===' : '=== MY SUPERFLEX ROOKIE BOARD ===';
+    const header = `=== ${(activeBoard?.name || 'MY BOARD').toUpperCase()} ===`;
     return `${header}\n${'='.repeat(header.length)}\n${lines.join('\n')}\n\nGenerated by Dynasty Rookie Scout`;
   };
 
@@ -460,7 +464,7 @@ const MyBoard = () => {
         scale: 2,
       });
       const link = document.createElement('a');
-      link.download = `dynasty-board-${activeFormat === 'oneQB' ? '1QB' : 'SF'}.png`;
+      link.download = `dynasty-board-${(activeBoard?.name || 'board').replace(/\s+/g, '-').toLowerCase()}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
@@ -505,33 +509,43 @@ const MyBoard = () => {
         justifyContent: 'space-between',
         marginBottom: 16,
       }}>
-        <div className="myboard-tabs" style={{ display: 'flex', gap: 4 }}>
-          {[
-            { id: 'oneQB', label: '1QB BOARD' },
-            { id: 'superflex', label: 'SUPERFLEX BOARD' },
-          ].map(tab => (
+        <div className="myboard-tabs" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
+          {allBoards.map(board => (
             <button
-              key={tab.id}
-              onClick={() => setActiveFormat(tab.id)}
+              key={board.id}
+              onClick={() => setActiveBoardId(board.id)}
+              onDoubleClick={() => { setRenamingBoardId(board.id); setRenameValue(board.name); }}
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 700,
-                fontSize: 14,
-                letterSpacing: 1.5,
-                textTransform: 'uppercase',
-                padding: '8px 20px',
+                fontWeight: 700, fontSize: 13, letterSpacing: 1,
+                textTransform: 'uppercase', padding: '6px 14px',
                 border: '1px solid',
-                borderColor: activeFormat === tab.id ? 'var(--warning)' : 'var(--border-primary)',
-                borderRadius: 4,
-                cursor: 'pointer',
-                background: activeFormat === tab.id ? 'var(--warning-light)' : 'transparent',
-                color: activeFormat === tab.id ? 'var(--warning)' : 'var(--text-tertiary)',
-                transition: 'all 0.15s',
+                borderColor: board.id === activeBoardId ? 'var(--warning)' : 'var(--border-primary)',
+                borderRadius: 4, cursor: 'pointer',
+                background: board.id === activeBoardId ? 'var(--warning-light)' : 'transparent',
+                color: board.id === activeBoardId ? 'var(--warning)' : 'var(--text-tertiary)',
+                transition: 'all 0.15s', maxWidth: 180,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}
+              title={`${board.name} (${board.format === 'SF' || board.format === 'superflex' ? 'SF' : '1QB'})`}
             >
-              {tab.label}
+              {board.name}
             </button>
           ))}
+          {user && (
+            <button
+              onClick={() => setShowNewBoard(!showNewBoard)}
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700, fontSize: 13, letterSpacing: 1,
+                padding: '6px 10px', border: '1px dashed var(--border-primary)',
+                borderRadius: 4, cursor: 'pointer',
+                background: 'transparent', color: 'var(--text-tertiary)',
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
 
         {/* Board actions — icon buttons for share/export */}
@@ -570,6 +584,99 @@ const MyBoard = () => {
           </button>
         </div>
       </div>
+
+      {/* New board form */}
+      {showNewBoard && (
+        <div style={{
+          display: 'flex', gap: 8, alignItems: 'center',
+          marginBottom: 12, padding: '8px 12px',
+          background: 'var(--bg-tertiary)', borderRadius: 6,
+          border: '1px solid var(--border-primary)',
+        }}>
+          <input
+            value={newBoardName}
+            onChange={e => setNewBoardName(e.target.value)}
+            placeholder="Board name..."
+            autoFocus
+            style={{
+              flex: 1, padding: '6px 10px', borderRadius: 4,
+              border: '1px solid var(--border-primary)',
+              background: 'var(--bg-input)', color: 'var(--text-primary)',
+              fontFamily: "'Inter', sans-serif", fontSize: 12, outline: 'none',
+            }}
+          />
+          <select
+            value={newBoardFormat}
+            onChange={e => setNewBoardFormat(e.target.value)}
+            style={{
+              padding: '6px 8px', borderRadius: 4,
+              border: '1px solid var(--border-primary)',
+              background: 'var(--bg-input)', color: 'var(--text-primary)',
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+            }}
+          >
+            <option value="oneQB">1QB</option>
+            <option value="superflex">SF</option>
+          </select>
+          <button
+            onClick={handleCreateBoard}
+            disabled={!newBoardName.trim()}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700, fontSize: 12, padding: '6px 12px',
+              border: 'none', borderRadius: 4,
+              background: 'var(--accent)', color: '#fff', cursor: 'pointer',
+              opacity: newBoardName.trim() ? 1 : 0.5,
+            }}
+          >
+            Create
+          </button>
+          <button onClick={() => setShowNewBoard(false)} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-tertiary)', fontSize: 16,
+          }}>×</button>
+        </div>
+      )}
+
+      {/* Rename inline */}
+      {renamingBoardId && (
+        <div style={{
+          display: 'flex', gap: 8, alignItems: 'center',
+          marginBottom: 12, padding: '8px 12px',
+          background: 'var(--bg-tertiary)', borderRadius: 6,
+          border: '1px solid var(--warning)',
+        }}>
+          <input
+            value={renameValue}
+            onChange={e => setRenameValue(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleRenameBoard(renamingBoardId, renameValue)}
+            autoFocus
+            style={{
+              flex: 1, padding: '6px 10px', borderRadius: 4,
+              border: '1px solid var(--border-primary)',
+              background: 'var(--bg-input)', color: 'var(--text-primary)',
+              fontFamily: "'Inter', sans-serif", fontSize: 12, outline: 'none',
+            }}
+          />
+          <button onClick={() => handleRenameBoard(renamingBoardId, renameValue)} style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+            padding: '4px 10px', borderRadius: 4, border: 'none',
+            background: 'var(--warning)', color: '#fff', cursor: 'pointer',
+          }}>Save</button>
+          {allBoards.length > 1 && (
+            <button onClick={() => handleDeleteBoard(renamingBoardId)} style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+              padding: '4px 10px', borderRadius: 4,
+              border: '1px solid var(--danger)', background: 'transparent',
+              color: 'var(--danger)', cursor: 'pointer',
+            }}>Delete</button>
+          )}
+          <button onClick={() => setRenamingBoardId(null)} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-tertiary)', fontSize: 16,
+          }}>×</button>
+        </div>
+      )}
 
       {/* Share URL display + publish toggle */}
       {shareUrl && (
@@ -614,7 +721,7 @@ const MyBoard = () => {
             </span>
             <button
               onClick={async () => {
-                const boardId = activeFormat === 'oneQB' ? boardId1QB : boardIdSF;
+                const boardId = activeBoardId;
                 if (!boardId) return;
                 const newVisibility = isPublished ? 'shared' : 'public';
                 try {
@@ -640,20 +747,17 @@ const MyBoard = () => {
 
       {/* Sleeper sync */}
       {user && <SleeperSync onSynced={(result) => {
-        // Auto-switch format to match synced league
-        if (result.format === 'SF') {
-          setActiveFormat('superflex');
-          try { localStorage.setItem('drs_league_format', 'SF'); } catch {}
-        } else {
-          setActiveFormat('oneQB');
-          try { localStorage.setItem('drs_league_format', '1QB'); } catch {}
-        }
+        // Auto-switch to a board matching the league format
+        const targetFormat = result.format === 'SF' ? 'superflex' : 'oneQB';
+        try { localStorage.setItem('drs_league_format', result.format === 'SF' ? 'SF' : '1QB'); } catch {}
+        const matchingBoard = allBoards.find(b =>
+          b.format === targetFormat || b.format === (result.format === 'SF' ? 'SF' : '1QB')
+        );
+        if (matchingBoard) setActiveBoardId(matchingBoard.id);
         // Store picks for board markers
         const picks = Array.isArray(result.draft_picks) ? result.draft_picks : [];
         setSleeperPicks(picks);
-        // Determine total teams from roster positions or default
-        const totalTeams = result.total_rosters || 12;
-        setSleeperLeagueCount(totalTeams);
+        setSleeperLeagueCount(result.total_rosters || 12);
       }} />}
 
       {/* Quick links */}
