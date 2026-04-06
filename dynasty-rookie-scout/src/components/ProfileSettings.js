@@ -8,6 +8,7 @@ const ProfileSettings = () => {
   // Profile form
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [sleeperUsername, setSleeperUsername] = useState(user?.sleeper_username || '');
   const [profileMsg, setProfileMsg] = useState(null);
   const [profileErr, setProfileErr] = useState(null);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -17,6 +18,7 @@ const ProfileSettings = () => {
     if (user) {
       setUsername(user.username || '');
       setBio(user.bio || '');
+      setSleeperUsername(user.sleeper_username || '');
     }
   }, [user]);
 
@@ -34,7 +36,7 @@ const ProfileSettings = () => {
     setProfileErr(null);
     setProfileSaving(true);
     try {
-      await updateProfile({ username, bio });
+      await updateProfile({ username, bio, sleeper_username: sleeperUsername });
       setProfileMsg('Profile updated');
     } catch (err) {
       setProfileErr(err.message || 'Failed to update profile');
@@ -177,6 +179,21 @@ const ProfileSettings = () => {
               textAlign: 'right', marginTop: 2,
             }}>
               {bio.length}/500
+            </div>
+          </Field>
+
+          <Field label="Sleeper Username">
+            <input
+              value={sleeperUsername}
+              onChange={(e) => setSleeperUsername(e.target.value)}
+              placeholder="Your Sleeper app username"
+              style={inputStyle}
+            />
+            <div style={{
+              fontSize: 11, color: 'var(--text-tertiary)',
+              fontFamily: "'Inter', sans-serif", marginTop: 2,
+            }}>
+              Used to auto-sync your leagues and draft picks
             </div>
           </Field>
 

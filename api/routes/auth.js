@@ -6,6 +6,13 @@ const { requireAuth, signToken } = require('../middleware/auth');
 const router = express.Router();
 
 const SALT_ROUNDS = 12;
+
+// Ensure sleeper_username column exists
+(async () => {
+  try {
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS sleeper_username VARCHAR(100)');
+  } catch { /* ignore */ }
+})();
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/;
 
 // POST /api/auth/register
@@ -83,7 +90,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, email, username, avatar_url, bio, created_at FROM users WHERE id = $1',
+      'SELECT id, email, username, avatar_url, bio, sleeper_username, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -102,7 +109,7 @@ router.get('/me', requireAuth, async (req, res) => {
 // PATCH /api/auth/profile — update profile fields
 router.patch('/profile', requireAuth, async (req, res) => {
   try {
-    const { username, bio, avatar_url } = req.body;
+    const { username, bio, avatar_url, sleeper_username } = req.body;
     const updates = [];
     const values = [];
     let idx = 1;
@@ -125,6 +132,10 @@ router.patch('/profile', requireAuth, async (req, res) => {
       updates.push(`avatar_url = $${idx++}`);
       values.push(avatar_url || null);
     }
+    if (sleeper_username !== undefined) {
+      updates.push(`sleeper_username = $${idx++}`);
+      values.push(sleeper_username?.trim() || null);
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({ error: 'No fields to update' });
@@ -135,7 +146,7 @@ router.patch('/profile', requireAuth, async (req, res) => {
 
     const result = await pool.query(
       `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}
-       RETURNING id, email, username, avatar_url, bio, created_at`,
+       RETURNING id, email, username, avatar_url, bio, sleeper_username, created_at`,
       values
     );
 

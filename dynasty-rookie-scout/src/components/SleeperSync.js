@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import {
   lookupSleeperUser,
   fetchSleeperLeagues,
@@ -19,6 +20,8 @@ const SleeperIcon = () => (
  * Steps: enter username → pick league → synced (shows picks).
  */
 const SleeperSync = ({ onSynced }) => {
+  const { user: authUser } = useAuth();
+
   // Synced leagues
   const [syncedLeagues, setSyncedLeagues] = useState([]);
   const [loadingSynced, setLoadingSynced] = useState(true);
@@ -216,7 +219,29 @@ const SleeperSync = ({ onSynced }) => {
               {/* Right: add league button */}
               {step === 'idle' && (
                 <button
-                  onClick={() => setStep('username')}
+                  onClick={async () => {
+                    // If sleeper_username is saved in profile, skip straight to league selection
+                    const savedUsername = authUser?.sleeper_username;
+                    if (savedUsername) {
+                      setLoading(true);
+                      setError(null);
+                      try {
+                        const slUser = await lookupSleeperUser(savedUsername);
+                        setSleeperUser(slUser);
+                        setUsername(savedUsername);
+                        const { leagues: found } = await fetchSleeperLeagues(slUser.sleeper_user_id);
+                        setLeagues(found);
+                        setStep('leagues');
+                      } catch (err) {
+                        setError(err.message || 'Failed to look up saved Sleeper username');
+                        setStep('username');
+                      } finally {
+                        setLoading(false);
+                      }
+                    } else {
+                      setStep('username');
+                    }
+                  }}
                   style={{
                     fontFamily: "'Barlow Condensed', sans-serif",
                     fontWeight: 700, fontSize: 12, letterSpacing: 0.5,
