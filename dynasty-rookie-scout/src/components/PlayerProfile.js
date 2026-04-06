@@ -153,7 +153,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
         { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
         { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
         { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
-        { stat: 'Catch %', value: computePercentile(s.catchRate, peers.map(p => p.stats?.catchRate)), fullMark: 100 },
+        { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
       ];
       if (player.advancedStats?.yprr) {
         radarStats.push({ stat: 'YPRR', value: computePercentile(player.advancedStats.yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)), fullMark: 100 });
@@ -165,8 +165,8 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
       { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
       { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
-      { stat: 'Catch %', value: computePercentile(s.catchRate, peers.map(p => p.stats?.catchRate)), fullMark: 100 },
-      { stat: 'Yds/Tgt', value: computePercentile(s.yardsPerTarget, peers.map(p => p.stats?.yardsPerTarget)), fullMark: 100 },
+      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
+      { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
     ];
   }, [player, peers]);
 
