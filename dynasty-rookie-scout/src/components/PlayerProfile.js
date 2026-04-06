@@ -134,30 +134,40 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
       return [
         { stat: 'Comp %', value: computePercentile(s.completionPct, peers.map(p => p.stats?.completionPct)), fullMark: 100 },
         { stat: 'Pass TDs', value: computePercentile(s.passingTDs, peers.map(p => p.stats?.passingTDs)), fullMark: 100 },
-        { stat: 'Pass YDs', value: computePercentile(s.passingYards, peers.map(p => p.stats?.passingYards)), fullMark: 100 },
+        { stat: 'Y/A', value: computePercentile(s.yardsPerAttempt, peers.map(p => p.stats?.yardsPerAttempt)), fullMark: 100 },
+        { stat: 'TD/INT', value: computePercentile(s.tdIntRatio, peers.map(p => p.stats?.tdIntRatio)), fullMark: 100 },
         { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
-        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
       ];
     }
     if (pos === 'RB') {
       return [
         { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
         { stat: 'YPC', value: computePercentile(s.yardsPerCarry, peers.map(p => p.stats?.yardsPerCarry)), fullMark: 100 },
-        { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
-        { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
-        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
+        { stat: 'Rec Work', value: computePercentile(s.receivingWorkPct, peers.map(p => p.stats?.receivingWorkPct)), fullMark: 100 },
+        { stat: 'Total TDs', value: computePercentile(s.totalTDs, peers.map(p => p.stats?.totalTDs)), fullMark: 100 },
+        { stat: 'Receiving', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       ];
     }
-    // WR & TE — YPRR only for WR (TE data is inaccurate)
-    const radarStats = [
+    if (pos === 'WR') {
+      const radarStats = [
+        { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
+        { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
+        { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
+        { stat: 'Catch %', value: computePercentile(s.catchRate, peers.map(p => p.stats?.catchRate)), fullMark: 100 },
+      ];
+      if (player.advancedStats?.yprr) {
+        radarStats.push({ stat: 'YPRR', value: computePercentile(player.advancedStats.yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)), fullMark: 100 });
+      }
+      return radarStats;
+    }
+    // TE
+    return [
       { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
       { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
+      { stat: 'Catch %', value: computePercentile(s.catchRate, peers.map(p => p.stats?.catchRate)), fullMark: 100 },
+      { stat: 'Yds/Tgt', value: computePercentile(s.yardsPerTarget, peers.map(p => p.stats?.yardsPerTarget)), fullMark: 100 },
     ];
-    if (player.position === 'WR' && player.advancedStats?.yprr) {
-      radarStats.push({ stat: 'YPRR', value: computePercentile(player.advancedStats.yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)), fullMark: 100 });
-    }
-    return radarStats;
   }, [player, peers]);
 
   const isUnranked = player.rank?.oneQB === 'UNR' || player.rank?.superflex === 'UNR';

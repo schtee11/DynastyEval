@@ -187,9 +187,9 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
       return [
         { stat: 'Comp %', value: computePercentile(s.completionPct, peers.map(p => p.stats?.completionPct)), fullMark: 100 },
         { stat: 'Pass TDs', value: computePercentile(s.passingTDs, peers.map(p => p.stats?.passingTDs)), fullMark: 100 },
-        { stat: 'Pass YDs', value: computePercentile(s.passingYards, peers.map(p => p.stats?.passingYards)), fullMark: 100 },
+        { stat: 'Y/A', value: computePercentile(s.yardsPerAttempt, peers.map(p => p.stats?.yardsPerAttempt)), fullMark: 100 },
+        { stat: 'TD/INT', value: computePercentile(s.tdIntRatio, peers.map(p => p.stats?.tdIntRatio)), fullMark: 100 },
         { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
-        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
       ];
     }
 
@@ -197,9 +197,9 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
       return [
         { stat: 'Rush YDs', value: computePercentile(s.rushingYards, peers.map(p => p.stats?.rushingYards)), fullMark: 100 },
         { stat: 'YPC', value: computePercentile(s.yardsPerCarry, peers.map(p => p.stats?.yardsPerCarry)), fullMark: 100 },
+        { stat: 'Rec Work', value: computePercentile(s.receivingWorkPct, peers.map(p => p.stats?.receivingWorkPct)), fullMark: 100 },
+        { stat: 'Total TDs', value: computePercentile(s.totalTDs, peers.map(p => p.stats?.totalTDs)), fullMark: 100 },
         { stat: 'Receiving', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
-        { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
-        { stat: 'MTF', value: computePercentile(player.avoidedTackles, peers.map(p => p.avoidedTackles)), fullMark: 100 },
       ];
     }
 
@@ -229,8 +229,8 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
       { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
       { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
-      { stat: 'Tgt Share', value: computePercentile(player.targetShare, peers.map(p => p.targetShare)), fullMark: 100 },
-      { stat: 'YAC/Rec', value: computePercentile(player.yardsAfterCatchPerRec, peers.map(p => p.yardsAfterCatchPerRec)), fullMark: 100 },
+      { stat: 'Catch %', value: computePercentile(s.catchRate, peers.map(p => p.stats?.catchRate)), fullMark: 100 },
+      { stat: 'Yds/Tgt', value: computePercentile(s.yardsPerTarget, peers.map(p => p.stats?.yardsPerTarget)), fullMark: 100 },
     ];
   };
 
@@ -372,21 +372,29 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                   <StatRow label="Passing Yards" value={player.stats?.passingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.passingYards)} />
                   <StatRow label="Passing TDs" value={player.stats?.passingTDs} benchmark={25} allValues={peerVals(p => p.stats?.passingTDs)} />
                   <StatRow label="Interceptions" value={player.stats?.interceptions} />
+                  <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="Yards/Attempt" value={player.stats?.yardsPerAttempt} benchmark={8.0} allValues={peerVals(p => p.stats?.yardsPerAttempt)} />
+                  <StatRow label="TD/INT Ratio" value={player.stats?.tdIntRatio} benchmark={2.5} allValues={peerVals(p => p.stats?.tdIntRatio)} />
                   <SectionLabel>Rushing</SectionLabel>
                   <StatRow label="Rushing Yards" value={player.stats?.rushingYards} allValues={peerVals(p => p.stats?.rushingYards)} />
                   <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} allValues={peerVals(p => p.stats?.rushingTDs)} />
+                  <StatRow label="Rush Share" value={player.stats?.rushingShare} unit="%" allValues={peerVals(p => p.stats?.rushingShare)} />
                 </>
               )}
 
               {player.position === 'RB' && (
                 <>
                   <SectionLabel>Production</SectionLabel>
+                  <StatRow label="Total Yards" value={player.stats?.totalYards?.toLocaleString()} allValues={peerVals(p => p.stats?.totalYards)} />
                   <StatRow label="Rushing Yards" value={player.stats?.rushingYards?.toLocaleString()} benchmark={1200} allValues={peerVals(p => p.stats?.rushingYards)} />
                   <StatRow label="Rushing TDs" value={player.stats?.rushingTDs} benchmark={12} allValues={peerVals(p => p.stats?.rushingTDs)} />
                   <StatRow label="YPC" value={player.stats?.yardsPerCarry} benchmark={5.0} allValues={peerVals(p => p.stats?.yardsPerCarry)} />
+                  <SectionLabel>Receiving</SectionLabel>
                   <StatRow label="Receptions" value={player.stats?.receptions} benchmark={25} allValues={peerVals(p => p.stats?.receptions)} />
                   <StatRow label="Receiving Yards" value={player.stats?.receivingYards} allValues={peerVals(p => p.stats?.receivingYards)} />
+                  <StatRow label="Rec Work %" value={player.stats?.receivingWorkPct} unit="%" allValues={peerVals(p => p.stats?.receivingWorkPct)} />
                   <SectionLabel>Efficiency</SectionLabel>
+                  <StatRow label="Total TDs" value={player.stats?.totalTDs} allValues={peerVals(p => p.stats?.totalTDs)} />
                   <StatRow label="YAC/Attempt" value={player.ycoPerAttempt} benchmark={3.5} allValues={peerVals(p => p.ycoPerAttempt)} />
                   <StatRow label="MTF" value={player.avoidedTackles} benchmark={40} allValues={peerVals(p => p.avoidedTackles)} />
                 </>
@@ -401,10 +409,12 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                   <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" allValues={peerVals(p => p.targetShare)} />
                   <SectionLabel>Efficiency</SectionLabel>
                   <StatRow label="YPRR" value={player.yprr} benchmark={1.8} />
+                  <StatRow label="Catch Rate" value={player.stats?.catchRate} unit="%" benchmark={65} allValues={peerVals(p => p.stats?.catchRate)} />
+                  <StatRow label="Yards/Target" value={player.stats?.yardsPerTarget} benchmark={9} allValues={peerVals(p => p.stats?.yardsPerTarget)} />
+                  <StatRow label="Yards/Rec" value={player.stats?.yardsPerReception} benchmark={12} allValues={peerVals(p => p.stats?.yardsPerReception)} />
+                  <StatRow label="TD Rate" value={player.stats?.tdRate} unit="%" benchmark={8} allValues={peerVals(p => p.stats?.tdRate)} />
                   <StatRow label="Rec Grade" value={player.recGrade} benchmark={70} allValues={peerVals(p => p.recGrade)} />
-                  <StatRow label="Targets/RR" value={player.tgtPerRR} unit="%" benchmark={20} allValues={peerVals(p => p.tgtPerRR)} />
                   <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} allValues={peerVals(p => p.yardsAfterCatchPerRec)} />
-                  <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" allValues={peerVals(p => p.contestedCatchRate)} />
                 </>
               )}
 
@@ -483,6 +493,9 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                         <StatRow label="Target Share" value={player.targetShare} benchmark={20} unit="%" />
                         <SectionLabel>Efficiency</SectionLabel>
                         <StatRow label="YPRR" value={player.yprr} benchmark={2.5} />
+                        <StatRow label="Catch Rate" value={player.stats?.catchRate} unit="%" benchmark={65} />
+                        <StatRow label="Yards/Target" value={player.stats?.yardsPerTarget} benchmark={9} />
+                        <StatRow label="TD Rate" value={player.stats?.tdRate} unit="%" benchmark={8} />
                         <StatRow label="Rec Grade" value={player.recGrade} benchmark={75} />
                         <StatRow label="YAC/Rec" value={player.yardsAfterCatchPerRec} benchmark={5.0} />
                         <StatRow label="Contested Catch %" value={player.contestedCatchRate} unit="%" />

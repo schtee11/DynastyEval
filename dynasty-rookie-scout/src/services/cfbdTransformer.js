@@ -147,13 +147,24 @@ const pct = (num, denom) =>
 const buildQBStats = (live) => {
   const pass = live?.passing;
   const rush = live?.rushing;
+  const att = v(pass, 'ATT');
+  const passYds = v(pass, 'YDS');
+  const passTDs = v(pass, 'TD');
+  const ints = v(pass, 'INT');
+  const rushYds = v(rush, 'YDS');
+  const rushTDs = v(rush, 'TD');
   return {
-    passingYards: v(pass, 'YDS'),
-    passingTDs: v(pass, 'TD'),
-    interceptions: v(pass, 'INT'),
-    completionPct: v(pass, 'PCT') || pct(v(pass, 'COMP'), v(pass, 'ATT')),
-    rushingYards: v(rush, 'YDS'),
-    rushingTDs: v(rush, 'TD'),
+    passingYards: passYds,
+    passingTDs: passTDs,
+    interceptions: ints,
+    completionPct: v(pass, 'PCT') || pct(v(pass, 'COMP'), att),
+    rushingYards: rushYds,
+    rushingTDs: rushTDs,
+    // Derived
+    yardsPerAttempt: att > 0 ? +(passYds / att).toFixed(1) : null,
+    tdIntRatio: ints > 0 ? +(passTDs / ints).toFixed(1) : passTDs > 0 ? passTDs : null,
+    totalTDs: passTDs + rushTDs,
+    rushingShare: (passYds + rushYds) > 0 ? +((rushYds / (passYds + rushYds)) * 100).toFixed(1) : null,
   };
 };
 
@@ -161,24 +172,41 @@ const buildRBStats = (live) => {
   const rush = live?.rushing;
   const recv = live?.receiving;
   const car = v(rush, 'CAR');
-  const yds = v(rush, 'YDS');
+  const rushYds = v(rush, 'YDS');
+  const rushTDs = v(rush, 'TD');
+  const rec = v(recv, 'REC');
+  const recYds = v(recv, 'YDS');
+  const recTDs = v(recv, 'TD');
   return {
-    rushingYards: yds,
-    rushingTDs: v(rush, 'TD'),
-    yardsPerCarry: car > 0 ? +(yds / car).toFixed(1) : 0,
-    receptions: v(recv, 'REC'),
-    receivingYards: v(recv, 'YDS'),
-    receivingTDs: v(recv, 'TD'),
+    rushingYards: rushYds,
+    rushingTDs: rushTDs,
+    yardsPerCarry: car > 0 ? +(rushYds / car).toFixed(1) : 0,
+    receptions: rec,
+    receivingYards: recYds,
+    receivingTDs: recTDs,
+    // Derived
+    totalYards: rushYds + recYds,
+    totalTDs: rushTDs + recTDs,
+    receivingWorkPct: (rushYds + recYds) > 0 ? +((recYds / (rushYds + recYds)) * 100).toFixed(1) : null,
   };
 };
 
 const buildRecStats = (live) => {
   const recv = live?.receiving;
+  const rec = v(recv, 'REC');
+  const recYds = v(recv, 'YDS');
+  const recTDs = v(recv, 'TD');
+  const targets = v(recv, 'TARGETS') || null;
   return {
-    receptions: v(recv, 'REC'),
-    receivingYards: v(recv, 'YDS'),
-    receivingTDs: v(recv, 'TD'),
-    targets: v(recv, 'TARGETS') || null, // from ESPN merge, 0 means no data
+    receptions: rec,
+    receivingYards: recYds,
+    receivingTDs: recTDs,
+    targets,
+    // Derived
+    yardsPerReception: rec > 0 ? +(recYds / rec).toFixed(1) : null,
+    yardsPerTarget: targets > 0 ? +(recYds / targets).toFixed(1) : null,
+    catchRate: targets > 0 ? +((rec / targets) * 100).toFixed(1) : null,
+    tdRate: rec > 0 ? +((recTDs / rec) * 100).toFixed(1) : null,
   };
 };
 
