@@ -18,7 +18,7 @@ export const generateScoutingSummary = (player) => {
     return `${name} profiles as a ${player.yprr > 2.5 ? 'high-efficiency' : 'developing'} route runner (${player.yprr} YPRR) with ${player.targetShare ? `a ${player.targetShare}% target share and ` : ''}${breakout} breakout age. ${capital} draft capital confirms NFL evaluators believe in the talent. Premium asset in both 1QB and SF rookie drafts — WR is the safest dynasty position.${injuryNote}`;
   }
   if (position === 'TE') {
-    return `${name} is a ${player.yprr > 2.0 ? 'productive' : 'developmental'} tight end prospect (${player.yprr} YPRR) with ${capital} draft capital and ${breakout} breakout age. ${player.targetShare ? `${player.targetShare}% target share. ` : ''}TE is a patience position in dynasty — expect a 2-year runway before consistent production. Value is comparable across 1QB and SF formats.${injuryNote}`;
+    return `${name} is a ${breakout} tight end prospect with ${capital} draft capital. ${player.targetShare ? `${player.targetShare}% target share. ` : ''}TE is a patience position in dynasty — expect a 2-year runway before consistent production. Value is comparable across 1QB and SF formats.${injuryNote}`;
   }
   return `${name} is a prospect with ${capital} draft capital. Evaluate based on landing spot and usage projections.`;
 };

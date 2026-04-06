@@ -90,9 +90,9 @@ export const getTopStats = (player, perspective = 'overall') => {
 
   if (position === 'TE') {
     return [
-      { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
       { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
       { label: 'Rec YDs', value: stats?.receivingYards?.toLocaleString() || 'N/A' },
+      { label: 'Rec TDs', value: stats?.receivingTDs?.toString() || 'N/A' },
     ];
   }
 
@@ -225,7 +225,6 @@ const strengthStatDefs = {
     { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
   ],
   TE: [
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
     { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target share' },
     { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
     { label: 'Receiving TDs', key: 'recTDs', unit: '', getValue: p => p.stats?.receivingTDs, desc: 'touchdown production' },
@@ -251,7 +250,6 @@ const concernStatDefs = {
     { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target volume' },
   ],
   TE: [
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
     { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target volume' },
   ],
 };
@@ -447,9 +445,9 @@ export const getStatAccessors = (position, perspective = 'overall') => {
   }
   if (position === 'TE') {
     return [
-      { label: 'YPRR', getValue: p => p.yprr },
       { label: 'TGT SHARE', getValue: p => p.targetShare },
       { label: 'REC YDS', getValue: p => p.stats?.receivingYards },
+      { label: 'REC TDs', getValue: p => p.stats?.receivingTDs },
     ];
   }
   return [];
