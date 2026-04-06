@@ -40,7 +40,9 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
     nameSearch: '',
   });
   const [sortBy, setSortBy] = useState('adp');
-  const [leagueType, setLeagueType] = useState('oneQB');
+  const [leagueType, setLeagueType] = useState(() => {
+    try { const f = localStorage.getItem('drs_league_format'); return f === 'SF' ? 'superflex' : 'oneQB'; } catch { return 'oneQB'; }
+  });
   const [perspective, setPerspective] = useState('overall');
   const rightPanelRef = useRef(null);
   const listRef = useRef(null);
