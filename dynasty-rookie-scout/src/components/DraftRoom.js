@@ -4,25 +4,231 @@ import { fetchMySleeperLeagues } from '../services/apiClient';
 import { getPlayers } from '../services/dataService';
 import { positionColors } from '../utils/helpers';
 
-/**
- * DraftRoom — combines Draft Scenario Planner + Draft Night Live Mode.
- *
- * Scenario Planner: Users create if/then rules for their draft picks.
- * Live Mode: Track picks in real-time, see best available, get recommendations.
- */
+const PLANS_KEY = 'drs_draft_plans';
+const LIVE_KEY = 'drs_draft_live';
 
-const STORAGE_KEY = 'drs_draft_scenarios';
-const LIVE_STORAGE_KEY = 'drs_draft_live';
+const PickCard = ({ pickLabel, targets, allPlayers, onAddTarget, onRemoveTarget, onMoveTarget, takenPlayerIds }) => {
+  const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return [];
+    const q = search.toLowerCase();
+    const targetIds = new Set(targets.map(t => String(t)));
+    return allPlayers
+      .filter(p => !targetIds.has(String(p.id)) && !takenPlayerIds.has(String(p.id)))
+      .filter(p => p.name.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [search, allPlayers, targets, takenPlayerIds]);
+
+  return (
+    <div style={{
+      background: 'var(--bg-card)', borderRadius: 10,
+      border: '1px solid var(--border-subtle)', overflow: 'hidden',
+      marginBottom: 12,
+    }}>
+      {/* Pick header */}
+      <div style={{
+        background: 'var(--warning-light)',
+        borderBottom: '1px solid var(--warning)',
+        padding: '10px 16px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontWeight: 700, fontSize: 18, letterSpacing: 1,
+          color: 'var(--warning)',
+        }}>
+          PICK {pickLabel}
+        </div>
+        <button
+          onClick={() => setShowSearch(!showSearch)}
+          style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+            padding: '3px 10px', borderRadius: 4,
+            border: 'none',
+            background: 'var(--accent)', color: '#fff', cursor: 'pointer',
+          }}
+        >
+          + Add Target
+        </button>
+      </div>
+
+      {/* Target list (priority order) */}
+      <div style={{ padding: targets.length > 0 || showSearch ? '8px 12px' : 0 }}>
+        {targets.length === 0 && !showSearch && (
+          <div style={{
+            padding: '16px 12px', textAlign: 'center',
+            fontFamily: "'Inter', sans-serif", fontSize: 12,
+            color: 'var(--text-tertiary)',
+          }}>
+            No targets set. Add players you'd want at this pick.
+          </div>
+        )}
+
+        {targets.map((playerId, i) => {
+          const p = allPlayers.find(pl => String(pl.id) === String(playerId));
+          if (!p) return null;
+          const posColor = positionColors[p.position] || positionColors.WR;
+          const isTaken = takenPlayerIds.has(String(p.id));
+          return (
+            <div key={playerId} style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '6px 4px',
+              borderBottom: i < targets.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+              opacity: isTaken ? 0.35 : 1,
+            }}>
+              {/* Priority number */}
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 14, fontWeight: 700, color: i === 0 ? 'var(--success)' : 'var(--text-tertiary)',
+                width: 20, textAlign: 'center',
+              }}>
+                {i + 1}
+              </span>
+
+              {/* Move buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <button
+                  onClick={() => onMoveTarget(i, -1)}
+                  disabled={i === 0}
+                  style={{
+                    background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer',
+                    color: 'var(--text-tertiary)', fontSize: 10, padding: 0, lineHeight: 1,
+                    opacity: i === 0 ? 0.3 : 1,
+                  }}
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => onMoveTarget(i, 1)}
+                  disabled={i === targets.length - 1}
+                  style={{
+                    background: 'none', border: 'none', cursor: i === targets.length - 1 ? 'default' : 'pointer',
+                    color: 'var(--text-tertiary)', fontSize: 10, padding: 0, lineHeight: 1,
+                    opacity: i === targets.length - 1 ? 0.3 : 1,
+                  }}
+                >
+                  ▼
+                </button>
+              </div>
+
+              {/* Player info */}
+              <span style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                color: isTaken ? 'var(--text-tertiary)' : 'var(--text-primary)',
+                textDecoration: isTaken ? 'line-through' : 'none',
+                flex: 1,
+              }}>
+                {p.name}
+              </span>
+              <span style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 600, fontSize: 10,
+                color: posColor.text, background: posColor.bg,
+                padding: '1px 5px', borderRadius: 3,
+              }}>
+                {p.position}
+              </span>
+              {isTaken && (
+                <span style={{
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
+                  color: 'var(--danger)', fontWeight: 700,
+                }}>
+                  TAKEN
+                </span>
+              )}
+              <button
+                onClick={() => onRemoveTarget(i)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-tertiary)', fontSize: 14, padding: '0 4px',
+                }}
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
+
+        {/* Search to add */}
+        {showSearch && (
+          <div style={{ marginTop: 8 }}>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search for a player..."
+              autoFocus
+              style={{
+                width: '100%', padding: '8px 10px', borderRadius: 6,
+                border: '1px solid var(--border-primary)',
+                background: 'var(--bg-input)', color: 'var(--text-primary)',
+                fontFamily: "'Inter', sans-serif", fontSize: 12,
+                outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            {searchResults.map(p => {
+              const posColor = positionColors[p.position] || positionColors.WR;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => { onAddTarget(p.id); setSearch(''); setShowSearch(false); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '6px 8px', cursor: 'pointer',
+                    borderBottom: '1px solid var(--border-subtle)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+                    color: 'var(--text-primary)', flex: 1,
+                  }}>
+                    {p.name}
+                  </span>
+                  <span style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 600, fontSize: 10,
+                    color: posColor.text, background: posColor.bg,
+                    padding: '1px 5px', borderRadius: 3,
+                  }}>
+                    {p.position}
+                  </span>
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                    color: 'var(--text-tertiary)',
+                  }}>
+                    ADP #{p.dynastyADP?.oneQB || '—'}
+                  </span>
+                </div>
+              );
+            })}
+            {search.trim() && searchResults.length === 0 && (
+              <div style={{
+                padding: 8, fontFamily: "'Inter', sans-serif", fontSize: 11,
+                color: 'var(--text-tertiary)',
+              }}>
+                No players found
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const DraftRoom = () => {
   const { user } = useAuth();
   const [players, setPlayers] = useState([]);
   const [leagues, setLeagues] = useState([]);
   const [activeLeagueId, setActiveLeagueId] = useState(null);
-  const [mode, setMode] = useState('plan'); // 'plan' | 'live'
-  const [scenarios, setScenarios] = useState([]);
-  const [livePicks, setLivePicks] = useState([]); // [{pickNumber, playerId}]
+  const [mode, setMode] = useState('plan');
+  const [plans, setPlans] = useState({}); // { "1.05": [playerId, playerId, ...], "1.11": [...] }
+  const [livePicks, setLivePicks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [liveSearch, setLiveSearch] = useState('');
 
   // Load players and leagues
   useEffect(() => {
@@ -45,107 +251,106 @@ const DraftRoom = () => {
     load();
   }, [user]);
 
-  // Load saved scenarios and live picks
+  // Load saved plans and live picks
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setScenarios(JSON.parse(saved));
-      const savedLive = localStorage.getItem(LIVE_STORAGE_KEY);
+      const saved = localStorage.getItem(PLANS_KEY);
+      if (saved) setPlans(JSON.parse(saved));
+      const savedLive = localStorage.getItem(LIVE_KEY);
       if (savedLive) setLivePicks(JSON.parse(savedLive));
     } catch { /* ignore */ }
   }, []);
 
-  // Persist scenarios
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(scenarios)); } catch {}
-  }, [scenarios]);
+    try { localStorage.setItem(PLANS_KEY, JSON.stringify(plans)); } catch {}
+  }, [plans]);
 
-  // Persist live picks
   useEffect(() => {
-    try { localStorage.setItem(LIVE_STORAGE_KEY, JSON.stringify(livePicks)); } catch {}
+    try { localStorage.setItem(LIVE_KEY, JSON.stringify(livePicks)); } catch {}
   }, [livePicks]);
 
   const activeLeague = leagues.find(l => l.league_id === activeLeagueId);
   const totalTeams = activeLeague?.total_rosters || 12;
   const picks = useMemo(() => {
     if (!activeLeague) return [];
-    const dp = Array.isArray(activeLeague.draft_picks) ? activeLeague.draft_picks : JSON.parse(activeLeague.draft_picks || '[]');
-    return dp;
-  }, [activeLeague]);
+    const dp = Array.isArray(activeLeague.draft_picks)
+      ? activeLeague.draft_picks
+      : JSON.parse(activeLeague.draft_picks || '[]');
+    return dp.map(p => ({
+      ...p,
+      label: p.slot ? `${p.round}.${String(p.slot).padStart(2, '0')}` : `Rd ${p.round}`,
+      overall: p.slot ? (p.round - 1) * totalTeams + p.slot : null,
+    }));
+  }, [activeLeague, totalTeams]);
 
-  const playerMap = useMemo(() => {
-    const map = {};
-    for (const p of players) map[String(p.id)] = p;
-    return map;
-  }, [players]);
+  const takenPlayerIds = useMemo(() =>
+    new Set(livePicks.map(p => String(p.playerId))),
+  [livePicks]);
 
-  // Players not yet picked in live mode
-  const availablePlayers = useMemo(() => {
-    const pickedIds = new Set(livePicks.map(p => String(p.playerId)));
-    return players.filter(p => !pickedIds.has(String(p.id)));
-  }, [players, livePicks]);
+  // Plan handlers
+  const addTarget = useCallback((pickLabel, playerId) => {
+    setPlans(prev => ({
+      ...prev,
+      [pickLabel]: [...(prev[pickLabel] || []), String(playerId)],
+    }));
+  }, []);
 
-  // ── Scenario Planner ──
+  const removeTarget = useCallback((pickLabel, index) => {
+    setPlans(prev => ({
+      ...prev,
+      [pickLabel]: (prev[pickLabel] || []).filter((_, i) => i !== index),
+    }));
+  }, []);
 
-  const addScenario = () => {
-    setScenarios(prev => [...prev, {
-      id: Date.now(),
-      pickRound: picks[0]?.round || 1,
-      ifPlayerId: null,
-      thenAction: 'take', // 'take' | 'skip'
-      elsePlayerId: null,
-    }]);
-  };
+  const moveTarget = useCallback((pickLabel, index, direction) => {
+    setPlans(prev => {
+      const list = [...(prev[pickLabel] || [])];
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= list.length) return prev;
+      [list[index], list[newIndex]] = [list[newIndex], list[index]];
+      return { ...prev, [pickLabel]: list };
+    });
+  }, []);
 
-  const updateScenario = (id, updates) => {
-    setScenarios(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-  };
-
-  const removeScenario = (id) => {
-    setScenarios(prev => prev.filter(s => s.id !== id));
-  };
-
-  // ── Live Mode ──
-
+  // Live handlers
   const addLivePick = (playerId) => {
     setLivePicks(prev => [...prev, {
       pickNumber: prev.length + 1,
       playerId: String(playerId),
-      timestamp: Date.now(),
     }]);
+    setLiveSearch('');
   };
 
-  const undoLastPick = () => {
-    setLivePicks(prev => prev.slice(0, -1));
-  };
-
-  const resetLive = () => {
-    if (window.confirm('Reset all live picks?')) setLivePicks([]);
-  };
+  const undoLastPick = () => setLivePicks(prev => prev.slice(0, -1));
+  const resetLive = () => { if (window.confirm('Reset all picks?')) setLivePicks([]); };
 
   const currentPick = livePicks.length + 1;
   const currentRound = Math.ceil(currentPick / totalTeams);
   const currentSlot = currentPick - (currentRound - 1) * totalTeams;
+  const isMyPick = picks.some(p => p.overall === currentPick);
 
-  // Check if current pick is the user's
-  const isMyPick = picks.some(p => {
-    const pickStart = (p.round - 1) * totalTeams + (p.slot || 0);
-    return pickStart === currentPick;
-  });
-
-  // Get recommendation from scenarios
-  const getRecommendation = useCallback(() => {
+  // Live recommendation from plans
+  const recommendation = useMemo(() => {
     if (!isMyPick) return null;
-    for (const s of scenarios) {
-      if (s.pickRound !== currentRound) continue;
-      if (s.ifPlayerId) {
-        const isAvailable = availablePlayers.some(p => String(p.id) === String(s.ifPlayerId));
-        if (isAvailable && s.thenAction === 'take') return playerMap[String(s.ifPlayerId)];
-        if (!isAvailable && s.elsePlayerId) return playerMap[String(s.elsePlayerId)];
+    const myPick = picks.find(p => p.overall === currentPick);
+    if (!myPick) return null;
+    const targets = plans[myPick.label] || [];
+    for (const tid of targets) {
+      if (!takenPlayerIds.has(String(tid))) {
+        return players.find(p => String(p.id) === String(tid));
       }
     }
     return null;
-  }, [isMyPick, scenarios, currentRound, availablePlayers, playerMap]);
+  }, [isMyPick, picks, currentPick, plans, takenPlayerIds, players]);
+
+  // Available players for live search
+  const liveSearchResults = useMemo(() => {
+    if (!liveSearch.trim()) return players.filter(p => !takenPlayerIds.has(String(p.id))).slice(0, 15);
+    const q = liveSearch.toLowerCase();
+    return players
+      .filter(p => !takenPlayerIds.has(String(p.id)) && p.name.toLowerCase().includes(q))
+      .slice(0, 15);
+  }, [players, takenPlayerIds, liveSearch]);
 
   if (loading) {
     return (
@@ -154,8 +359,6 @@ const DraftRoom = () => {
       </div>
     );
   }
-
-  const recommendation = mode === 'live' ? getRecommendation() : null;
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '16px 16px 80px' }}>
@@ -181,14 +384,14 @@ const DraftRoom = () => {
                 fontWeight: 700, fontSize: 13, letterSpacing: 1,
                 textTransform: 'uppercase', padding: '6px 16px',
                 border: '1px solid',
-                borderColor: mode === m ? 'var(--warning)' : 'var(--border-primary)',
+                borderColor: mode === m ? (m === 'live' ? 'var(--danger)' : 'var(--warning)') : 'var(--border-primary)',
                 borderRadius: 4,
-                background: mode === m ? 'var(--warning-light)' : 'transparent',
-                color: mode === m ? 'var(--warning)' : 'var(--text-tertiary)',
+                background: mode === m ? (m === 'live' ? 'rgba(239,68,68,0.1)' : 'var(--warning-light)') : 'transparent',
+                color: mode === m ? (m === 'live' ? 'var(--danger)' : 'var(--warning)') : 'var(--text-tertiary)',
                 cursor: 'pointer',
               }}
             >
-              {m === 'plan' ? 'Plan' : 'Live'}
+              {m === 'plan' ? 'Plan' : '● Live'}
             </button>
           ))}
         </div>
@@ -216,266 +419,143 @@ const DraftRoom = () => {
         </div>
       )}
 
-      {/* Your picks summary */}
-      {picks.length > 0 && (
-        <div style={{
-          display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap',
-          fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-        }}>
-          <span style={{ color: 'var(--text-tertiary)' }}>Your picks:</span>
-          {picks.map((p, i) => (
-            <span key={i} style={{
-              padding: '2px 8px', borderRadius: 3,
-              background: 'var(--warning-light)', color: 'var(--warning)',
-              fontWeight: 700,
-            }}>
-              {p.slot ? `${p.round}.${String(p.slot).padStart(2, '0')}` : `Rd ${p.round}`}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* ══ PLAN MODE ══ */}
       {mode === 'plan' && (
         <div>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginBottom: 12,
-          }}>
-            <h3 style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700, fontSize: 16, letterSpacing: 1,
-              textTransform: 'uppercase', color: 'var(--text-secondary)', margin: 0,
-            }}>
-              Draft Scenarios
-            </h3>
-            <button
-              onClick={addScenario}
-              style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 700, fontSize: 12, letterSpacing: 0.5,
-                textTransform: 'uppercase', padding: '5px 12px',
-                border: 'none', borderRadius: 4,
-                background: 'var(--accent)', color: '#fff', cursor: 'pointer',
-              }}
-            >
-              + Add Rule
-            </button>
-          </div>
-
-          {scenarios.length === 0 && (
+          {picks.length === 0 ? (
             <div style={{
               padding: 30, textAlign: 'center',
-              color: 'var(--text-tertiary)',
+              background: 'var(--bg-secondary)', borderRadius: 10,
               fontFamily: "'Inter', sans-serif", fontSize: 13,
-              background: 'var(--bg-secondary)', borderRadius: 8,
+              color: 'var(--text-tertiary)',
             }}>
-              No scenarios yet. Add rules like "If Player X is available at my pick, take him."
+              {user ? 'Sync a Sleeper league to see your picks.' : 'Sign in and sync a Sleeper league to plan your draft.'}
             </div>
+          ) : (
+            <>
+              <p style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 13,
+                color: 'var(--text-tertiary)', margin: '0 0 16px',
+              }}>
+                For each pick, add players in priority order. Your top available choice will be recommended during the live draft.
+              </p>
+              {picks.map(pick => (
+                <PickCard
+                  key={pick.label}
+                  pickLabel={pick.label}
+                  targets={plans[pick.label] || []}
+                  allPlayers={players}
+                  takenPlayerIds={takenPlayerIds}
+                  onAddTarget={(playerId) => addTarget(pick.label, playerId)}
+                  onRemoveTarget={(index) => removeTarget(pick.label, index)}
+                  onMoveTarget={(index, dir) => moveTarget(pick.label, index, dir)}
+                />
+              ))}
+            </>
           )}
-
-          {scenarios.map(scenario => (
-            <div key={scenario.id} style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 8, padding: 12, marginBottom: 8,
-            }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
-                fontFamily: "'Inter', sans-serif", fontSize: 13,
-              }}>
-                <span style={{ color: 'var(--text-tertiary)', fontWeight: 600 }}>At Rd</span>
-                <select
-                  value={scenario.pickRound}
-                  onChange={e => updateScenario(scenario.id, { pickRound: Number(e.target.value) })}
-                  style={{
-                    padding: '4px 8px', borderRadius: 4,
-                    border: '1px solid var(--border-primary)',
-                    background: 'var(--bg-input)', color: 'var(--text-primary)',
-                    fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                  }}
-                >
-                  {[1,2,3,4,5].map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-
-                <span style={{ color: 'var(--warning)', fontWeight: 700 }}>IF</span>
-                <select
-                  value={scenario.ifPlayerId || ''}
-                  onChange={e => updateScenario(scenario.id, { ifPlayerId: e.target.value || null })}
-                  style={{
-                    padding: '4px 8px', borderRadius: 4, flex: 1, minWidth: 120,
-                    border: '1px solid var(--border-primary)',
-                    background: 'var(--bg-input)', color: 'var(--text-primary)',
-                    fontFamily: "'Inter', sans-serif", fontSize: 12,
-                  }}
-                >
-                  <option value="">Select player...</option>
-                  {players.slice(0, 50).map(p => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.position})</option>
-                  ))}
-                </select>
-
-                <span style={{ color: 'var(--text-tertiary)', fontWeight: 600 }}>is available →</span>
-                <span style={{ color: 'var(--success)', fontWeight: 700 }}>TAKE</span>
-              </div>
-
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap',
-                fontFamily: "'Inter', sans-serif", fontSize: 13,
-              }}>
-                <span style={{ color: 'var(--danger)', fontWeight: 700 }}>ELSE →</span>
-                <select
-                  value={scenario.elsePlayerId || ''}
-                  onChange={e => updateScenario(scenario.id, { elsePlayerId: e.target.value || null })}
-                  style={{
-                    padding: '4px 8px', borderRadius: 4, flex: 1, minWidth: 120,
-                    border: '1px solid var(--border-primary)',
-                    background: 'var(--bg-input)', color: 'var(--text-primary)',
-                    fontFamily: "'Inter', sans-serif", fontSize: 12,
-                  }}
-                >
-                  <option value="">Best available</option>
-                  {players.slice(0, 50).map(p => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.position})</option>
-                  ))}
-                </select>
-
-                <button
-                  onClick={() => removeScenario(scenario.id)}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--danger)', fontSize: 16, padding: '0 4px',
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       )}
 
       {/* ══ LIVE MODE ══ */}
       {mode === 'live' && (
         <div>
-          {/* Current pick status */}
+          {/* Current pick banner */}
           <div style={{
             background: isMyPick ? 'var(--warning-light)' : 'var(--bg-secondary)',
-            border: `1px solid ${isMyPick ? 'var(--warning)' : 'var(--border-primary)'}`,
-            borderRadius: 8, padding: 16, marginBottom: 16, textAlign: 'center',
+            border: `2px solid ${isMyPick ? 'var(--warning)' : 'var(--border-primary)'}`,
+            borderRadius: 10, padding: 20, marginBottom: 16, textAlign: 'center',
           }}>
             <div style={{
-              fontFamily: "'JetBrains Mono', monospace", fontSize: 14,
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
               color: 'var(--text-tertiary)',
             }}>
-              Pick {currentRound}.{String(currentSlot).padStart(2, '0')}
+              PICK {currentRound}.{String(currentSlot).padStart(2, '0')}
             </div>
             <div style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700, fontSize: 24, letterSpacing: 1,
+              fontWeight: 700, fontSize: 28, letterSpacing: 2,
               color: isMyPick ? 'var(--warning)' : 'var(--text-primary)',
               textTransform: 'uppercase',
             }}>
-              {isMyPick ? 'YOUR PICK' : 'On the Clock'}
+              {isMyPick ? '★ YOUR PICK ★' : 'On the Clock'}
             </div>
             {recommendation && (
               <div style={{
-                marginTop: 8, padding: '8px 16px',
-                background: 'var(--success-light)', borderRadius: 6,
-                fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700,
-                color: 'var(--success)',
+                marginTop: 10, padding: '10px 20px',
+                background: 'var(--success-light)', borderRadius: 8,
+                border: '1px solid var(--success)',
+                display: 'inline-block',
               }}>
-                Recommendation: {recommendation.name} ({recommendation.position})
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                  color: 'var(--success)', textTransform: 'uppercase', marginBottom: 2,
+                }}>
+                  Your Plan Says
+                </div>
+                <div style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700, fontSize: 20,
+                  color: 'var(--success)',
+                }}>
+                  {recommendation.name} ({recommendation.position})
+                </div>
               </div>
             )}
           </div>
 
           {/* Controls */}
           <div style={{
-            display: 'flex', gap: 8, marginBottom: 16, justifyContent: 'flex-end',
+            display: 'flex', gap: 8, marginBottom: 12, justifyContent: 'space-between',
+            alignItems: 'center',
           }}>
-            <button
-              onClick={undoLastPick}
-              disabled={livePicks.length === 0}
-              style={{
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+              color: 'var(--text-tertiary)',
+            }}>
+              {livePicks.length} picks made
+            </span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={undoLastPick} disabled={livePicks.length === 0} style={{
                 fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-                padding: '5px 12px', borderRadius: 4,
+                padding: '4px 10px', borderRadius: 4,
                 border: '1px solid var(--border-primary)',
                 background: 'transparent', color: 'var(--text-tertiary)',
                 cursor: livePicks.length === 0 ? 'default' : 'pointer',
                 opacity: livePicks.length === 0 ? 0.4 : 1,
-              }}
-            >
-              Undo
-            </button>
-            <button
-              onClick={resetLive}
-              style={{
+              }}>
+                Undo
+              </button>
+              <button onClick={resetLive} style={{
                 fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-                padding: '5px 12px', borderRadius: 4,
-                border: '1px solid var(--danger)', background: 'transparent',
-                color: 'var(--danger)', cursor: 'pointer',
-              }}
-            >
-              Reset
-            </button>
+                padding: '4px 10px', borderRadius: 4,
+                border: '1px solid var(--danger)',
+                background: 'transparent', color: 'var(--danger)',
+                cursor: 'pointer',
+              }}>
+                Reset
+              </button>
+            </div>
           </div>
 
-          {/* Pick log */}
-          {livePicks.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <h4 style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 700, fontSize: 13, letterSpacing: 1,
-                textTransform: 'uppercase', color: 'var(--text-tertiary)',
-                margin: '0 0 8px',
-              }}>
-                Picks Made
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {livePicks.map((pick, i) => {
-                  const p = playerMap[String(pick.playerId)];
-                  const round = Math.ceil(pick.pickNumber / totalTeams);
-                  const slot = pick.pickNumber - (round - 1) * totalTeams;
-                  const wasMyPick = picks.some(up => {
-                    const pos = (up.round - 1) * totalTeams + (up.slot || 0);
-                    return pos === pick.pickNumber;
-                  });
-                  return (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '4px 8px', borderRadius: 4,
-                      background: wasMyPick ? 'var(--warning-light)' : 'var(--bg-card)',
-                      fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
-                    }}>
-                      <span style={{ color: 'var(--text-tertiary)', width: 36 }}>
-                        {round}.{String(slot).padStart(2, '0')}
-                      </span>
-                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {p?.name || 'Unknown'}
-                      </span>
-                      <span style={{ color: (positionColors[p?.position] || {}).text || 'var(--text-tertiary)' }}>
-                        {p?.position}
-                      </span>
-                      {wasMyPick && <span style={{ color: 'var(--warning)', fontWeight: 700 }}>★</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Search + Best Available */}
+          <input
+            value={liveSearch}
+            onChange={e => setLiveSearch(e.target.value)}
+            placeholder="Search available players or click to pick..."
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              border: '1px solid var(--border-primary)',
+              background: 'var(--bg-input)', color: 'var(--text-primary)',
+              fontFamily: "'Inter', sans-serif", fontSize: 13,
+              outline: 'none', boxSizing: 'border-box', marginBottom: 8,
+            }}
+          />
 
-          {/* Best available */}
-          <h4 style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700, fontSize: 13, letterSpacing: 1,
-            textTransform: 'uppercase', color: 'var(--text-tertiary)',
-            margin: '0 0 8px',
+          <div style={{
+            background: 'var(--bg-secondary)', borderRadius: 8,
+            padding: 4,
           }}>
-            Best Available
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {availablePlayers.slice(0, 20).map(p => {
+            {liveSearchResults.map(p => {
               const posColor = positionColors[p.position] || positionColors.WR;
               return (
                 <div
@@ -484,30 +564,26 @@ const DraftRoom = () => {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '8px 12px', borderRadius: 6,
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-subtle)',
-                    cursor: 'pointer',
-                    transition: 'background 0.1s',
+                    cursor: 'pointer', transition: 'background 0.1s',
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <span style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 700, fontSize: 14, color: 'var(--text-primary)',
+                    fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                    color: 'var(--text-primary)', flex: 1,
                   }}>
                     {p.name}
                   </span>
                   <span style={{
                     fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 600, fontSize: 11,
+                    fontWeight: 600, fontSize: 10,
                     color: posColor.text, background: posColor.bg,
-                    padding: '1px 6px', borderRadius: 3,
+                    padding: '1px 5px', borderRadius: 3,
                   }}>
                     {p.position}
                   </span>
                   <span style={{
-                    marginLeft: 'auto',
                     fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
                     color: 'var(--text-tertiary)',
                   }}>
@@ -517,16 +593,70 @@ const DraftRoom = () => {
               );
             })}
           </div>
+
+          {/* Pick log */}
+          {livePicks.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <h4 style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700, fontSize: 13, letterSpacing: 1,
+                textTransform: 'uppercase', color: 'var(--text-tertiary)',
+                margin: '0 0 6px',
+              }}>
+                Draft Log
+              </h4>
+              <div style={{
+                background: 'var(--bg-secondary)', borderRadius: 8, padding: 4,
+              }}>
+                {livePicks.map((pick, i) => {
+                  const p = players.find(pl => String(pl.id) === String(pick.playerId));
+                  const round = Math.ceil(pick.pickNumber / totalTeams);
+                  const slot = pick.pickNumber - (round - 1) * totalTeams;
+                  const wasMyPick = picks.some(up => up.overall === pick.pickNumber);
+                  const posColor = positionColors[p?.position] || positionColors.WR;
+                  return (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '5px 10px', borderRadius: 4,
+                      background: wasMyPick ? 'var(--warning-light)' : 'transparent',
+                    }}>
+                      <span style={{
+                        fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+                        color: 'var(--text-tertiary)', width: 36,
+                      }}>
+                        {round}.{String(slot).padStart(2, '0')}
+                      </span>
+                      <span style={{
+                        fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+                        color: 'var(--text-primary)', flex: 1,
+                      }}>
+                        {p?.name || 'Unknown'}
+                      </span>
+                      <span style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 600, fontSize: 10,
+                        color: posColor.text, background: posColor.bg,
+                        padding: '1px 5px', borderRadius: 3,
+                      }}>
+                        {p?.position}
+                      </span>
+                      {wasMyPick && <span style={{ color: 'var(--warning)', fontSize: 12 }}>★</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* No leagues message */}
-      {!user && (
+      {/* No user */}
+      {!user && picks.length === 0 && (
         <div style={{
           padding: 30, textAlign: 'center',
-          color: 'var(--text-tertiary)',
+          background: 'var(--bg-secondary)', borderRadius: 10,
           fontFamily: "'Inter', sans-serif", fontSize: 13,
-          background: 'var(--bg-secondary)', borderRadius: 8,
+          color: 'var(--text-tertiary)',
         }}>
           Sign in and sync a Sleeper league to use the Draft Room.
         </div>
