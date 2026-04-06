@@ -14,12 +14,6 @@ const SleeperIcon = () => (
   </svg>
 );
 
-const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
 /**
  * Sleeper league sync flow.
  * Steps: enter username → pick league → synced (shows picks).
@@ -39,6 +33,7 @@ const SleeperSync = ({ onSynced }) => {
   const [leagues, setLeagues] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const notifyParent = (league) => {
     if (!onSynced || !league) return;
@@ -159,113 +154,132 @@ const SleeperSync = ({ onSynced }) => {
       padding: 16,
       marginBottom: 16,
     }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: syncedLeagues.length > 0 || step !== 'idle' ? 12 : 0,
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontWeight: 700, fontSize: 13, letterSpacing: 1,
-          textTransform: 'uppercase',
-          color: 'var(--text-secondary)',
-        }}>
-          <SleeperIcon />
-          Sleeper Sync
-        </div>
-
-        {step === 'idle' && (
-          <button
-            onClick={() => setStep('username')}
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700, fontSize: 12, letterSpacing: 0.5,
-              textTransform: 'uppercase',
-              padding: '5px 12px',
-              border: '1px solid var(--accent)',
-              borderRadius: 4,
-              background: 'transparent',
-              color: 'var(--accent-text)',
-              cursor: 'pointer',
-            }}
-          >
-            {syncedLeagues.length > 0 ? '+ Add League' : 'Link Sleeper'}
-          </button>
-        )}
-      </div>
-
-      {/* Synced leagues */}
-      {syncedLeagues.map(league => {
-        const isActive = league.league_id === activeLeagueId;
-        const picks = Array.isArray(league.draft_picks) ? league.draft_picks : JSON.parse(league.draft_picks || '[]');
-        const byRound = {};
-        for (const p of picks) { byRound[p.round] = (byRound[p.round] || 0) + 1; }
-        const pickLabel = Object.entries(byRound)
-          .sort(([a], [b]) => a - b)
-          .map(([rd, cnt]) => `${cnt}×Rd${rd}`)
-          .join(', ');
+      {/* Header — collapsed: shows active league inline; expanded: shows all */}
+      {(() => {
+        const activeLeague = syncedLeagues.find(l => l.league_id === activeLeagueId);
+        const activePicks = activeLeague ? (Array.isArray(activeLeague.draft_picks) ? activeLeague.draft_picks : JSON.parse(activeLeague.draft_picks || '[]')) : [];
+        const activeByRound = {};
+        for (const p of activePicks) { activeByRound[p.round] = (activeByRound[p.round] || 0) + 1; }
+        const activePickLabel = Object.entries(activeByRound).sort(([a],[b]) => a - b).map(([rd, cnt]) => `${cnt}×Rd${rd}`).join(', ');
 
         return (
-        <div
-          key={league.league_id}
-          onClick={() => selectActiveLeague(league.league_id)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 12px',
-            background: isActive ? 'var(--warning-light)' : 'var(--bg-card)',
-            borderRadius: 6,
-            marginBottom: 6,
-            border: `1px solid ${isActive ? 'var(--warning)' : 'var(--border-subtle)'}`,
-            cursor: 'pointer',
-            transition: 'all 0.15s',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Active indicator */}
+          <>
             <div style={{
-              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-              background: isActive ? 'var(--warning)' : 'var(--border-primary)',
-              transition: 'background 0.15s',
-            }} />
-            <div>
-              <div style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13, fontWeight: 600,
-                color: 'var(--text-primary)',
-              }}>
-                {league.league_name}
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: expanded || step !== 'idle' ? 12 : 0,
+            }}>
+              {/* Left: icon + active league or label */}
+              <div
+                onClick={() => syncedLeagues.length > 0 && setExpanded(!expanded)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  cursor: syncedLeagues.length > 0 ? 'pointer' : 'default',
+                  flex: 1, minWidth: 0,
+                }}
+              >
+                <SleeperIcon />
+                {activeLeague ? (
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{
+                      fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                      color: 'var(--text-primary)',
+                    }}>
+                      {activeLeague.league_name}
+                    </span>
+                    <span style={{
+                      fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+                      color: 'var(--text-tertiary)', marginLeft: 8,
+                    }}>
+                      {activeLeague.format === 'SF' ? 'SF' : '1QB'}
+                      {activePickLabel ? ` · ${activePickLabel}` : ''}
+                    </span>
+                    {syncedLeagues.length > 1 && (
+                      <span style={{
+                        fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                        color: 'var(--text-tertiary)', marginLeft: 6,
+                      }}>
+                        {expanded ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span style={{
+                    fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+                    fontSize: 13, letterSpacing: 1, textTransform: 'uppercase',
+                    color: 'var(--text-secondary)',
+                  }}>
+                    Sleeper Sync
+                  </span>
+                )}
               </div>
-              <div style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 11, color: 'var(--text-tertiary)',
-                display: 'flex', gap: 8, marginTop: 2,
-              }}>
-                <span>{league.format === 'SF' ? 'Superflex' : '1QB'}</span>
-                {pickLabel && <span>{pickLabel}</span>}
-                <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--success)' }}>
-                  <CheckIcon /> Synced
-                </span>
-              </div>
+
+              {/* Right: add league button */}
+              {step === 'idle' && (
+                <button
+                  onClick={() => setStep('username')}
+                  style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 700, fontSize: 12, letterSpacing: 0.5,
+                    textTransform: 'uppercase', padding: '5px 12px',
+                    border: '1px solid var(--accent)', borderRadius: 4,
+                    background: 'transparent', color: 'var(--accent-text)',
+                    cursor: 'pointer', flexShrink: 0,
+                  }}
+                >
+                  {syncedLeagues.length > 0 ? '+ Add' : 'Link Sleeper'}
+                </button>
+              )}
             </div>
-          </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleUnlink(league.league_id); }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
-              color: 'var(--text-tertiary)',
-            }}
-          >
-            Unlink
-          </button>
-        </div>
+
+            {/* Expanded league list */}
+            {expanded && syncedLeagues.map(league => {
+              const isActive = league.league_id === activeLeagueId;
+              const picks = Array.isArray(league.draft_picks) ? league.draft_picks : JSON.parse(league.draft_picks || '[]');
+              const byRound = {};
+              for (const p of picks) { byRound[p.round] = (byRound[p.round] || 0) + 1; }
+              const pickLabel = Object.entries(byRound).sort(([a],[b]) => a - b).map(([rd, cnt]) => `${cnt}×Rd${rd}`).join(', ');
+
+              return (
+                <div
+                  key={league.league_id}
+                  onClick={() => { selectActiveLeague(league.league_id); setExpanded(false); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '6px 12px',
+                    background: isActive ? 'var(--warning-light)' : 'var(--bg-card)',
+                    borderRadius: 6, marginBottom: 4,
+                    border: `1px solid ${isActive ? 'var(--warning)' : 'var(--border-subtle)'}`,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{
+                      width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                      background: isActive ? 'var(--warning)' : 'var(--border-primary)',
+                    }} />
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {league.league_name}
+                    </span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: 'var(--text-tertiary)' }}>
+                      {league.format === 'SF' ? 'SF' : '1QB'}{pickLabel ? ` · ${pickLabel}` : ''}
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleUnlink(league.league_id); }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
+                      color: 'var(--text-tertiary)',
+                    }}
+                  >
+                    Unlink
+                  </button>
+                </div>
+              );
+            })}
+          </>
         );
-      })}
+      })()}
 
       {/* Username entry */}
       {step === 'username' && (
