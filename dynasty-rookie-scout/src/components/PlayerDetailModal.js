@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/scoutingSummary';
+import { fetchDiscussions } from '../services/apiClient';
 import { useTheme } from '../ThemeContext';
 import DraftBadge from './DraftBadge';
 import PlayerCompChip from './PlayerCompChip';
@@ -127,9 +129,11 @@ const SIMPLIFIED_PERSPECTIVES = ['overall', 'deepBall', 'redZone', 'lateDown'];
 
 const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspective = 'overall', onClose, isDesktopPanel = false }) => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [modalPerspective, setModalPerspective] = useState(initialPerspective);
   const [slideIn, setSlideIn] = useState(false);
+  const [recentThreads, setRecentThreads] = useState([]);
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const isDesktop = isDesktopPanel || winWidth >= 1025;
   const isTabletLandscape = winWidth >= 1025 && winWidth <= 1400;
@@ -162,6 +166,17 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
     document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
   }, [onClose]);
+
+  // Fetch recent discussions for this player
+  useEffect(() => {
+    const loadThreads = async () => {
+      try {
+        const { discussions } = await fetchDiscussions(String(player.id), 'hot');
+        setRecentThreads((discussions || []).slice(0, 3));
+      } catch { setRecentThreads([]); }
+    };
+    loadThreads();
+  }, [player.id]);
 
   const getRadarData = () => {
     const s = player.stats || {};
@@ -714,6 +729,80 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
               </p>
             )}
           </div>
+        </div>
+
+        {/* Discussion preview */}
+        <div style={{ padding: isDesktop ? '16px 24px 24px' : '16px 28px 28px' }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            marginBottom: 10,
+          }}>
+            <h4 style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700, fontSize: 14, letterSpacing: 1,
+              textTransform: 'uppercase',
+              color: 'var(--text-primary)', margin: 0,
+            }}>
+              Discussions
+            </h4>
+            <button
+              onClick={() => navigate(`/community?player=${player.id}`)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+                color: 'var(--accent-text)',
+              }}
+            >
+              View All →
+            </button>
+          </div>
+          {recentThreads.length === 0 ? (
+            <div style={{
+              padding: '12px 0',
+              fontFamily: "'Inter', sans-serif", fontSize: 12,
+              color: 'var(--text-tertiary)',
+            }}>
+              No discussions yet.{' '}
+              <button
+                onClick={() => navigate(`/community?player=${player.id}`)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 600,
+                  color: 'var(--accent-text)', padding: 0,
+                }}
+              >
+                Start one →
+              </button>
+            </div>
+          ) : (
+            recentThreads.map(d => (
+              <div
+                key={d.id}
+                onClick={() => navigate(`/community?player=${player.id}`)}
+                style={{
+                  padding: '8px 0',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{
+                  fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                  color: 'var(--text-primary)', lineHeight: 1.3,
+                }}>
+                  {d.title}
+                </div>
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10, color: 'var(--text-tertiary)',
+                  marginTop: 3, display: 'flex', gap: 8,
+                }}>
+                  <span>{d.username || 'Anonymous'}</span>
+                  <span>↑{d.upvote_count || 0}</span>
+                  <span>💬{d.comment_count || 0}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
     </>
   );

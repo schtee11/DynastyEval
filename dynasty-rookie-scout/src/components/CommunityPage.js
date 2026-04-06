@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchAllDiscussions, voteDiscussion } from '../services/apiClient';
+import { fetchAllDiscussions, fetchDiscussions, voteDiscussion } from '../services/apiClient';
 import VoteButton from './VoteButton';
+import DiscussionThread from './DiscussionThread';
+import CreateDiscussion from './CreateDiscussion';
 
 const timeAgo = (dateStr) => {
   const now = new Date();
@@ -25,12 +27,18 @@ const CommentIcon = () => (
 );
 
 const CommunityPage = ({ players = [] }) => {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [discussions, setDiscussions] = useState([]);
   const [sort, setSort] = useState('hot');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeThreadId, setActiveThreadId] = useState(null);
+  const [filterPlayerId, setFilterPlayerId] = useState(() => {
+    const p = searchParams.get('player');
+    return p ? Number(p) : null;
+  });
+  const [showCreate, setShowCreate] = useState(false);
 
   // Build player lookup for names
   const playerMap = React.useMemo(() => {
@@ -42,18 +50,27 @@ const CommunityPage = ({ players = [] }) => {
     return map;
   }, [players]);
 
+  const filteredPlayer = filterPlayerId ? playerMap[String(filterPlayerId)] : null;
+
   const loadDiscussions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const { discussions: data } = await fetchAllDiscussions(sort, 50, 0);
+      let data;
+      if (filterPlayerId) {
+        const result = await fetchDiscussions(String(filterPlayerId), sort);
+        data = result.discussions || [];
+      } else {
+        const result = await fetchAllDiscussions(sort, 50, 0);
+        data = result.discussions || [];
+      }
       setDiscussions(data);
     } catch (err) {
       setError(err.message || 'Failed to load discussions');
     } finally {
       setLoading(false);
     }
-  }, [sort]);
+  }, [sort, filterPlayerId]);
 
   useEffect(() => { loadDiscussions(); }, [loadDiscussions]);
 
@@ -67,12 +84,67 @@ const CommunityPage = ({ players = [] }) => {
     } catch { /* ignore */ }
   };
 
+  const handleCreated = (newDiscussion) => {
+    setDiscussions(prev => [{ ...newDiscussion, username: user?.username, userVote: 0 }, ...prev]);
+    setShowCreate(false);
+  };
+
   const sortTabs = [
     { key: 'hot', label: 'Hot' },
     { key: 'new', label: 'New' },
     { key: 'top', label: 'Top' },
   ];
 
+  // Thread view
+  if (activeThreadId) {
+    const activeThread = discussions.find(d => d.id === activeThreadId);
+    const threadPlayer = activeThread ? playerMap[String(activeThread.player_id)] : null;
+    return (
+      <div style={{
+        maxWidth: 680,
+        margin: '0 auto',
+        padding: '16px 16px 80px',
+      }}>
+        {/* Back to feed */}
+        <button
+          onClick={() => setActiveThreadId(null)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 20, fontWeight: 800,
+            color: 'var(--accent-text)',
+            padding: 0,
+            display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 16,
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Community
+        </button>
+
+        {/* Player context */}
+        {threadPlayer && (
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11, color: 'var(--text-tertiary)',
+            textTransform: 'uppercase', letterSpacing: 0.5,
+            marginBottom: 12,
+          }}>
+            {threadPlayer.position} — {threadPlayer.name}
+          </div>
+        )}
+
+        <DiscussionThread
+          discussionId={activeThreadId}
+          onBack={() => setActiveThreadId(null)}
+        />
+      </div>
+    );
+  }
+
+  // Feed view
   return (
     <div style={{
       maxWidth: 680,
@@ -97,7 +169,62 @@ const CommunityPage = ({ players = [] }) => {
         }}>
           Community
         </h1>
+        {user && filterPlayerId && (
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            style={{
+              padding: '6px 14px', borderRadius: 6, border: 'none',
+              background: 'var(--accent)', color: '#fff',
+              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            + New Thread
+          </button>
+        )}
       </div>
+
+      {/* Player filter badge */}
+      {filteredPlayer && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          marginBottom: 12,
+          padding: '8px 12px',
+          background: 'var(--accent-light)',
+          borderRadius: 6,
+        }}>
+          <span style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13, fontWeight: 600,
+            color: 'var(--accent-text)',
+            flex: 1,
+          }}>
+            {filteredPlayer.position} — {filteredPlayer.name}
+          </span>
+          <button
+            onClick={() => { setFilterPlayerId(null); setSearchParams({}); }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif", fontSize: 18,
+              color: 'var(--accent-text)', padding: '0 4px',
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Create thread form (player-filtered only) */}
+      {showCreate && filterPlayerId && (
+        <div style={{ marginBottom: 16 }}>
+          <CreateDiscussion
+            playerId={filterPlayerId}
+            onCreated={handleCreated}
+            onCancel={() => setShowCreate(false)}
+          />
+        </div>
+      )}
 
       {/* Sort tabs */}
       <div style={{
@@ -132,9 +259,7 @@ const CommunityPage = ({ players = [] }) => {
 
       {/* Loading / Error */}
       {loading && (
-        <div style={{
-          display: 'flex', justifyContent: 'center', padding: 40,
-        }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
           <div className="loading-spinner" />
         </div>
       )}
@@ -173,7 +298,7 @@ const CommunityPage = ({ players = [] }) => {
               borderBottom: '1px solid var(--border-primary)',
               cursor: 'pointer',
             }}
-            onClick={() => navigate(`/player/${d.player_id}/discuss`)}
+            onClick={() => setActiveThreadId(d.id)}
           >
             {/* Vote */}
             <div style={{ flexShrink: 0 }} onClick={e => e.stopPropagation()}>
@@ -186,8 +311,8 @@ const CommunityPage = ({ players = [] }) => {
 
             {/* Content */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Player badge */}
-              {player && (
+              {/* Player badge (hide when filtered to one player) */}
+              {player && !filterPlayerId && (
                 <span style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
@@ -210,7 +335,7 @@ const CommunityPage = ({ players = [] }) => {
                 fontSize: 15,
                 fontWeight: 600,
                 color: 'var(--text-primary)',
-                marginTop: player ? 6 : 0,
+                marginTop: player && !filterPlayerId ? 6 : 0,
                 lineHeight: 1.3,
               }}>
                 {d.title}
