@@ -3,6 +3,8 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { positionColors, positionChartColors, getBreakoutIndicator, hasInjuryRisk, computePercentile, getPercentileColor } from '../utils/helpers';
 import { generateScoutingSummary } from '../services/scoutingSummary';
 import { useTheme } from '../ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useUserData } from '../contexts/UserDataContext';
 import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
 import ProspectGlance from './ProspectGlance';
@@ -82,8 +84,12 @@ const extractYouTubeId = (url) => {
 
 const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBack, onSelectPlayer, videos = [], onAddVideo, onRemoveVideo }) => {
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const { getNote, saveNote, isBookmarked, toggleBookmark } = useUserData();
   const [summary, setSummary] = useState(null);
   const [videoInput, setVideoInput] = useState('');
+  const [noteText, setNoteText] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
 
   const posColor = positionColors[player.position] || positionColors.WR;
   const chartColor = positionChartColors[player.position] || positionChartColors.WR;
@@ -168,6 +174,11 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
 
   // Filter out radar entries with no data (null percentile shows as 0th)
   const radarData = useMemo(() => getRadarData().filter(d => d.value != null && d.value > 0), [getRadarData]);
+
+  // Load note
+  useEffect(() => {
+    setNoteText(getNote(player.id));
+  }, [player.id, getNote]);
 
   const isUnranked = player.rank?.oneQB === 'UNR' || player.rank?.superflex === 'UNR';
   const rankComparisonData = player.rank && player.dynastyADP && !isUnranked ? [
@@ -677,6 +688,65 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
           </button>
         )}
       </div>
+
+      {/* ═══ NOTES + WATCHLIST ═══ */}
+      {user && (
+        <div style={{
+          background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
+          padding: 20, marginTop: 24,
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10,
+          }}>
+            <h3 style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700, fontSize: 15, letterSpacing: 1,
+              textTransform: 'uppercase',
+              color: 'var(--accent-text)', margin: 0,
+            }}>
+              My Notes
+            </h3>
+            <button
+              onClick={() => toggleBookmark(player.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: isBookmarked(player.id) ? 'var(--warning-light)' : 'transparent',
+                border: `1px solid ${isBookmarked(player.id) ? 'var(--warning)' : 'var(--border-primary)'}`,
+                borderRadius: 4, padding: '4px 12px', cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+                color: isBookmarked(player.id) ? 'var(--warning)' : 'var(--text-tertiary)',
+              }}
+            >
+              {isBookmarked(player.id) ? '★ Watching' : '☆ Watch'}
+            </button>
+          </div>
+          <textarea
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            onBlur={() => {
+              if (noteText !== getNote(player.id)) {
+                setNoteSaving(true);
+                saveNote(player.id, noteText).then(() => setNoteSaving(false));
+              }
+            }}
+            placeholder="Add private notes about this prospect..."
+            rows={3}
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 6,
+              border: '1px solid var(--border-primary)',
+              background: 'var(--bg-input)', color: 'var(--text-primary)',
+              fontFamily: "'Inter', sans-serif", fontSize: 13,
+              resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+            }}
+          />
+          {noteSaving && (
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2 }}>
+              Saving...
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ═══ BOTTOM NAV ═══ */}
       <div style={{

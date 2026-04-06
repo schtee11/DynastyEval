@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { positionColors, getBreakoutIndicator, hasInjuryRisk, computePercentile } from '../utils/helpers';
 import { fetchDiscussions } from '../services/apiClient';
+import { useUserData } from '../contexts/UserDataContext';
 import StatHighlight from './StatHighlight';
 import DraftBadge from './DraftBadge';
 
@@ -67,6 +68,7 @@ const timeAgo = (dateStr) => {
 };
 
 const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, onViewProfile, onDiscuss, isStudied }) => {
+  const { isBookmarked, toggleBookmark } = useUserData();
   const posColor = positionColors[player.position] || positionColors.WR;
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
@@ -181,6 +183,17 @@ const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, onViewProfil
             lineHeight: 1.1,
           }}>
             {player.name}
+            <button
+              onClick={() => toggleBookmark(player.id)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 18, marginLeft: 8, padding: 0, lineHeight: 1,
+                color: isBookmarked(player.id) ? 'var(--warning)' : 'var(--text-tertiary)',
+              }}
+              title={isBookmarked(player.id) ? 'Remove from watchlist' : 'Add to watchlist'}
+            >
+              {isBookmarked(player.id) ? '★' : '☆'}
+            </button>
           </h2>
 
           {/* College + Age + Archetype */}
