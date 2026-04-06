@@ -19,6 +19,7 @@ import { getPlayers } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchMyBoards, createBoard, updateBoard, shareBoard } from '../services/apiClient';
 import { useNavigate } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import { positionColors, getDraftCapitalInfo, getDraftRangeLabel, hasInjuryRisk } from '../utils/helpers';
 import SleeperSync from './SleeperSync';
 
@@ -248,6 +249,7 @@ const MyBoard = () => {
   const [shareUrl, setShareUrl] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
   const shareCopiedTimer = useRef(null);
+  const boardListRef = useRef(null);
   const [sleeperPicks, setSleeperPicks] = useState([]); // [{round, roster_id, ...}]
   const [sleeperLeagueCount, setSleeperLeagueCount] = useState(null); // total teams in league
 
@@ -444,6 +446,22 @@ const MyBoard = () => {
     setShowExport(false);
   };
 
+  const handleExportImage = async () => {
+    if (!boardListRef.current) return;
+    try {
+      const canvas = await html2canvas(boardListRef.current, {
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || '#0f172a',
+        scale: 2,
+      });
+      const link = document.createElement('a');
+      link.download = `dynasty-board-${activeFormat === 'oneQB' ? '1QB' : 'SF'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('[MyBoard] Image export failed:', err);
+    }
+  };
+
   if (error) {
     return (
       <div style={{ padding: '20px 24px', textAlign: 'center', fontFamily: "'JetBrains Mono', monospace" }}>
@@ -564,6 +582,19 @@ const MyBoard = () => {
           >
             Browse Boards
           </button>
+          <button
+            onClick={() => navigate('/draft')}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700, fontSize: 13, letterSpacing: 1,
+              textTransform: 'uppercase', padding: '8px 16px',
+              border: '1px solid var(--warning)', borderRadius: 4,
+              cursor: 'pointer', background: 'var(--warning-light)',
+              color: 'var(--warning)', transition: 'all 0.15s',
+            }}
+          >
+            Draft Room
+          </button>
         </div>
       </div>
 
@@ -641,6 +672,7 @@ const MyBoard = () => {
           strategy={verticalListSortingStrategy}
         >
           <div
+            ref={boardListRef}
             style={{
               background: 'var(--bg-secondary)',
               borderRadius: 8,
@@ -732,6 +764,18 @@ const MyBoard = () => {
                 }}
               >
                 Close
+              </button>
+              <button
+                onClick={handleExportImage}
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700, padding: '8px 16px',
+                  border: '1px solid var(--accent)', borderRadius: 4,
+                  background: 'var(--accent-light)', color: 'var(--accent-text)',
+                  cursor: 'pointer',
+                }}
+              >
+                Save as Image
               </button>
               <button
                 onClick={handleCopyExport}

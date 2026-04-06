@@ -31,6 +31,7 @@ const CommunityPage = lazy(() => import('./components/CommunityPage'));
 const SharedBoardView = lazy(() => import('./components/SharedBoardView'));
 const MyBoard = lazy(() => import('./components/MyBoard'));
 const BrowseBoards = lazy(() => import('./components/BrowseBoards'));
+const DraftRoom = lazy(() => import('./components/DraftRoom'));
 const AuthPage = lazy(() => import('./components/AuthPage'));
 const AdminPage = lazy(() => import('./components/AdminPage'));
 const ProfileSettings = lazy(() => import('./components/ProfileSettings'));
@@ -207,6 +208,9 @@ function AppInner() {
               } />
               <Route path="/boards" element={
                 <BrowseBoards players={players} />
+              } />
+              <Route path="/draft" element={
+                <DraftRoom />
               } />
               <Route path="/login" element={
                 <AuthPage onSuccess={() => navigate('/')} />
