@@ -12,10 +12,10 @@ const TIER_TINTS = {
   'Undrafted / TBD': 'transparent',
 };
 
-const PlayerRowCard = memo(({ player, perspective, onClick, isOdd, allPlayers, isStudied = false }) => {
+const PlayerRowCard = memo(({ player, perspective, onClick, isOdd, allPlayers, isStudied = false, leagueType = 'oneQB' }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
-  const rank1QB = player.rank?.oneQB;
+  const rank1QB = leagueType === 'superflex' ? player.rank?.superflex : player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
   const isTopRank = rank1QB != null && rank1QB !== 'UNR' && rank1QB <= 12;
   const breakout = getBreakoutIndicator(player.breakoutAge);
