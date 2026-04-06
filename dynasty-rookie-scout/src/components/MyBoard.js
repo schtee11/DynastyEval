@@ -528,72 +528,39 @@ const MyBoard = () => {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {/* Board actions — icon buttons for share/export */}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {user && (
             <button
               onClick={handleShareBoard}
+              title="Share link"
               style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                padding: '8px 16px',
-                border: '1px solid var(--border-primary)',
-                borderRadius: 4,
-                cursor: 'pointer',
-                background: 'var(--bg-tertiary)',
-                color: 'var(--text-tertiary)',
-                transition: 'all 0.15s',
+                background: 'none', border: '1px solid var(--border-primary)',
+                borderRadius: 4, padding: '6px 8px', cursor: 'pointer',
+                color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center',
               }}
             >
-              Share Board
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" y1="2" x2="12" y2="15" />
+              </svg>
             </button>
           )}
           <button
             onClick={() => setShowExport(true)}
+            title="Export / Download"
             style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: 1,
-              textTransform: 'uppercase',
-              padding: '8px 16px',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 4,
-              cursor: 'pointer',
-              background: 'var(--bg-tertiary)',
-              color: 'var(--text-tertiary)',
-              transition: 'all 0.15s',
+              background: 'none', border: '1px solid var(--border-primary)',
+              borderRadius: 4, padding: '6px 8px', cursor: 'pointer',
+              color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center',
             }}
           >
-            Export Board
-          </button>
-          <button
-            onClick={() => navigate('/boards')}
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700, fontSize: 13, letterSpacing: 1,
-              textTransform: 'uppercase', padding: '8px 16px',
-              border: '1px solid var(--border-primary)', borderRadius: 4,
-              cursor: 'pointer', background: 'var(--bg-tertiary)',
-              color: 'var(--text-tertiary)', transition: 'all 0.15s',
-            }}
-          >
-            Browse Boards
-          </button>
-          <button
-            onClick={() => navigate('/draft')}
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700, fontSize: 13, letterSpacing: 1,
-              textTransform: 'uppercase', padding: '8px 16px',
-              border: '1px solid var(--warning)', borderRadius: 4,
-              cursor: 'pointer', background: 'var(--warning-light)',
-              color: 'var(--warning)', transition: 'all 0.15s',
-            }}
-          >
-            Draft Room
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
           </button>
         </div>
       </div>
@@ -660,6 +627,34 @@ const MyBoard = () => {
         const totalTeams = result.total_rosters || 12;
         setSleeperLeagueCount(totalTeams);
       }} />}
+
+      {/* Quick links */}
+      <div style={{
+        display: 'flex', gap: 12, marginBottom: 12,
+        fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+      }}>
+        <button
+          onClick={() => navigate('/draft')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--warning)', padding: 0,
+            fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit',
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}
+        >
+          Draft Room →
+        </button>
+        <button
+          onClick={() => navigate('/boards')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--accent-text)', padding: 0,
+            fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit',
+          }}
+        >
+          Browse Community Boards →
+        </button>
+      </div>
 
       {/* Drag-and-drop list */}
       <DndContext

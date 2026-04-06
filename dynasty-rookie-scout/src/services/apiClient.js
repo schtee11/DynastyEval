@@ -157,4 +157,12 @@ export const addBookmark = (playerId) =>
 export const removeBookmark = (playerId) =>
   apiFetch(`/api/bookmarks/${playerId}`, { method: 'DELETE' });
 
+// Draft plans
+export const fetchDraftPlan = (leagueId) => apiFetch(`/api/draft-plans/${leagueId}`);
+export const saveDraftPlan = (leagueId, plans, livePicks) =>
+  apiFetch(`/api/draft-plans/${leagueId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ plans, live_picks: livePicks }),
+  });
+
 export default apiFetch;

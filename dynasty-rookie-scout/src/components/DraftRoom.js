@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchMySleeperLeagues, fetchMyBoards } from '../services/apiClient';
+import { fetchMySleeperLeagues, fetchMyBoards, fetchDraftPlan, saveDraftPlan } from '../services/apiClient';
 import { getPlayers } from '../services/dataService';
 import { positionColors } from '../utils/helpers';
 
-const PLANS_KEY = 'drs_draft_plans';
-const LIVE_KEY = 'drs_draft_live';
+// Debounce save to avoid hammering the API on every reorder
+let saveTimeout = null;
+const debouncedSave = (leagueId, plans, livePicks) => {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    saveDraftPlan(leagueId, plans, livePicks).catch(() => {});
+  }, 1000);
+};
 
 const PickCard = ({ pickLabel, targets, allPlayers, onAddTarget, onRemoveTarget, onMoveTarget, takenPlayerIds }) => {
   const [search, setSearch] = useState('');
@@ -277,23 +283,24 @@ const DraftRoom = () => {
     load();
   }, [user]);
 
-  // Load saved plans and live picks
+  // Load saved plans from API when league changes
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(PLANS_KEY);
-      if (saved) setPlans(JSON.parse(saved));
-      const savedLive = localStorage.getItem(LIVE_KEY);
-      if (savedLive) setLivePicks(JSON.parse(savedLive));
-    } catch { /* ignore */ }
-  }, []);
+    if (!activeLeagueId || !user) return;
+    const load = async () => {
+      try {
+        const data = await fetchDraftPlan(activeLeagueId);
+        setPlans(data.plans || {});
+        setLivePicks(data.live_picks || []);
+      } catch { /* ignore */ }
+    };
+    load();
+  }, [activeLeagueId, user]);
 
+  // Auto-save plans and live picks to API (debounced)
   useEffect(() => {
-    try { localStorage.setItem(PLANS_KEY, JSON.stringify(plans)); } catch {}
-  }, [plans]);
-
-  useEffect(() => {
-    try { localStorage.setItem(LIVE_KEY, JSON.stringify(livePicks)); } catch {}
-  }, [livePicks]);
+    if (!activeLeagueId || !user) return;
+    debouncedSave(activeLeagueId, plans, livePicks);
+  }, [plans, livePicks, activeLeagueId, user]);
 
   const activeLeague = leagues.find(l => l.league_id === activeLeagueId);
   const totalTeams = activeLeague?.total_rosters || 12;
