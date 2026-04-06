@@ -73,9 +73,9 @@ const getHeroStats = (player, allPlayers) => {
     ];
   }
 
-  // WR and TE — YPRR compared against all WR+TE (not just same position)
-  const yprrPeers = allPlayers.filter(p => ['WR', 'TE'].includes(p.position));
-  const yprr = player.advancedStats?.yprr;
+  // WR and TE — YPRR only for WR (TE data is inaccurate)
+  const showYprr = position === 'WR' && player.advancedStats?.yprr;
+  const yprrPeers = allPlayers.filter(p => p.position === 'WR');
   const result = [
     {
       label: 'Rec Yds',
@@ -94,11 +94,11 @@ const getHeroStats = (player, allPlayers) => {
     },
   ];
 
-  if (yprr) {
+  if (showYprr) {
     result.push({
       label: 'YPRR',
-      value: yprr.toFixed(2),
-      tier: tier(yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)),
+      value: player.advancedStats.yprr.toFixed(2),
+      tier: tier(player.advancedStats.yprr, yprrPeers.map(p => p.advancedStats?.yprr).filter(Boolean)),
     });
   } else {
     result.push({

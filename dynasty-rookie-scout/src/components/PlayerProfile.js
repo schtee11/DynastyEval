@@ -148,15 +148,14 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
         { stat: 'Rush TDs', value: computePercentile(s.rushingTDs, peers.map(p => p.stats?.rushingTDs)), fullMark: 100 },
       ];
     }
-    // WR & TE
-    const yprr = player.advancedStats?.yprr;
+    // WR & TE — YPRR only for WR (TE data is inaccurate)
     const radarStats = [
       { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
       { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
       { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
     ];
-    if (yprr) {
-      radarStats.push({ stat: 'YPRR', value: computePercentile(yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)), fullMark: 100 });
+    if (player.position === 'WR' && player.advancedStats?.yprr) {
+      radarStats.push({ stat: 'YPRR', value: computePercentile(player.advancedStats.yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)), fullMark: 100 });
     }
     return radarStats;
   }, [player, peers]);
@@ -461,7 +460,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
                 <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
-                {player.advancedStats?.yprr && (
+                {player.position === 'WR' && player.advancedStats?.yprr && (
                   <>
                     <SectionLabel>Efficiency</SectionLabel>
                     <StatRow label="YPRR" value={player.advancedStats.yprr.toFixed(2)} allValues={peerVals(p => p.advancedStats?.yprr)} />
@@ -476,7 +475,7 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
                 <StatRow label="Receiving Yards" value={player.stats?.receivingYards?.toLocaleString()} allValues={peerVals(p => p.stats?.receivingYards)} />
                 <StatRow label="Receptions" value={player.stats?.receptions} allValues={peerVals(p => p.stats?.receptions)} />
                 <StatRow label="Receiving TDs" value={player.stats?.receivingTDs} allValues={peerVals(p => p.stats?.receivingTDs)} />
-                {player.advancedStats?.yprr && (
+                {player.position === 'WR' && player.advancedStats?.yprr && (
                   <>
                     <SectionLabel>Efficiency</SectionLabel>
                     <StatRow label="YPRR" value={player.advancedStats.yprr.toFixed(2)} allValues={peerVals(p => p.advancedStats?.yprr)} />
