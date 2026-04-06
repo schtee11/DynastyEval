@@ -149,16 +149,12 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
       ];
     }
     if (pos === 'WR') {
-      const radarStats = [
+      return [
         { stat: 'Rec YDs', value: computePercentile(s.receivingYards, peers.map(p => p.stats?.receivingYards)), fullMark: 100 },
         { stat: 'Receptions', value: computePercentile(s.receptions, peers.map(p => p.stats?.receptions)), fullMark: 100 },
         { stat: 'TDs', value: computePercentile(s.receivingTDs, peers.map(p => p.stats?.receivingTDs)), fullMark: 100 },
-        { stat: 'Cont %', value: computePercentile(player.contestedCatchRate, peers.map(p => p.contestedCatchRate)), fullMark: 100 },
+        { stat: 'YPRR', value: computePercentile(player.advancedStats?.yprr, peers.map(p => p.advancedStats?.yprr).filter(v => v != null)), fullMark: 100 },
       ];
-      if (player.advancedStats?.yprr) {
-        radarStats.push({ stat: 'YPRR', value: computePercentile(player.advancedStats.yprr, peers.map(p => p.advancedStats?.yprr).filter(Boolean)), fullMark: 100 });
-      }
-      return radarStats;
     }
     // TE
     return [
@@ -187,16 +183,9 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px' }}>
       {/* Navigation bar */}
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: 20, gap: 12,
+        display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+        marginBottom: 20, gap: 8,
       }}>
-        <button onClick={onBack} style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
-          color: 'var(--accent-text)', background: 'none', border: 'none',
-          cursor: 'pointer', padding: 0,
-        }}>
-          &larr; All Prospects
-        </button>
         <div style={{ display: 'flex', gap: 8 }}>
           {prevId && (
             <button onClick={() => onSelectPlayer(prevId)} style={{
