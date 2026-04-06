@@ -170,6 +170,9 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
     ];
   }, [player, peers]);
 
+  // Filter out radar entries with no data (null percentile shows as 0th)
+  const radarData = useMemo(() => getRadarData().filter(d => d.value != null && d.value > 0), [getRadarData]);
+
   const isUnranked = player.rank?.oneQB === 'UNR' || player.rank?.superflex === 'UNR';
   const rankComparisonData = player.rank && player.dynastyADP && !isUnranked ? [
     { format: '1QB', rank: player.rank.oneQB, adp: player.dynastyADP.oneQB },
@@ -368,12 +371,12 @@ const PlayerProfile = ({ player, allPlayers, studiedPlayers, toggleStudied, onBa
             Player Profile
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={getRadarData()}>
+            <RadarChart data={radarData}>
               <PolarGrid stroke={gridColor} />
               <PolarAngleAxis
                 dataKey="stat"
                 tick={({ x, y, payload, index }) => {
-                  const rd = getRadarData();
+                  const rd = radarData;
                   const pct = Math.round(rd[index]?.value || 0);
                   return (
                     <g>

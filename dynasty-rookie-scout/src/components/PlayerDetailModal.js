@@ -536,12 +536,12 @@ const PlayerDetailModal = ({ player, allPlayers = [], perspective: initialPerspe
                 marginBottom: 12,
               }}>Player Profile</h3>
               <ResponsiveContainer width="100%" height={280}>
-                <RadarChart data={getRadarData()}>
+                <RadarChart data={getRadarData().filter(d => d.value != null && d.value > 0)}>
                   <PolarGrid stroke={gridColor} />
                   <PolarAngleAxis
                     dataKey="stat"
                     tick={({ x, y, payload, index }) => {
-                      const radarData = getRadarData();
+                      const radarData = getRadarData().filter(d => d.value != null && d.value > 0);
                       const pct = Math.round(radarData[index]?.value || 0);
                       return (
                         <g>
