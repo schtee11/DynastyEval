@@ -48,27 +48,13 @@ export const getTierForPlayer = (player) => {
 
 export const getTopStats = (player, perspective = 'overall') => {
   const { position, stats } = player;
+  const yprr = player.advancedStats?.yprr;
 
   if (position === 'WR') {
-    const pData = player.receivingByPerspective?.[perspective];
-    if (pData) {
-      if (perspective === 'deepBall') {
-        return [
-          { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
-          { label: '1D+TD/RR', value: pData.firstDownTDPerRR?.toFixed(2) || 'N/A' },
-          { label: 'CONT %', value: pData.contestedCatchRate != null ? `${pData.contestedCatchRate}%` : 'N/A' },
-        ];
-      }
-      return [
-        { label: 'YPRR', value: pData.yprr?.toFixed(2) || 'N/A' },
-        { label: '1D+TD/RR', value: pData.firstDownTDPerRR?.toFixed(2) || 'N/A' },
-        { label: 'TGT/RR', value: pData.tgtPerRR != null ? `${pData.tgtPerRR}%` : 'N/A' },
-      ];
-    }
     return [
-      { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-      { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
+      { label: 'YPRR', value: yprr?.toFixed(2) || 'N/A' },
       { label: 'Rec YDs', value: stats?.receivingYards?.toLocaleString() || 'N/A' },
+      { label: 'TDs', value: stats?.receivingTDs?.toString() || 'N/A' },
     ];
   }
 
@@ -90,9 +76,9 @@ export const getTopStats = (player, perspective = 'overall') => {
 
   if (position === 'TE') {
     return [
-      { label: 'YPRR', value: player.yprr?.toFixed(2) || 'N/A' },
-      { label: 'TGT SHARE', value: player.targetShare != null ? `${player.targetShare}%` : 'N/A' },
+      { label: 'YPRR', value: yprr?.toFixed(2) || 'N/A' },
       { label: 'Rec YDs', value: stats?.receivingYards?.toLocaleString() || 'N/A' },
+      { label: 'TDs', value: stats?.receivingTDs?.toString() || 'N/A' },
     ];
   }
 
@@ -203,11 +189,9 @@ const strengthStatDefs = {
     { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
     { label: 'Passing TDs', key: 'passingTDs', unit: '', getValue: p => p.stats?.passingTDs, desc: 'touchdown production' },
     { label: 'Passing Yards', key: 'passingYards', unit: '', getValue: p => p.stats?.passingYards, desc: 'passing volume' },
+    { label: 'Y/A', key: 'yardsPerAttempt', unit: '', getValue: p => p.stats?.yardsPerAttempt, desc: 'yards per attempt' },
     { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing production' },
     { label: 'Rushing TDs', key: 'rushingTDs', unit: '', getValue: p => p.stats?.rushingTDs, desc: 'rushing touchdowns' },
-    { label: 'BTT Rate', key: 'bttRate', unit: '%', getValue: p => p.stats?.bttRate, desc: 'big-time throw rate' },
-    { label: 'Y/A', key: 'yardsPerAttempt', unit: '', getValue: p => p.stats?.yardsPerAttempt, desc: 'yards per attempt' },
-    { label: 'QB Rating', key: 'qbRating', unit: '', getValue: p => p.stats?.qbRating, desc: 'passer rating' },
   ],
   RB: [
     { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing volume' },
@@ -215,18 +199,15 @@ const strengthStatDefs = {
     { label: 'Rushing TDs', key: 'rushingTDs', unit: '', getValue: p => p.stats?.rushingTDs, desc: 'touchdown production' },
     { label: 'Receptions', key: 'receptions', unit: '', getValue: p => p.stats?.receptions, desc: 'receiving involvement' },
     { label: 'Receiving Yards', key: 'receivingYards', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
-    { label: 'Elusive Rating', key: 'elusiveRating', unit: '', getValue: p => p.stats?.elusiveRating, desc: 'elusiveness' },
   ],
   WR: [
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
-    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target share' },
-    { label: 'YAC/Rec', key: 'yac', unit: '', getValue: p => p.yardsAfterCatchPerRec, desc: 'yards after catch' },
-    { label: 'Contested Catch %', key: 'contested', unit: '%', getValue: p => p.contestedCatchRate, desc: 'contested catch ability' },
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
     { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
+    { label: 'Receiving TDs', key: 'recTDs', unit: '', getValue: p => p.stats?.receivingTDs, desc: 'touchdown production' },
+    { label: 'Receptions', key: 'receptions', unit: '', getValue: p => p.stats?.receptions, desc: 'reception volume' },
   ],
   TE: [
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
-    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target share' },
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
     { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
     { label: 'Receiving TDs', key: 'recTDs', unit: '', getValue: p => p.stats?.receivingTDs, desc: 'touchdown production' },
   ],
@@ -234,9 +215,7 @@ const strengthStatDefs = {
 
 const concernStatDefs = {
   QB: [
-    { label: 'TWP Rate', key: 'twpRate', unit: '%', getValue: p => p.stats?.twpRate, desc: 'turnover-worthy play rate', invert: true },
-    { label: 'Sacks', key: 'sacks', unit: '', getValue: p => p.stats?.sacks, desc: 'sack tendency', invert: true },
-    { label: 'INTs', key: 'INT', unit: '', getValue: p => p.stats?.INT, desc: 'interception count', invert: true },
+    { label: 'INTs', key: 'interceptions', unit: '', getValue: p => p.stats?.interceptions, desc: 'interception count', invert: true },
     { label: 'Completion %', key: 'completionPct', unit: '%', getValue: p => p.stats?.completionPct, desc: 'completion accuracy' },
     { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing production' },
   ],
@@ -246,13 +225,12 @@ const concernStatDefs = {
     { label: 'Rushing Yards', key: 'rushingYards', unit: '', getValue: p => p.stats?.rushingYards, desc: 'rushing volume' },
   ],
   WR: [
-    { label: 'Contested Catch %', key: 'contested', unit: '%', getValue: p => p.contestedCatchRate, desc: 'contested catch ability' },
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
-    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target volume' },
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
+    { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
   ],
   TE: [
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.yprr || p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
-    { label: 'Target Share', key: 'targetShare', unit: '%', getValue: p => p.targetShare || p.advancedStats?.targetShare, desc: 'target volume' },
+    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
+    { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
   ],
 };
 
@@ -438,18 +416,17 @@ export const getStatAccessors = (position, perspective = 'overall') => {
     ];
   }
   if (position === 'WR') {
-    const pData = (p) => p.receivingByPerspective?.[perspective];
     return [
-      { label: 'YPRR', getValue: p => pData(p)?.yprr ?? p.yprr },
-      { label: '1D+TD/RR', getValue: p => pData(p)?.firstDownTDPerRR ?? p.firstDownTDPerRR },
-      { label: 'TGT/RR', getValue: p => pData(p)?.tgtPerRR ?? p.tgtPerRR },
+      { label: 'YPRR', getValue: p => p.advancedStats?.yprr },
+      { label: 'REC YDS', getValue: p => p.stats?.receivingYards },
+      { label: 'REC TDS', getValue: p => p.stats?.receivingTDs },
     ];
   }
   if (position === 'TE') {
     return [
-      { label: 'YPRR', getValue: p => p.yprr },
-      { label: 'TGT SHARE', getValue: p => p.targetShare },
+      { label: 'YPRR', getValue: p => p.advancedStats?.yprr },
       { label: 'REC YDS', getValue: p => p.stats?.receivingYards },
+      { label: 'REC TDS', getValue: p => p.stats?.receivingTDs },
     ];
   }
   return [];
