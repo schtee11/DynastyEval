@@ -28,6 +28,9 @@ const SleeperSync = ({ onSynced }) => {
   // Synced leagues
   const [syncedLeagues, setSyncedLeagues] = useState([]);
   const [loadingSynced, setLoadingSynced] = useState(true);
+  const [activeLeagueId, setActiveLeagueId] = useState(() => {
+    try { return localStorage.getItem('drs_active_league') || null; } catch { return null; }
+  });
 
   // Link flow state
   const [step, setStep] = useState('idle'); // idle | username | leagues | syncing
@@ -37,24 +40,40 @@ const SleeperSync = ({ onSynced }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Load already-synced leagues and notify parent
+  const notifyParent = (league) => {
+    if (!onSynced || !league) return;
+    const picks = Array.isArray(league.draft_picks)
+      ? league.draft_picks
+      : JSON.parse(league.draft_picks || '[]');
+    onSynced({
+      format: league.format,
+      draft_picks: picks,
+      league_name: league.league_name,
+      league_id: league.league_id,
+      total_rosters: league.total_rosters || 12,
+    });
+  };
+
+  const selectActiveLeague = (leagueId) => {
+    setActiveLeagueId(leagueId);
+    try { localStorage.setItem('drs_active_league', leagueId); } catch {}
+    const league = syncedLeagues.find(l => l.league_id === leagueId);
+    notifyParent(league);
+  };
+
+  // Load already-synced leagues and notify parent with active league
   useEffect(() => {
     const load = async () => {
       try {
         const { leagues: data } = await fetchMySleeperLeagues();
         setSyncedLeagues(data || []);
-        // Notify parent with the most recently synced league
-        if (data && data.length > 0 && onSynced) {
-          const latest = data[0];
-          const picks = Array.isArray(latest.draft_picks)
-            ? latest.draft_picks
-            : JSON.parse(latest.draft_picks || '[]');
-          onSynced({
-            format: latest.format,
-            draft_picks: picks,
-            league_name: latest.league_name,
-            total_rosters: latest.total_rosters || 12,
-          });
+        if (data && data.length > 0) {
+          // Use saved active league, or default to first
+          const savedId = activeLeagueId;
+          const active = data.find(l => l.league_id === savedId) || data[0];
+          setActiveLeagueId(active.league_id);
+          try { localStorage.setItem('drs_active_league', active.league_id); } catch {}
+          notifyParent(active);
         }
       } catch { /* ignore */ }
       finally { setLoadingSynced(false); }
@@ -90,12 +109,15 @@ const SleeperSync = ({ onSynced }) => {
         league_id: league.league_id,
         season: league.season,
       });
+      const newLeague = { ...result, league_id: league.league_id, league_name: result.league_name, synced_at: new Date().toISOString() };
       setSyncedLeagues(prev => {
         const filtered = prev.filter(l => l.league_id !== league.league_id);
-        return [{ ...result, league_id: league.league_id, league_name: result.league_name, synced_at: new Date().toISOString() }, ...filtered];
+        return [newLeague, ...filtered];
       });
+      setActiveLeagueId(league.league_id);
+      try { localStorage.setItem('drs_active_league', league.league_id); } catch {}
       setStep('idle');
-      if (onSynced) onSynced(result);
+      notifyParent(newLeague);
     } catch (err) {
       setError(err.message || 'Sync failed');
       setStep('leagues');
@@ -105,7 +127,18 @@ const SleeperSync = ({ onSynced }) => {
   const handleUnlink = async (leagueId) => {
     try {
       await unlinkSleeperLeague(leagueId);
-      setSyncedLeagues(prev => prev.filter(l => l.league_id !== leagueId));
+      const remaining = syncedLeagues.filter(l => l.league_id !== leagueId);
+      setSyncedLeagues(remaining);
+      // If we unlinked the active league, switch to next or clear
+      if (leagueId === activeLeagueId) {
+        if (remaining.length > 0) {
+          selectActiveLeague(remaining[0].league_id);
+        } else {
+          setActiveLeagueId(null);
+          try { localStorage.removeItem('drs_active_league'); } catch {}
+          if (onSynced) onSynced({ format: '1QB', draft_picks: [], league_name: null, total_rosters: 12 });
+        }
+      }
     } catch { /* ignore */ }
   };
 
@@ -165,49 +198,63 @@ const SleeperSync = ({ onSynced }) => {
       </div>
 
       {/* Synced leagues */}
-      {syncedLeagues.map(league => (
-        <div key={league.league_id} style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '8px 12px',
-          background: 'var(--bg-card)',
-          borderRadius: 6,
-          marginBottom: 6,
-          border: '1px solid var(--border-subtle)',
-        }}>
-          <div>
+      {syncedLeagues.map(league => {
+        const isActive = league.league_id === activeLeagueId;
+        const picks = Array.isArray(league.draft_picks) ? league.draft_picks : JSON.parse(league.draft_picks || '[]');
+        const byRound = {};
+        for (const p of picks) { byRound[p.round] = (byRound[p.round] || 0) + 1; }
+        const pickLabel = Object.entries(byRound)
+          .sort(([a], [b]) => a - b)
+          .map(([rd, cnt]) => `${cnt}×Rd${rd}`)
+          .join(', ');
+
+        return (
+        <div
+          key={league.league_id}
+          onClick={() => selectActiveLeague(league.league_id)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 12px',
+            background: isActive ? 'var(--warning-light)' : 'var(--bg-card)',
+            borderRadius: 6,
+            marginBottom: 6,
+            border: `1px solid ${isActive ? 'var(--warning)' : 'var(--border-subtle)'}`,
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Active indicator */}
             <div style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 13, fontWeight: 600,
-              color: 'var(--text-primary)',
-            }}>
-              {league.league_name}
-            </div>
-            <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 11, color: 'var(--text-tertiary)',
-              display: 'flex', gap: 8, marginTop: 2,
-            }}>
-              <span>{league.format === 'SF' ? 'Superflex' : '1QB'}</span>
-              {league.draft_picks && (() => {
-                const picks = Array.isArray(league.draft_picks) ? league.draft_picks : JSON.parse(league.draft_picks || '[]');
-                // Group by round: "2×Rd1, 1×Rd3"
-                const byRound = {};
-                for (const p of picks) { byRound[p.round] = (byRound[p.round] || 0) + 1; }
-                const label = Object.entries(byRound)
-                  .sort(([a], [b]) => a - b)
-                  .map(([rd, cnt]) => `${cnt}×Rd${rd}`)
-                  .join(', ');
-                return <span>{label || `${picks.length} picks`}</span>;
-              })()}
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--success)' }}>
-                <CheckIcon /> Synced
-              </span>
+              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+              background: isActive ? 'var(--warning)' : 'var(--border-primary)',
+              transition: 'background 0.15s',
+            }} />
+            <div>
+              <div style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13, fontWeight: 600,
+                color: 'var(--text-primary)',
+              }}>
+                {league.league_name}
+              </div>
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11, color: 'var(--text-tertiary)',
+                display: 'flex', gap: 8, marginTop: 2,
+              }}>
+                <span>{league.format === 'SF' ? 'Superflex' : '1QB'}</span>
+                {pickLabel && <span>{pickLabel}</span>}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--success)' }}>
+                  <CheckIcon /> Synced
+                </span>
+              </div>
             </div>
           </div>
           <button
-            onClick={() => handleUnlink(league.league_id)}
+            onClick={(e) => { e.stopPropagation(); handleUnlink(league.league_id); }}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
@@ -217,7 +264,8 @@ const SleeperSync = ({ onSynced }) => {
             Unlink
           </button>
         </div>
-      ))}
+        );
+      })}
 
       {/* Username entry */}
       {step === 'username' && (
