@@ -94,6 +94,21 @@ const DraftBadge = memo(({ round, pick, team, isProjected }) => {
           {team}
         </span>
       )}
+      {/* Projected indicator */}
+      {isProjected && (
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 7.5,
+          fontWeight: 700,
+          color: 'var(--text-tertiary)',
+          padding: '2px 4px',
+          borderLeft: `1px dashed ${s.border}`,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+        }}>
+          PROJ
+        </span>
+      )}
     </span>
   );
 });

@@ -183,7 +183,7 @@ const SortableRow = ({ player, index, activeFormat, pickLabel }) => {
           fontSize: 11,
           color: 'var(--text-tertiary)',
         }}>
-          {[player.college, player.draftRound ? `${capital.emoji} ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}` : null].filter(Boolean).join(' · ') || 'TBD'}
+          {[player.college, player.draftRound ? `${capital.emoji} ${getDraftRangeLabel(player.draftRound, player.draftPick) || 'TBD'}${player.draftIsProjected ? ' (proj)' : ''}` : null].filter(Boolean).join(' · ') || 'TBD'}
         </div>
       </div>
 
