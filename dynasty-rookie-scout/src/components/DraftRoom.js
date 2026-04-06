@@ -13,9 +13,21 @@ const debouncedSave = (leagueId, plans, livePicks) => {
   }, 1000);
 };
 
-const PickCard = ({ pickLabel, targets, allPlayers, onAddTarget, onRemoveTarget, onMoveTarget, takenPlayerIds }) => {
+const PickCard = ({ pickLabel, pickOverall, totalTeams, targets, allPlayers, onAddTarget, onRemoveTarget, onMoveTarget, takenPlayerIds }) => {
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+
+  // Players likely available around this pick (window of board positions near this overall pick)
+  const suggestedPlayers = useMemo(() => {
+    if (!pickOverall || !allPlayers.length) return [];
+    const targetIds = new Set(targets.map(t => String(t)));
+    // Show a window: 2 picks before to 3 picks after this pick position
+    const start = Math.max(0, pickOverall - 3);
+    const end = pickOverall + 3;
+    return allPlayers
+      .slice(start, end)
+      .filter(p => !targetIds.has(String(p.id)) && !takenPlayerIds.has(String(p.id)));
+  }, [pickOverall, allPlayers, targets, takenPlayerIds]);
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
@@ -218,6 +230,67 @@ const PickCard = ({ pickLabel, targets, allPlayers, onAddTarget, onRemoveTarget,
                 No players found
               </div>
             )}
+          </div>
+        )}
+
+        {/* Suggested players — who might be available at this pick */}
+        {suggestedPlayers.length > 0 && !showSearch && (
+          <div style={{
+            borderTop: targets.length > 0 ? '1px solid var(--border-subtle)' : 'none',
+            padding: '6px 4px',
+          }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
+              color: 'var(--text-tertiary)', textTransform: 'uppercase',
+              letterSpacing: 1, marginBottom: 4, paddingLeft: 4,
+            }}>
+              Likely available
+            </div>
+            {suggestedPlayers.map(p => {
+              const posColor = positionColors[p.position] || positionColors.WR;
+              const boardRank = allPlayers.indexOf(p) + 1;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => onAddTarget(p.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '4px 4px', borderRadius: 4,
+                    cursor: 'pointer',
+                    opacity: 0.7,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.opacity = '1'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.opacity = '0.7'; }}
+                >
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                    color: 'var(--text-tertiary)', width: 20, textAlign: 'center',
+                  }}>
+                    {boardRank}
+                  </span>
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontSize: 12,
+                    color: 'var(--text-secondary)', flex: 1,
+                  }}>
+                    {p.name}
+                  </span>
+                  <span style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 600, fontSize: 9,
+                    color: posColor.text, background: posColor.bg,
+                    padding: '1px 4px', borderRadius: 2,
+                  }}>
+                    {p.position}
+                  </span>
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
+                    color: 'var(--accent-text)',
+                  }}>
+                    + add
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -476,6 +549,8 @@ const DraftRoom = () => {
                 <PickCard
                   key={pick.label}
                   pickLabel={pick.label}
+                  pickOverall={pick.overall}
+                  totalTeams={totalTeams}
                   targets={plans[pick.label] || []}
                   allPlayers={players}
                   takenPlayerIds={takenPlayerIds}
