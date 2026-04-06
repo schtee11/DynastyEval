@@ -229,7 +229,6 @@ const concernStatDefs = {
     { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
   ],
   TE: [
-    { label: 'YPRR', key: 'yprr', unit: '', getValue: p => p.advancedStats?.yprr, desc: 'route efficiency (YPRR)' },
     { label: 'Receiving Yards', key: 'recYds', unit: '', getValue: p => p.stats?.receivingYards, desc: 'receiving production' },
   ],
 };
