@@ -294,7 +294,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
                 <PlayerListItem
                   player={player}
                   allPlayers={players}
-                  displayRank={i + 1}
+                  displayRank={player.rank?.oneQB}
                   isSelected={selectedPlayer?.id === player.id}
                   isStudied={studiedPlayers.has(player.id)}
                   onClick={() => locked ? null : goToIndex(i)}
@@ -331,7 +331,7 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
             <DesktopDetailPanel
               player={player}
               allPlayers={players}
-              displayRank={i + 1}
+              displayRank={player.rank?.oneQB}
               onViewProfile={(id) => onSelectPlayer(id)}
               onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
               isStudied={studiedPlayers.has(player.id)}
