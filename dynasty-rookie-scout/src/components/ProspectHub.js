@@ -35,13 +35,13 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   const isMobile = useIsMobile();
 
   // Use league format from Sleeper sync if available, otherwise default to 1QB
-  const leagueFormat = useMemo(() => {
+  const [leagueFormat, setLeagueFormat] = useState(() => {
     try {
       const saved = localStorage.getItem('drs_league_format');
       if (saved === 'SF') return 'superflex';
     } catch { /* ignore */ }
     return 'oneQB';
-  }, []);
+  });
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
   const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueFormat, perspective), [filtered, sortBy, leagueFormat, perspective]);
@@ -81,14 +81,21 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
 
     return (
       <div style={{ position: 'relative' }}>
-        {/* Filter toggle button (floating) */}
+        {/* Floating controls: Filter + League toggle */}
+        <div style={{
+          position: 'fixed',
+          top: 50,
+          left: 12,
+          right: 12,
+          zIndex: 'var(--z-overlay)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          pointerEvents: 'none',
+        }}>
         <button
           onClick={() => setShowFilters(!showFilters)}
           style={{
-            position: 'fixed',
-            top: 50,
-            left: 12,
-            zIndex: 'var(--z-overlay)',
             padding: '6px 12px',
             borderRadius: 20,
             border: '1px solid var(--border-primary)',
@@ -102,6 +109,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
             display: 'flex',
             alignItems: 'center',
             gap: 4,
+            pointerEvents: 'auto',
           }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -110,6 +118,36 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           Filter
           {hasActiveFilters && <span style={{ marginLeft: 2 }}>({sorted.length})</span>}
         </button>
+
+        {/* 1QB / SF toggle */}
+        <div style={{
+          display: 'flex',
+          borderRadius: 20,
+          overflow: 'hidden',
+          border: '1px solid var(--border-primary)',
+          boxShadow: 'var(--shadow-md)',
+          pointerEvents: 'auto',
+        }}>
+          {['oneQB', 'superflex'].map(lt => (
+            <button
+              key={lt}
+              onClick={() => setLeagueFormat(lt)}
+              style={{
+                padding: '6px 12px',
+                border: 'none',
+                background: leagueFormat === lt ? 'var(--accent)' : 'var(--bg-header)',
+                color: leagueFormat === lt ? '#fff' : 'var(--text-secondary)',
+                fontSize: 12,
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                cursor: 'pointer',
+              }}
+            >
+              {lt === 'oneQB' ? '1QB' : 'SF'}
+            </button>
+          ))}
+        </div>
+        </div>
 
         {/* Filter bottom sheet overlay */}
         <BottomSheet open={showFilters} onClose={() => setShowFilters(false)}>
@@ -157,7 +195,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
                 key={player.id}
                 player={player}
                 allPlayers={players}
-                displayRank={i + 1}
+                displayRank={sortBy === 'adp' ? (player.dynastyADP?.[leagueFormat] ?? player.rank?.[leagueFormat]) : (player.rank?.[leagueFormat])}
                 onViewProfile={onSelectPlayer}
                 onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
                 isStudied={studiedPlayers.has(player.id)}
