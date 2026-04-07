@@ -87,97 +87,113 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
 
     return (
       <div style={{ position: 'relative' }}>
-        {/* Floating controls: Filter + League toggle */}
+        {/* Integrated toolbar — lives between the app header and the feed,
+            shares the header background, no floating chips. */}
         <div style={{
-          position: 'fixed',
-          top: 50,
-          left: 12,
-          right: 12,
-          zIndex: 'var(--z-overlay)',
+          height: 40,
+          padding: '0 12px',
+          background: 'var(--bg-header)',
+          borderBottom: '1px solid var(--border-primary)',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           gap: 8,
-          pointerEvents: 'none',
         }}>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 20,
-            border: '1px solid var(--border-primary)',
-            background: hasActiveFilters ? 'var(--accent)' : 'var(--bg-header)',
-            color: hasActiveFilters ? '#fff' : 'var(--text-secondary)',
-            fontSize: 12,
-            fontWeight: 600,
-            fontFamily: "'Inter', sans-serif",
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-md)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            pointerEvents: 'auto',
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="4" y1="6" x2="20" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="8" y1="18" x2="16" y2="18" />
-          </svg>
-          Filter
-          {hasActiveFilters && <span style={{ marginLeft: 2 }}>({sorted.length})</span>}
-        </button>
+          {/* Filter — icon-first */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            aria-label="Filter prospects"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              height: 28,
+              padding: '0 10px',
+              borderRadius: 14,
+              border: '1px solid var(--border-primary)',
+              background: hasActiveFilters ? 'var(--accent-light, rgba(59,130,246,0.12))' : 'transparent',
+              color: hasActiveFilters ? 'var(--accent-text, var(--accent))' : 'var(--text-secondary)',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="6" y1="12" x2="18" y2="12" />
+              <line x1="8" y1="18" x2="16" y2="18" />
+            </svg>
+            Filter
+            {hasActiveFilters && (
+              <span style={{
+                fontSize: 9,
+                fontWeight: 800,
+                color: 'var(--accent)',
+                background: 'rgba(59,130,246,0.18)',
+                padding: '0 5px',
+                borderRadius: 8,
+                minWidth: 16,
+                textAlign: 'center',
+              }}>
+                {sorted.length}
+              </span>
+            )}
+          </button>
 
-        {/* Rankings chip — compact, with a format badge + truncated label */}
-        <button
-          onClick={() => setShowLeagueSettings(true)}
-          title={isCustom ? (leagueProfile.leagueName || 'My League') : 'Change league / rankings'}
-          style={{
-            pointerEvents: 'auto',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            maxWidth: 180,
-            padding: '4px 4px 4px 4px',
-            borderRadius: 20,
-            border: '1px solid var(--border-primary)',
-            background: 'var(--bg-header)',
-            color: 'var(--text-secondary)',
-            fontFamily: "'Inter', sans-serif",
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-md)',
-            overflow: 'hidden',
-          }}
-        >
-          <span style={{
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: 28,
-            height: 22,
-            padding: '0 8px',
-            borderRadius: 12,
-            background: 'var(--accent)',
-            color: '#fff',
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 10,
-            fontWeight: 800,
-            letterSpacing: 0.5,
-          }}>
-            {leagueFormat === 'superflex' ? 'SF' : '1QB'}
-          </span>
-          <span style={{
-            minWidth: 0,
-            flexShrink: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            fontSize: 12,
-            fontWeight: 600,
-            paddingRight: 2,
-          }}>
-            {isCustom ? (leagueProfile.leagueName || 'My League') : 'Rankings'}
-          </span>
-          <span style={{ fontSize: 10, opacity: 0.6, flexShrink: 0, paddingRight: 6 }}>▾</span>
-        </button>
+          {/* Rankings / League chip — format badge + compact name */}
+          <button
+            onClick={() => setShowLeagueSettings(true)}
+            title={isCustom ? (leagueProfile.leagueName || 'My League') : 'Change league / rankings'}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              maxWidth: 200,
+              height: 28,
+              padding: '0 10px 0 3px',
+              borderRadius: 14,
+              border: '1px solid var(--border-primary)',
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              fontFamily: "'Inter', sans-serif",
+              cursor: 'pointer',
+              overflow: 'hidden',
+            }}
+          >
+            <span style={{
+              flexShrink: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: 30,
+              height: 20,
+              padding: '0 7px',
+              borderRadius: 10,
+              background: 'var(--accent)',
+              color: '#fff',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 9,
+              fontWeight: 800,
+              letterSpacing: 0.5,
+            }}>
+              {leagueFormat === 'superflex' ? 'SF' : '1QB'}
+            </span>
+            <span style={{
+              minWidth: 0,
+              flexShrink: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontSize: 12,
+              fontWeight: 600,
+            }}>
+              {isCustom ? (leagueProfile.leagueName || 'My League') : 'Rankings'}
+            </span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" style={{ flexShrink: 0, opacity: 0.55 }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
         </div>
 
         <LeagueProfileSettings open={showLeagueSettings} onClose={() => setShowLeagueSettings(false)} />
@@ -222,7 +238,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
 
         {/* Vertical swipe feed */}
         {sorted.length > 0 ? (
-          <VerticalFeed players={sorted}>
+          <VerticalFeed players={sorted} topOffset={40}>
             {sorted.map((player, i) => {
               const personalized = personalizedRankings.get(player.id);
               const displayRank = sortBy === 'adp'
@@ -245,7 +261,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           </VerticalFeed>
         ) : (
           <div style={{
-            height: 'calc(100dvh - 48px - 56px)',
+            height: 'calc(100dvh - 48px - 56px - 40px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--text-secondary)', fontFamily: "'Inter', sans-serif",
           }}>

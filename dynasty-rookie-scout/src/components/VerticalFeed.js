@@ -14,7 +14,7 @@ const FREE_PREVIEW_LIMIT = 5;
  */
 const STORAGE_KEY = 'drs_feed_index';
 
-const VerticalFeed = ({ children, players = [], onActiveChange }) => {
+const VerticalFeed = ({ children, players = [], onActiveChange, topOffset = 0 }) => {
   const containerRef = useRef(null);
   const jumpListRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(() => {
@@ -100,7 +100,7 @@ const VerticalFeed = ({ children, players = [], onActiveChange }) => {
       ref={containerRef}
       className="vertical-feed"
       style={{
-        height: 'calc(100dvh - 48px - 56px)',
+        height: `calc(100dvh - 48px - 56px - ${topOffset}px)`,
         overflowY: 'scroll',
         scrollSnapType: 'y mandatory',
         WebkitOverflowScrolling: 'touch',
@@ -116,7 +116,7 @@ const VerticalFeed = ({ children, players = [], onActiveChange }) => {
           data-index={i}
           className="vertical-feed-card"
           style={{
-            height: 'calc(100dvh - 48px - 56px)',
+            height: `calc(100dvh - 48px - 56px - ${topOffset}px)`,
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
             position: 'relative',
