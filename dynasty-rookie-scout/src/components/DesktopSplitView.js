@@ -6,7 +6,10 @@ import PlayerListItem from './PlayerListItem';
 import DesktopDetailPanel from './DesktopDetailPanel';
 import FilterBar from './FilterBar';
 import SearchInput from './SearchInput';
+import LeagueProfileSettings from './LeagueProfileSettings';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
+import { buildPersonalizedRankings } from '../utils/personalizedRank';
+import { useLeagueProfile } from '../contexts/LeagueProfileContext';
 import { isUsingLiveData } from '../services/dataService';
 
 /**
@@ -40,9 +43,12 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
     nameSearch: '',
   });
   const [sortBy, setSortBy] = useState('adp');
-  const [leagueType, setLeagueType] = useState(() => {
-    try { const f = localStorage.getItem('drs_league_format'); return f === 'SF' ? 'superflex' : 'oneQB'; } catch { return 'oneQB'; }
-  });
+  const [showLeagueSettings, setShowLeagueSettings] = useState(false);
+  const { profile: leagueProfile, setPreset1QB, setPresetSF, isCustom } = useLeagueProfile();
+  const leagueType = leagueProfile.format;
+  const setLeagueType = useCallback((lt) => {
+    if (lt === 'oneQB') setPreset1QB(); else setPresetSF();
+  }, [setPreset1QB, setPresetSF]);
   const [perspective, setPerspective] = useState('overall');
   const rightPanelRef = useRef(null);
   const listRef = useRef(null);
@@ -51,7 +57,14 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
   const lastKeyTimeRef = useRef(0);    // timestamp of last arrow key press
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
-  const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueType, perspective), [filtered, sortBy, leagueType, perspective]);
+  const personalizedRankings = useMemo(
+    () => buildPersonalizedRankings(filtered, leagueProfile),
+    [filtered, leagueProfile]
+  );
+  const sorted = useMemo(
+    () => sortPlayers(filtered, sortBy, leagueType, perspective, personalizedRankings),
+    [filtered, sortBy, leagueType, perspective, personalizedRankings]
+  );
 
   // Current index in the sorted list
   const selectedIndex = useMemo(() => {
@@ -249,14 +262,28 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
                   fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700,
                   padding: '3px 8px', border: '1px solid var(--border-primary)',
                   borderLeft: lt === 'superflex' ? 'none' : undefined,
-                  borderRadius: lt === 'oneQB' ? '4px 0 0 4px' : '0 4px 4px 0',
-                  background: leagueType === lt ? 'var(--accent)' : 'transparent',
-                  color: leagueType === lt ? '#fff' : 'var(--text-tertiary)',
+                  borderRadius: lt === 'oneQB' ? '4px 0 0 4px' : 0,
+                  background: !isCustom && leagueType === lt ? 'var(--accent)' : 'transparent',
+                  color: !isCustom && leagueType === lt ? '#fff' : 'var(--text-tertiary)',
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}>
                   {lt === 'oneQB' ? '1QB' : 'SF'}
                 </button>
               ))}
+              <button
+                onClick={() => setShowLeagueSettings(true)}
+                title="Personalize rankings to your league"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700,
+                  padding: '3px 8px', border: '1px solid var(--border-primary)', borderLeft: 'none',
+                  borderRadius: '0 4px 4px 0',
+                  background: isCustom ? 'var(--accent)' : 'transparent',
+                  color: isCustom ? '#fff' : 'var(--text-tertiary)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                {isCustom ? 'MY LG' : 'LG⚙'}
+              </button>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -289,6 +316,10 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
           ) : (
             sorted.map((player, i) => {
               const locked = !user && i >= FREE_PREVIEW_LIMIT;
+              const personalized = personalizedRankings.get(player.id);
+              const displayRank = sortBy === 'adp'
+                ? (player.dynastyADP?.[leagueType] ?? player.rank?.[leagueType])
+                : (personalized?.personalizedRank ?? player.rank?.[leagueType]);
               return (
               <div key={player.id} data-list-id={player.id} style={locked ? {
                 filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none',
@@ -296,7 +327,9 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
                 <PlayerListItem
                   player={player}
                   allPlayers={players}
-                  displayRank={sortBy === 'adp' ? (player.dynastyADP?.[leagueType] ?? player.rank?.[leagueType]) : (player.rank?.[leagueType])}
+                  displayRank={displayRank}
+                  rankDelta={sortBy === 'adp' ? 0 : (personalized?.delta ?? 0)}
+                  rankReasons={personalized?.reasons ?? []}
                   isSelected={selectedPlayer?.id === player.id}
                   isStudied={studiedPlayers.has(player.id)}
                   onClick={() => locked ? null : goToIndex(i)}
@@ -333,7 +366,9 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
             <DesktopDetailPanel
               player={player}
               allPlayers={players}
-              displayRank={sortBy === 'adp' ? (player.dynastyADP?.[leagueType] ?? player.rank?.[leagueType]) : (player.rank?.[leagueType])}
+              displayRank={sortBy === 'adp' ? (player.dynastyADP?.[leagueType] ?? player.rank?.[leagueType]) : (personalizedRankings.get(player.id)?.personalizedRank ?? player.rank?.[leagueType])}
+              rankDelta={sortBy === 'adp' ? 0 : (personalizedRankings.get(player.id)?.delta ?? 0)}
+              rankReasons={personalizedRankings.get(player.id)?.reasons ?? []}
               onViewProfile={(id) => onSelectPlayer(id)}
               onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
               isStudied={studiedPlayers.has(player.id)}
@@ -344,6 +379,8 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
 
       {/* Signup gate after free preview */}
       {showGate && <SignupGate />}
+
+      <LeagueProfileSettings open={showLeagueSettings} onClose={() => setShowLeagueSettings(false)} />
     </div>
   );
 };

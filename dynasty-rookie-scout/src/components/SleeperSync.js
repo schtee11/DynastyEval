@@ -114,6 +114,13 @@ const SleeperSync = ({ onSynced }) => {
       });
       setActiveLeagueId(league.league_id);
       try { localStorage.setItem('drs_active_league', league.league_id); } catch {}
+      // Persist the derived league profile so rankings personalize automatically.
+      if (result.league_profile) {
+        try { localStorage.setItem('drs_league_profile', JSON.stringify(result.league_profile)); } catch {}
+        // Nudge any listeners (LeagueProfileContext reads this key on mount;
+        // a custom event is the cheapest way to refresh an already-mounted tree).
+        try { window.dispatchEvent(new Event('drs_league_profile_updated')); } catch {}
+      }
       setStep('leagues'); // Stay on league list so user can sync more
       notifyParent(newLeague);
     } catch (err) {

@@ -60,6 +60,45 @@ function detectFormat(rosterPositions) {
   return superflexSlots.length >= 2 ? 'SF' : '1QB';
 }
 
+// Derive a leagueProfile object from raw Sleeper data. This is the shape
+// the frontend expects in localStorage under 'drs_league_profile'. Keeps
+// the frontend free of Sleeper-specific parsing.
+function deriveLeagueProfile({ leagueName, rosterPositions, scoringSettings, totalRosters }) {
+  const positions = Array.isArray(rosterPositions) ? rosterPositions : [];
+  const count = (needle) => positions.filter(p => p === needle).length;
+
+  const starters = {
+    qb: count('QB'),
+    rb: count('RB'),
+    wr: count('WR'),
+    te: count('TE'),
+    flex: count('FLEX') + count('REC_FLEX') + count('WRRB_FLEX') + count('WRTE_FLEX'),
+    superflex: count('SUPER_FLEX'),
+  };
+
+  const bench = count('BN');
+  const taxi = count('TAXI');
+
+  const s = scoringSettings || {};
+  const recVal = Number(s.rec || 0);
+  const ppr = recVal >= 0.9 ? 1 : recVal >= 0.4 ? 0.5 : 0;
+  const tePremium = Number(s.bonus_rec_te || 0);
+
+  const format = starters.superflex > 0 || starters.qb >= 2 ? 'superflex' : 'oneQB';
+
+  return {
+    source: 'sleeper',
+    leagueName: leagueName || null,
+    format,
+    teams: Number(totalRosters) || 12,
+    ppr,
+    tePremium,
+    starters,
+    bench,
+    taxi,
+  };
+}
+
 // GET /api/sleeper/user/:username — look up a Sleeper user
 router.get('/user/:username', requireAuth, async (req, res) => {
   try {
@@ -228,6 +267,13 @@ router.post('/sync', requireAuth, async (req, res) => {
       ]
     );
 
+    const leagueProfile = deriveLeagueProfile({
+      leagueName: league.name,
+      rosterPositions: league.roster_positions,
+      scoringSettings: league.scoring_settings,
+      totalRosters,
+    });
+
     res.json({
       league_id,
       league_name: league.name,
@@ -235,6 +281,7 @@ router.post('/sync', requireAuth, async (req, res) => {
       draft_picks: draftPicks,
       roster_positions: league.roster_positions,
       total_rosters: league.total_rosters || rosters.length || 12,
+      league_profile: leagueProfile,
     });
   } catch (err) {
     console.error('[Sleeper] Sync error:', err.message, err.stack);

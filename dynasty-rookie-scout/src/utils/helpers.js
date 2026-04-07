@@ -85,9 +85,28 @@ export const getTopStats = (player, perspective = 'overall') => {
   return [{ label: 'Stats', value: 'N/A' }];
 };
 
-export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective = 'overall') => {
+/**
+ * Sort players by the requested key.
+ *
+ * The fourth argument `perspective` is the old WR-film perspective toggle.
+ *
+ * The fifth argument `personalizedRankings` is an optional Map keyed by
+ * player.id with entries { personalizedRank, delta, reasons }. When
+ * provided, the 'rank' sort uses personalizedRank instead of the static
+ * `player.rank[leagueType]` lookup. 'adp' still uses the static ADP since
+ * league-aware ADP would require a separate data source.
+ */
+export const sortPlayers = (players, sortBy, leagueType = 'oneQB', perspective = 'overall', personalizedRankings = null) => {
   const sorted = [...players];
-  const getRank = (p) => { const r = p.rank?.[leagueType]; return (r == null || r === 'UNR') ? 999 : r; };
+  const hasPersonalized = personalizedRankings && typeof personalizedRankings.get === 'function';
+  const getRank = (p) => {
+    if (hasPersonalized) {
+      const entry = personalizedRankings.get(p.id);
+      if (entry && entry.personalizedRank != null) return entry.personalizedRank;
+    }
+    const r = p.rank?.[leagueType];
+    return (r == null || r === 'UNR') ? 999 : r;
+  };
   const getAdp = (p) => p.dynastyADP?.[leagueType] ?? 999;
   const getYprr = (p) => p.receivingByPerspective?.[perspective]?.yprr ?? p.yprr ?? 0;
   const getRecGrade = (p) => p.receivingByPerspective?.[perspective]?.recGrade ?? 0;

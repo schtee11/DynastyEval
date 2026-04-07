@@ -67,7 +67,7 @@ const timeAgo = (dateStr) => {
   return `${days}d`;
 };
 
-const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, onViewProfile, onDiscuss, isStudied }) => {
+const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, rankDelta = 0, rankReasons = [], onViewProfile, onDiscuss, isStudied }) => {
   const { isBookmarked, toggleBookmark } = useUserData();
   const posColor = positionColors[player.position] || positionColors.WR;
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
@@ -75,6 +75,8 @@ const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, onViewProfil
   const injured = hasInjuryRisk(player);
   const rank1QB = displayRank ?? player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
+  const deltaLabel = rankDelta > 0 ? `↑${rankDelta}` : rankDelta < 0 ? `↓${Math.abs(rankDelta)}` : '';
+  const deltaColor = rankDelta > 0 ? 'var(--success)' : rankDelta < 0 ? 'var(--danger)' : 'var(--text-tertiary)';
 
   // Fetch trending discussions with client-side cache
   const [discussions, setDiscussions] = useState([]);
@@ -155,8 +157,17 @@ const DesktopDetailPanel = ({ player, allPlayers = [], displayRank, onViewProfil
               <span style={{
                 fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
                 fontWeight: 700, color: 'var(--text-tertiary)',
+                display: 'inline-flex', alignItems: 'baseline', gap: 4,
               }}>
                 #{rank1QB}
+                {deltaLabel && (
+                  <span
+                    title={rankReasons.join(' · ')}
+                    style={{ color: deltaColor, fontSize: 10 }}
+                  >
+                    {deltaLabel}
+                  </span>
+                )}
               </span>
             )}
             {injured && (
