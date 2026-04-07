@@ -337,11 +337,22 @@ router.get('/debug/:leagueId/:sleeperUserId', requireAuth, async (req, res) => {
 router.get('/my-leagues', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT league_id, league_name, season, format, draft_picks, roster_positions, sleeper_username, synced_at, total_rosters
+      `SELECT league_id, league_name, season, format, draft_picks, roster_positions, scoring_settings, sleeper_username, synced_at, total_rosters
        FROM sleeper_leagues WHERE user_id = $1 ORDER BY synced_at DESC`,
       [req.user.id]
     );
-    res.json({ leagues: result.rows });
+    // Enrich with derived league profile for each row so the frontend
+    // can personalize rankings without re-syncing.
+    const leagues = result.rows.map((row) => ({
+      ...row,
+      league_profile: deriveLeagueProfile({
+        leagueName: row.league_name,
+        rosterPositions: row.roster_positions,
+        scoringSettings: row.scoring_settings,
+        totalRosters: row.total_rosters,
+      }),
+    }));
+    res.json({ leagues });
   } catch (err) {
     console.error('[Sleeper] My leagues error:', err.message);
     res.status(500).json({ error: 'Failed to fetch synced leagues' });
