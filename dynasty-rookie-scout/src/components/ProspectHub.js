@@ -195,7 +195,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
                 key={player.id}
                 player={player}
                 allPlayers={players}
-                displayRank={leagueFormat === 'superflex' ? player.rank?.superflex : player.rank?.oneQB}
+                displayRank={sortBy === 'adp' ? (player.dynastyADP?.[leagueFormat] ?? player.rank?.[leagueFormat]) : (player.rank?.[leagueFormat])}
                 onViewProfile={onSelectPlayer}
                 onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
                 isStudied={studiedPlayers.has(player.id)}
