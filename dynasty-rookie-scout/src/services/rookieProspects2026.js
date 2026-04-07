@@ -1,12 +1,6 @@
 // 2026 NFL Draft prospect metadata
-// College stats come from CFBD API — this file holds scouting data, projections, and dynasty valuations
+// College stats come from CFBD API via our backend — this file holds scouting data, projections, and dynasty valuations
 // Update projectedPick/projectedTeam after the draft (April 23–25, 2026)
-//
-// advancedStats: hardcoded college YPRR + target share from PFF / scouting reports.
-// These override any calculated values in cfbdTransformer.js.
-// Sources: PFF, TruMedia, Steelers Depot, collegefootballnetwork.com, various scouting profiles.
-
-import { getReceivingData } from './receivingData';
 
 const prospects2026Raw = [
   {
@@ -26,7 +20,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 1, superflex: 1 },
     rank: { oneQB: 1, superflex: 1 },
     injuries: [],
-    advancedStats: { yprr: 1.45, targetShare: 16.7 },
+    advancedStats: null,
     cfbdLookup: { team: "Notre Dame", year: 2025 },
   },
   {
@@ -66,7 +60,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 2, superflex: 4 },
     rank: { oneQB: 2, superflex: 4 },
     injuries: [],
-    advancedStats: { yprr: 3.02, targetShare: 22.8 }, // PFF 2025: 89.0 recv grade, 0% drop rate
+    advancedStats: null,
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
   {
@@ -86,7 +80,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 3, superflex: 3 },
     rank: { oneQB: 3, superflex: 5 },
     injuries: [{ type: "Knee", date: "2025-10", severity: "Moderate", gamesOut: 3 }],
-    advancedStats: { yprr: 2.37, targetShare: 32.3 }, // 2025 (injury-shortened); career 31.2% routes targeted (98th %ile)
+    advancedStats: null,
     cfbdLookup: { team: "Arizona State", year: 2025 },
   },
   {
@@ -106,7 +100,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 4, superflex: 5 },
     rank: { oneQB: 4, superflex: 6 },
     injuries: [],
-    advancedStats: { yprr: 3.13, targetShare: 29.5 }, // PFF 2025: 91.4 recv grade, Biletnikoff winner; career 3.09 YPRR (1st in class)
+    advancedStats: null,
     cfbdLookup: { team: "USC", year: 2025 },
   },
   {
@@ -126,7 +120,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 5, superflex: 6 },
     rank: { oneQB: 5, superflex: 8 },
     injuries: [],
-    advancedStats: { yprr: 1.98, targetShare: 15.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Oregon", year: 2025 },
     stats: { receptions: 56, receivingYards: 748, receivingTDs: 6, targets: 78, epa: 0.22 },
   },
@@ -147,7 +141,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 7, superflex: 7 },
     rank: { oneQB: 7, superflex: 11 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
   },
   {
@@ -167,7 +161,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 6, superflex: 8 },
     rank: { oneQB: 6, superflex: 9 },
     injuries: [],
-    advancedStats: { yprr: 2.46, targetShare: 27.0 }, // 2025: 112.9 passer rating when targeted; 88.1% open target rate
+    advancedStats: null,
     cfbdLookup: { team: "Texas A&M", year: 2025 },
   },
   {
@@ -187,7 +181,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 8, superflex: 9 },
     rank: { oneQB: 8, superflex: 12 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Arkansas", year: 2025 },
   },
   {
@@ -227,7 +221,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 9, superflex: 11 },
     rank: { oneQB: 9, superflex: 13 },
     injuries: [],
-    advancedStats: { yprr: 2.44, targetShare: 26.3 }, // 2025 personal best; led Huskies in all receiving categories
+    advancedStats: null,
     cfbdLookup: { team: "Washington", year: 2025 },
   },
   {
@@ -247,7 +241,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 11, superflex: 12 },
     rank: { oneQB: 11, superflex: 15 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Washington", year: 2025 },
   },
   {
@@ -267,7 +261,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 12, superflex: 14 },
     rank: { oneQB: 12, superflex: 16 },
     injuries: [],
-    advancedStats: { yprr: 2.55, targetShare: 24.8 }, // 2025: 13 TDs, 145.2 passer rating when targeted; elite vs zone
+    advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
   },
   {
@@ -287,7 +281,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 13, superflex: 15 },
     rank: { oneQB: 13, superflex: 17 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Notre Dame", year: 2025 },
   },
   {
@@ -307,7 +301,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 14, superflex: 16 },
     rank: { oneQB: 14, superflex: 18 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Nebraska", year: 2025 },
   },
   {
@@ -345,7 +339,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 16, superflex: 17 },
     rank: { oneQB: 15, superflex: 19 },
     injuries: [],
-    advancedStats: { yprr: 1.32, targetShare: 16.0 }, // 2025: career-low YPRR at Florida, declining each season
+    advancedStats: null,
     cfbdLookup: { team: "Florida", year: 2025 },
   },
   {
@@ -365,7 +359,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 17, superflex: 18 },
     rank: { oneQB: 17, superflex: 20 },
     injuries: [],
-    advancedStats: { yprr: 2.55, targetShare: 22.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Vanderbilt", year: 2025 },
     stats: { receptions: 62, receivingYards: 820, receivingTDs: 8, targets: 85, epa: 0.28 },
   },
@@ -386,7 +380,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 19, superflex: 19 },
     rank: { oneQB: 18, superflex: 21 },
     injuries: [],
-    advancedStats: { yprr: 2.23, targetShare: 25.6 }, // 2025 (Missouri): 66 rec, 732 yds; strong YAC profile
+    advancedStats: null,
     cfbdLookup: { team: "Missouri", year: 2025 },
   },
   {
@@ -485,7 +479,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 20, superflex: 24 },
     rank: { oneQB: 19, superflex: 22 },
     injuries: [],
-    advancedStats: { yprr: 1.71, targetShare: 12.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Ohio State", year: 2025 },
     stats: { receptions: 38, receivingYards: 485, receivingTDs: 5, targets: 52, epa: 0.16 },
   },
@@ -527,7 +521,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 25, superflex: 28 },
     rank: { oneQB: 23, superflex: 25 },
     injuries: [],
-    advancedStats: { yprr: 1.90, targetShare: 18.0 },
+    advancedStats: null,
     cfbdLookup: { team: "NC State", year: 2025 },
     stats: { receptions: 49, receivingYards: 489, receivingTDs: 7, targets: 65, epa: 0.18 },
   },
@@ -547,7 +541,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 27, superflex: 29 },
     rank: { oneQB: 24, superflex: 26 },
     injuries: [],
-    advancedStats: { yprr: 1.45, targetShare: 16.7 }, // No PFF college data publicly available
+    advancedStats: null,
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
 
@@ -567,7 +561,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 33, superflex: 32 },
     rank: { oneQB: 29, superflex: 29 },
     injuries: [],
-    advancedStats: { yprr: 3.43, targetShare: 29.3 }, // 2025: 87 rec/109 tgt/1,243 yds; #1 career YPRR among CFB WRs
+    advancedStats: null,
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
 
@@ -589,7 +583,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 56 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: 2.6, targetShare: 26.3 },
+    advancedStats: null,
     cfbdLookup: { team: "TCU", year: 2025 },
   },
   {
@@ -609,7 +603,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 18, superflex: 22 },
     rank: { oneQB: 16, superflex: 20 },
     injuries: [],
-    advancedStats: { yprr: 2.39, targetShare: 25.2 },
+    advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
   },
   {
@@ -628,7 +622,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 58, superflex: 62 },
     rank: { oneQB: 52, superflex: 56 },
     injuries: [],
-    advancedStats: { yprr: 2.07, targetShare: 21.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia Tech", year: 2025 },
   },
   {
@@ -647,7 +641,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 58, superflex: 62 },
     rank: { oneQB: 52, superflex: 56 },
     injuries: [],
-    advancedStats: { yprr: 2.4, targetShare: 29.2 },
+    advancedStats: null,
     cfbdLookup: { team: "Northwestern", year: 2025 },
   },
   {
@@ -666,7 +660,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 64, superflex: 68 },
     rank: { oneQB: 58, superflex: 62 },
     injuries: [{ type: "Lower Body", date: "2025-09", severity: "Moderate", gamesOut: 4 }],
-    advancedStats: { yprr: 1.65, targetShare: 17.7 },
+    advancedStats: null,
     cfbdLookup: { team: "South Carolina", year: 2025 },
   },
   {
@@ -685,7 +679,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: 2.35, targetShare: 26.0 },
+    advancedStats: null,
     cfbdLookup: { team: "BYU", year: 2025 },
   },
   {
@@ -704,7 +698,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 64, superflex: 68 },
     rank: { oneQB: 58, superflex: 62 },
     injuries: [],
-    advancedStats: { yprr: 2.36, targetShare: 21.7 },
+    advancedStats: null,
     cfbdLookup: { team: "Baylor", year: 2025 },
   },
   {
@@ -724,7 +718,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 30, superflex: 34 },
     rank: { oneQB: 28, superflex: 32 },
     injuries: [],
-    advancedStats: { yprr: 2.42, targetShare: 30.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia State", year: 2025 },
   },
   {
@@ -744,7 +738,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: 2.77, targetShare: 22.9 },
+    advancedStats: null,
     cfbdLookup: { team: "Mississippi State", year: 2025 },
   },
   {
@@ -763,7 +757,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 56 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: 1.64, targetShare: 21.2 },
+    advancedStats: null,
     cfbdLookup: { team: "Louisville", year: 2025 },
   },
   {
@@ -782,7 +776,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: 2.16, targetShare: 26.2 },
+    advancedStats: null,
     cfbdLookup: { team: "Cincinnati", year: 2025 },
   },
   {
@@ -801,7 +795,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 30, superflex: 34 },
     rank: { oneQB: 28, superflex: 32 },
     injuries: [],
-    advancedStats: { yprr: 3.13, targetShare: 34.5 },
+    advancedStats: null,
     cfbdLookup: { team: "UConn", year: 2025 },
   },
   {
@@ -820,7 +814,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: 2.43, targetShare: 24.9 },
+    advancedStats: null,
     cfbdLookup: { team: "Houston", year: 2025 },
   },
   {
@@ -840,7 +834,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: 1.73, targetShare: 20.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Miami", year: 2025 },
   },
   {
@@ -859,7 +853,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 64, superflex: 68 },
     rank: { oneQB: 58, superflex: 62 },
     injuries: [{ type: "Multiple", date: "2025-09", severity: "Severe", gamesOut: 8 }],
-    advancedStats: { yprr: 0.55, targetShare: 16.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Florida State", year: 2025 },
   },
   {
@@ -878,7 +872,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 56 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: 2.51, targetShare: 25.7 },
+    advancedStats: null,
     cfbdLookup: { team: "Illinois", year: 2025 },
   },
   {
@@ -898,7 +892,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 18, superflex: 22 },
     rank: { oneQB: 16, superflex: 20 },
     injuries: [],
-    advancedStats: { yprr: 2.57, targetShare: 21.9 },
+    advancedStats: null,
     cfbdLookup: { team: "Tennessee", year: 2025 },
   },
   {
@@ -917,7 +911,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 58, superflex: 62 },
     rank: { oneQB: 52, superflex: 56 },
     injuries: [],
-    advancedStats: { yprr: 2.31, targetShare: 20.5 },
+    advancedStats: null,
     cfbdLookup: { team: "Kansas", year: 2025 },
   },
   {
@@ -936,7 +930,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 56 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: 2.42, targetShare: 25.3 },
+    advancedStats: null,
     cfbdLookup: { team: "Cincinnati", year: 2025 },
   },
   {
@@ -956,7 +950,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 58, superflex: 62 },
     rank: { oneQB: 52, superflex: 56 },
     injuries: [{ type: "Knee", date: "2025-10", severity: "Moderate", gamesOut: 3 }],
-    advancedStats: { yprr: 2.43, targetShare: 29.9 },
+    advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
   },
   {
@@ -976,7 +970,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 8, superflex: 10 },
     rank: { oneQB: 8, superflex: 12 },
     injuries: [],
-    advancedStats: { yprr: 2.57, targetShare: 29.4 },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia", year: 2025 },
   },
   {
@@ -995,7 +989,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 18, superflex: 22 },
     rank: { oneQB: 16, superflex: 20 },
     injuries: [],
-    advancedStats: { yprr: 2.2, targetShare: 21.7 },
+    advancedStats: null,
     cfbdLookup: { team: "Notre Dame", year: 2025 },
   },
   {
@@ -1015,7 +1009,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 18, superflex: 22 },
     rank: { oneQB: 16, superflex: 20 },
     injuries: [{ type: "ACL", date: "2025-11", severity: "Severe", gamesOut: 10 }],
-    advancedStats: { yprr: 2.55, targetShare: 29.4 },
+    advancedStats: null,
     cfbdLookup: { team: "Louisville", year: 2025 },
   },
   {
@@ -1034,7 +1028,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 18, superflex: 22 },
     rank: { oneQB: 16, superflex: 20 },
     injuries: [{ type: "Hamstring", date: "2025-09", severity: "Minor", gamesOut: 2 }],
-    advancedStats: { yprr: 2.27, targetShare: 26.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Clemson", year: 2025 },
   },
   {
@@ -1053,7 +1047,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: 2.15, targetShare: 19.6 },
+    advancedStats: null,
     cfbdLookup: { team: "Ole Miss", year: 2025 },
   },
   {
@@ -1073,7 +1067,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 42, superflex: 46 },
     rank: { oneQB: 38, superflex: 42 },
     injuries: [{ type: "Foot", date: "2025-10", severity: "Moderate", gamesOut: 3 }],
-    advancedStats: { yprr: 2.42, targetShare: 23.9 },
+    advancedStats: null,
     cfbdLookup: { team: "USC", year: 2025 },
   },
   {
@@ -1092,7 +1086,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 64, superflex: 68 },
     rank: { oneQB: 58, superflex: 62 },
     injuries: [{ type: "Elbow", date: "2026-01", severity: "Minor", gamesOut: 0 }],
-    advancedStats: { yprr: 2.16, targetShare: 25.3 },
+    advancedStats: null,
     cfbdLookup: { team: "SMU", year: 2025 },
   },
   {
@@ -1111,7 +1105,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 64, superflex: 68 },
     rank: { oneQB: 58, superflex: 62 },
     injuries: [],
-    advancedStats: { yprr: 2.38, targetShare: 31.4 },
+    advancedStats: null,
     cfbdLookup: { team: "South Alabama", year: 2025 },
   },
   {
@@ -1130,7 +1124,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 56 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: 2.09, targetShare: 23.4 },
+    advancedStats: null,
     cfbdLookup: { team: "Boston College", year: 2025 },
   },
   {
@@ -1149,7 +1143,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 58, superflex: 62 },
     rank: { oneQB: 52, superflex: 56 },
     injuries: [],
-    advancedStats: { yprr: 1.96, targetShare: 22.9 },
+    advancedStats: null,
     cfbdLookup: { team: "Troy", year: 2025 },
   },
   {
@@ -1168,7 +1162,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 56 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: 1.77, targetShare: 27.6 },
+    advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
   },
   {
@@ -1187,7 +1181,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 64, superflex: 68 },
     rank: { oneQB: 58, superflex: 62 },
     injuries: [],
-    advancedStats: { yprr: 1.95, targetShare: 30.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Western Michigan", year: 2025 },
   },
   {
@@ -1207,7 +1201,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 30, superflex: 34 },
     rank: { oneQB: 28, superflex: 32 },
     injuries: [],
-    advancedStats: { yprr: 1.7, targetShare: 20.1 },
+    advancedStats: null,
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
   {
@@ -1226,7 +1220,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "North Texas", year: 2025 },
   },
   {
@@ -1245,7 +1239,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Missouri", year: 2025 },
   },
   {
@@ -1264,7 +1258,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Unlv", year: 2025 },
   },
   {
@@ -1283,7 +1277,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 45, superflex: 51 },
     rank: { oneQB: 40, superflex: 42 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "South Alabama", year: 2025 },
   },
   {
@@ -1302,7 +1296,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia", year: 2025 },
   },
   {
@@ -1321,7 +1315,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 14, superflex: 21 },
     rank: { oneQB: 12, superflex: 19 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
   },
   {
@@ -1340,7 +1334,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Duke", year: 2025 },
   },
   {
@@ -1359,7 +1353,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Oregon", year: 2025 },
   },
   {
@@ -1378,7 +1372,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Rutgers", year: 2025 },
   },
   {
@@ -1397,7 +1391,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas Tech", year: 2025 },
   },
   {
@@ -1416,7 +1410,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Michigan", year: 2025 },
   },
   {
@@ -1435,7 +1429,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Florida", year: 2025 },
   },
   {
@@ -1454,7 +1448,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Louisiana-Monroe", year: 2025 },
   },
   {
@@ -1473,7 +1467,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
   {
@@ -1492,7 +1486,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Ole Miss", year: 2025 },
   },
   {
@@ -1511,7 +1505,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Louisville", year: 2025 },
   },
   {
@@ -1530,7 +1524,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 28, superflex: 34 },
     rank: { oneQB: 26, superflex: 30 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Miami", year: 2025 },
   },
   {
@@ -1549,7 +1543,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Tennessee", year: 2025 },
   },
   {
@@ -1568,7 +1562,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Uconn", year: 2025 },
   },
   {
@@ -1587,7 +1581,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas State", year: 2025 },
   },
   {
@@ -1606,7 +1600,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Byu", year: 2025 },
   },
   {
@@ -1625,7 +1619,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Boise State", year: 2025 },
   },
   {
@@ -1644,7 +1638,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 58, superflex: 65 },
     rank: { oneQB: 50, superflex: 52 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia Southern", year: 2025 },
   },
   {
@@ -1663,7 +1657,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Virginia Tech", year: 2025 },
   },
   {
@@ -1682,7 +1676,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Washington", year: 2025 },
   },
   {
@@ -1701,7 +1695,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Dominion", year: 2025 },
   },
   {
@@ -1720,7 +1714,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Jacksonville State", year: 2025 },
   },
   {
@@ -1739,7 +1733,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "San Diego State", year: 2025 },
   },
   {
@@ -1758,7 +1752,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: null, superflex: null },
     rank: { oneQB: null, superflex: null },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Utsa", year: 2025 },
   },
   {
@@ -1777,7 +1771,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 60, superflex: 68 },
     rank: { oneQB: 52, superflex: 55 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Cincinnati", year: 2025 },
   },
   {
@@ -1797,7 +1791,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 36, superflex: 42 },
     rank: { oneQB: 34, superflex: 38 },
     injuries: [{ type: "ACL/MCL", date: "2024-10", severity: "Severe", gamesOut: 6 }, { type: "Ankle", date: "2025-09", severity: "Moderate", gamesOut: 5 }],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas A&M", year: 2025 },
   },
   {
@@ -1817,7 +1811,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 38, superflex: 44 },
     rank: { oneQB: 36, superflex: 40 },
     injuries: [{ type: "ACL", date: "2022-04", severity: "Severe", gamesOut: 8 }],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Clemson", year: 2025 },
   },
   {
@@ -1836,7 +1830,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 55, superflex: 62 },
     rank: { oneQB: 48, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Houston", year: 2025 },
   },
   {
@@ -1856,7 +1850,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 46, superflex: 52 },
     rank: { oneQB: 40, superflex: 44 },
     injuries: [{ type: "Various", date: "2024-09", severity: "Moderate", gamesOut: 4 }],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Ohio State", year: 2025 },
   },
   {
@@ -1875,7 +1869,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 50, superflex: 56 },
     rank: { oneQB: 44, superflex: 48 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Florida International", year: 2025 },
   },
   {
@@ -1894,7 +1888,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 44, superflex: 50 },
     rank: { oneQB: 40, superflex: 44 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "South Carolina", year: 2025 },
   },
   {
@@ -1913,7 +1907,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 20, superflex: 26 },
     rank: { oneQB: 18, superflex: 22 },
     injuries: [{ type: "Undisclosed", date: "2025-09", severity: "Moderate", gamesOut: 5 }],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Pittsburgh", year: 2025 },
   },
   {
@@ -1932,7 +1926,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 52, superflex: 58 },
     rank: { oneQB: 46, superflex: 50 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Oregon State", year: 2025 },
   },
   {
@@ -1951,7 +1945,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 56, superflex: 63 },
     rank: { oneQB: 48, superflex: 52 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Mississippi State", year: 2025 },
   },
   {
@@ -1971,7 +1965,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 30, superflex: 36 },
     rank: { oneQB: 28, superflex: 32 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Wake Forest", year: 2025 },
   },
   {
@@ -1991,7 +1985,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 48, superflex: 54 },
     rank: { oneQB: 42, superflex: 46 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Virginia", year: 2025 },
   },
   {
@@ -2010,7 +2004,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 54, superflex: 60 },
     rank: { oneQB: 47, superflex: 51 },
     injuries: [],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas State", year: 2025 },
   },
   {
@@ -2029,7 +2023,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 36, superflex: 42 },
     rank: { oneQB: 32, superflex: 36 },
     injuries: [{ type: "Upper Body", date: "2025-08", severity: "Moderate", gamesOut: 3 }],
-    advancedStats: { yprr: null, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Alabama", year: 2025 },
   },
 
@@ -2070,7 +2064,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 66, superflex: 70 },
     rank: { oneQB: 60, superflex: 64 },
     injuries: [],
-    advancedStats: { yprr: 1.45, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Oklahoma", year: 2025 },
     stats: { receptions: 58, receivingYards: 617, receivingTDs: 4, targets: 86 },
   },
@@ -2091,7 +2085,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 67, superflex: 71 },
     rank: { oneQB: 61, superflex: 65 },
     injuries: [],
-    advancedStats: { yprr: 1.39, targetShare: 10.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Stanford", year: 2025 },
     stats: { receptions: 49, receivingYards: 545, receivingTDs: 2, targets: 80, epa: 0.15 },
   },
@@ -2112,7 +2106,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 68, superflex: 72 },
     rank: { oneQB: 62, superflex: 66 },
     injuries: [{ type: "Foot (hairline fracture)", date: "2025-10", severity: "Minor", gamesOut: 0 }],
-    advancedStats: { yprr: 1.29, targetShare: 3.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia", year: 2025 },
     stats: { receptions: 20, receivingYards: 261, receivingTDs: 1, targets: 28, epa: 0.15 },
   },
@@ -2133,7 +2127,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 69, superflex: 73 },
     rank: { oneQB: 63, superflex: 67 },
     injuries: [],
-    advancedStats: { yprr: 2.18, targetShare: 11.6 },
+    advancedStats: null,
     cfbdLookup: { team: "Baylor", year: 2025 },
     stats: { receptions: 50, receivingYards: 694, receivingTDs: 6, targets: 85, epa: 0.15 },
   },
@@ -2154,7 +2148,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 70, superflex: 74 },
     rank: { oneQB: 64, superflex: 68 },
     injuries: [],
-    advancedStats: { yprr: 1.07, targetShare: 5.2 },
+    advancedStats: null,
     cfbdLookup: { team: "Texas", year: 2025 },
     stats: { receptions: 33, receivingYards: 346, receivingTDs: 3, targets: 45, epa: 0.15 },
   },
@@ -2175,7 +2169,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 71, superflex: 75 },
     rank: { oneQB: 65, superflex: 69 },
     injuries: [],
-    advancedStats: { yprr: 1.70, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Baylor", year: 2025 },
     stats: { receptions: 69, receivingYards: 872, receivingTDs: 9, targets: 102 },
   },
@@ -2196,7 +2190,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 72, superflex: 76 },
     rank: { oneQB: 66, superflex: 70 },
     injuries: [],
-    advancedStats: { yprr: 1.49, targetShare: 3.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Cincinnati", year: 2025 },
     stats: { receptions: 29, receivingYards: 416, receivingTDs: 4, targets: 33, epa: 0.15 },
   },
@@ -2217,7 +2211,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 73, superflex: 77 },
     rank: { oneQB: 67, superflex: 71 },
     injuries: [],
-    advancedStats: { yprr: 2.23, targetShare: 5.5 },
+    advancedStats: null,
     cfbdLookup: { team: "Notre Dame", year: 2025 },
     stats: { receptions: 32, receivingYards: 482, receivingTDs: 0, targets: 44, epa: 0.15 },
   },
@@ -2238,7 +2232,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 74, superflex: 78 },
     rank: { oneQB: 68, superflex: 72 },
     injuries: [],
-    advancedStats: { yprr: 1.12, targetShare: 2.5 },
+    advancedStats: null,
     cfbdLookup: { team: "Texas A&M", year: 2025 },
     stats: { receptions: 19, receivingYards: 198, receivingTDs: 3, targets: 22, epa: 0.15 },
   },
@@ -2259,7 +2253,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 75, superflex: 79 },
     rank: { oneQB: 69, superflex: 73 },
     injuries: [],
-    advancedStats: { yprr: 2.26, targetShare: 10.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Houston", year: 2025 },
     stats: { receptions: 74, receivingYards: 727, receivingTDs: 6, targets: 94, epa: 0.15 },
   },
@@ -2280,7 +2274,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 76, superflex: 80 },
     rank: { oneQB: 70, superflex: 74 },
     injuries: [],
-    advancedStats: { yprr: 1.46, targetShare: 1.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Ohio State", year: 2025 },
     stats: { receptions: 15, receivingYards: 168, receivingTDs: 2, targets: 17, epa: 0.15 },
   },
@@ -2301,7 +2295,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 77, superflex: 81 },
     rank: { oneQB: 71, superflex: 75 },
     injuries: [],
-    advancedStats: { yprr: 2.08, targetShare: 5.5 },
+    advancedStats: null,
     cfbdLookup: { team: "Mississippi", year: 2025 },
     stats: { receptions: 39, receivingYards: 635, receivingTDs: 5, targets: 55, epa: 0.15 },
   },
@@ -2322,7 +2316,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 78, superflex: 82 },
     rank: { oneQB: 72, superflex: 76 },
     injuries: [],
-    advancedStats: { yprr: 1.50, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas Tech", year: 2025 },
     stats: { receptions: 57, receivingYards: 705, receivingTDs: 6, targets: 92 },
   },
@@ -2343,7 +2337,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 79, superflex: 83 },
     rank: { oneQB: 73, superflex: 77 },
     injuries: [],
-    advancedStats: { yprr: 1.84, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Kentucky", year: 2025 },
     stats: { receptions: 53, receivingYards: 540, receivingTDs: 3, targets: 64 },
   },
@@ -2364,7 +2358,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 80, superflex: 84 },
     rank: { oneQB: 74, superflex: 78 },
     injuries: [],
-    advancedStats: { yprr: 2.07, targetShare: 8.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Utah", year: 2025 },
     stats: { receptions: 48, receivingYards: 620, receivingTDs: 6, targets: 76, epa: 0.15 },
   },
@@ -2385,7 +2379,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 81, superflex: 85 },
     rank: { oneQB: 75, superflex: 79 },
     injuries: [],
-    advancedStats: { yprr: 1.53, targetShare: 5.6 },
+    advancedStats: null,
     cfbdLookup: { team: "Michigan", year: 2025 },
     stats: { receptions: 24, receivingYards: 248, receivingTDs: 1, targets: 41, epa: 0.15 },
   },
@@ -2466,7 +2460,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 85, superflex: 89 },
     rank: { oneQB: 79, superflex: 83 },
     injuries: [],
-    advancedStats: { yprr: 4.73, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Navy", year: 2025 },
     stats: { receptions: 51, receivingYards: 941, receivingTDs: 6, targets: 79 },
   },
@@ -2507,7 +2501,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 87, superflex: 91 },
     rank: { oneQB: 81, superflex: 85 },
     injuries: [{ type: "Hamstring", date: "2025-09", severity: "Moderate", gamesOut: 3 }],
-    advancedStats: { yprr: 1.18, targetShare: 5.8 },
+    advancedStats: null,
     cfbdLookup: { team: "Wyoming", year: 2025 },
     stats: { receptions: 24, receivingYards: 211, receivingTDs: 1, targets: 35, epa: 0.15 },
   },
@@ -2528,7 +2522,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 88, superflex: 92 },
     rank: { oneQB: 82, superflex: 86 },
     injuries: [],
-    advancedStats: { yprr: 1.68, targetShare: 3.4 },
+    advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
     stats: { receptions: 32, receivingYards: 387, receivingTDs: 2, targets: 36, epa: 0.15 },
   },
@@ -2549,7 +2543,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 89, superflex: 93 },
     rank: { oneQB: 83, superflex: 87 },
     injuries: [{ type: "Foot (broken)", date: "2025-11", severity: "Moderate", gamesOut: 4 }],
-    advancedStats: { yprr: 1.25, targetShare: 6.3 },
+    advancedStats: null,
     cfbdLookup: { team: "Alabama", year: 2025 },
     stats: { receptions: 37, receivingYards: 411, receivingTDs: 4, targets: 50, epa: 0.15 },
   },
@@ -2570,7 +2564,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 90, superflex: 94 },
     rank: { oneQB: 84, superflex: 88 },
     injuries: [],
-    advancedStats: { yprr: 1.46, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Iowa", year: 2025 },
     stats: { receptions: 22, receivingYards: 158, receivingTDs: 1, targets: 30 },
   },
@@ -2651,7 +2645,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 94, superflex: 98 },
     rank: { oneQB: 88, superflex: 92 },
     injuries: [],
-    advancedStats: { yprr: 1.77, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas Tech", year: 2025 },
     stats: { receptions: 54, receivingYards: 846, receivingTDs: 7, targets: 93 },
   },
@@ -2752,7 +2746,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 99, superflex: 103 },
     rank: { oneQB: 93, superflex: 97 },
     injuries: [],
-    advancedStats: { yprr: 1.40, targetShare: 4.6 },
+    advancedStats: null,
     cfbdLookup: { team: "TCU", year: 2025 },
     stats: { receptions: 34, receivingYards: 319, receivingTDs: 2, targets: 40, epa: 0.15 },
   },
@@ -2773,7 +2767,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 100, superflex: 104 },
     rank: { oneQB: 94, superflex: 98 },
     injuries: [],
-    advancedStats: { yprr: 2.60, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Oregon", year: 2025 },
     stats: { receptions: 43, receivingYards: 719, receivingTDs: 6, targets: 59 },
   },
@@ -2814,7 +2808,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 102, superflex: 106 },
     rank: { oneQB: 96, superflex: 100 },
     injuries: [],
-    advancedStats: { yprr: 1.37, targetShare: 5.0 },
+    advancedStats: null,
     cfbdLookup: { team: "SMU", year: 2025 },
     stats: { receptions: 31, receivingYards: 436, receivingTDs: 4, targets: 43, epa: 0.15 },
   },
@@ -2855,7 +2849,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 104, superflex: 108 },
     rank: { oneQB: 98, superflex: 102 },
     injuries: [],
-    advancedStats: { yprr: 2.24, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Mississippi", year: 2025 },
     stats: { receptions: 61, receivingYards: 934, receivingTDs: 4, targets: 96 },
   },
@@ -2876,7 +2870,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 105, superflex: 109 },
     rank: { oneQB: 99, superflex: 103 },
     injuries: [],
-    advancedStats: { yprr: 2.30, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia", year: 2025 },
     stats: { receptions: 26, receivingYards: 381, receivingTDs: 1, targets: 33 },
   },
@@ -2917,7 +2911,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 107, superflex: 111 },
     rank: { oneQB: 101, superflex: 105 },
     injuries: [],
-    advancedStats: { yprr: 1.64, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "SMU", year: 2025 },
     stats: { receptions: 43, receivingYards: 636, receivingTDs: 3, targets: 66 },
   },
@@ -2938,7 +2932,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 108, superflex: 112 },
     rank: { oneQB: 102, superflex: 106 },
     injuries: [],
-    advancedStats: { yprr: 1.50, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
     stats: { receptions: 41, receivingYards: 493, receivingTDs: 4, targets: 60 },
   },
@@ -2979,7 +2973,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 110, superflex: 114 },
     rank: { oneQB: 104, superflex: 108 },
     injuries: [{ type: "ACL (torn)", date: "2023-12", severity: "Major", gamesOut: 10 }, { type: "Knee", date: "2024-09", severity: "Moderate", gamesOut: 4 }],
-    advancedStats: { yprr: 1.51, targetShare: 6.0 },
+    advancedStats: null,
     cfbdLookup: { team: "USC", year: 2025 },
     stats: { receptions: 30, receivingYards: 445, receivingTDs: 4, targets: 48, epa: 0.15 },
   },
@@ -3000,7 +2994,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 111, superflex: 115 },
     rank: { oneQB: 105, superflex: 109 },
     injuries: [],
-    advancedStats: { yprr: 1.52, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Wisconsin", year: 2025 },
     stats: { receptions: 31, receivingYards: 391, receivingTDs: 1, targets: 49 },
   },
@@ -3041,7 +3035,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 113, superflex: 117 },
     rank: { oneQB: 107, superflex: 111 },
     injuries: [],
-    advancedStats: { yprr: 1.14, targetShare: 3.6 },
+    advancedStats: null,
     cfbdLookup: { team: "LSU", year: 2025 },
     stats: { receptions: 24, receivingYards: 248, receivingTDs: 2, targets: 31, epa: 0.15 },
   },
@@ -3082,7 +3076,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 115, superflex: 119 },
     rank: { oneQB: 109, superflex: 113 },
     injuries: [],
-    advancedStats: { yprr: 1.12, targetShare: 6.9 },
+    advancedStats: null,
     cfbdLookup: { team: "Syracuse", year: 2025 },
     stats: { receptions: 39, receivingYards: 406, receivingTDs: 0, targets: 55, epa: 0.15 },
   },
@@ -3103,7 +3097,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 116, superflex: 120 },
     rank: { oneQB: 110, superflex: 114 },
     injuries: [],
-    advancedStats: { yprr: 1.58, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Michigan", year: 2025 },
     stats: { receptions: 39, receivingYards: 588, receivingTDs: 3, targets: 77 },
   },
@@ -3144,7 +3138,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 118, superflex: 122 },
     rank: { oneQB: 112, superflex: 116 },
     injuries: [],
-    advancedStats: { yprr: 1.41, targetShare: 5.7 },
+    advancedStats: null,
     cfbdLookup: { team: "Tennessee", year: 2025 },
     stats: { receptions: 27, receivingYards: 264, receivingTDs: 2, targets: 42, epa: 0.15 },
   },
@@ -3225,7 +3219,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 122, superflex: 126 },
     rank: { oneQB: 116, superflex: 120 },
     injuries: [],
-    advancedStats: { yprr: 1.96, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Miami (FL)", year: 2025 },
     stats: { receptions: 57, receivingYards: 746, receivingTDs: 2, targets: 83 },
   },
@@ -3246,7 +3240,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 123, superflex: 127 },
     rank: { oneQB: 117, superflex: 121 },
     injuries: [],
-    advancedStats: { yprr: 1.34, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Nebraska", year: 2025 },
     stats: { receptions: 39, receivingYards: 452, receivingTDs: 5, targets: 64 },
   },
@@ -3267,7 +3261,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 124, superflex: 128 },
     rank: { oneQB: 118, superflex: 122 },
     injuries: [],
-    advancedStats: { yprr: 1.13, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia", year: 2025 },
     stats: { receptions: 16, receivingYards: 254, receivingTDs: 4, targets: 26 },
   },
@@ -3328,7 +3322,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 127, superflex: 131 },
     rank: { oneQB: 121, superflex: 125 },
     injuries: [],
-    advancedStats: { yprr: 1.92, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
     stats: { receptions: 49, receivingYards: 552, receivingTDs: 2, targets: 65 },
   },
@@ -3349,7 +3343,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 128, superflex: 132 },
     rank: { oneQB: 122, superflex: 126 },
     injuries: [],
-    advancedStats: { yprr: 1.89, targetShare: 6.1 },
+    advancedStats: null,
     cfbdLookup: { team: "Wisconsin", year: 2025 },
     stats: { receptions: 30, receivingYards: 398, receivingTDs: 4, targets: 49, epa: 0.15 },
   },
@@ -3370,7 +3364,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 129, superflex: 133 },
     rank: { oneQB: 123, superflex: 127 },
     injuries: [],
-    advancedStats: { yprr: 1.12, targetShare: 2.6 },
+    advancedStats: null,
     cfbdLookup: { team: "Penn State", year: 2025 },
     stats: { receptions: 14, receivingYards: 167, receivingTDs: 2, targets: 21, epa: 0.15 },
   },
@@ -3411,7 +3405,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 131, superflex: 135 },
     rank: { oneQB: 125, superflex: 129 },
     injuries: [],
-    advancedStats: { yprr: 1.06, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Georgia", year: 2025 },
     stats: { receptions: 27, receivingYards: 279, receivingTDs: 2, targets: 40 },
   },
@@ -3512,7 +3506,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 136, superflex: 140 },
     rank: { oneQB: 130, superflex: 134 },
     injuries: [],
-    advancedStats: { yprr: 1.08, targetShare: 5.5 },
+    advancedStats: null,
     cfbdLookup: { team: "Mississippi State", year: 2025 },
     stats: { receptions: 35, receivingYards: 374, receivingTDs: 5, targets: 48, epa: 0.15 },
   },
@@ -3533,7 +3527,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 137, superflex: 141 },
     rank: { oneQB: 131, superflex: 135 },
     injuries: [],
-    advancedStats: { yprr: 1.73, targetShare: 6.6 },
+    advancedStats: null,
     cfbdLookup: { team: "Oklahoma", year: 2025 },
     stats: { receptions: 44, receivingYards: 530, receivingTDs: 0, targets: 57, epa: 0.15 },
   },
@@ -3554,7 +3548,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 138, superflex: 142 },
     rank: { oneQB: 132, superflex: 136 },
     injuries: [],
-    advancedStats: { yprr: 0.65, targetShare: 2.0 },
+    advancedStats: null,
     cfbdLookup: { team: "Illinois", year: 2025 },
     stats: { receptions: 13, receivingYards: 114, receivingTDs: 2, targets: 17, epa: 0.15 },
   },
@@ -3575,7 +3569,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 139, superflex: 143 },
     rank: { oneQB: 133, superflex: 137 },
     injuries: [],
-    advancedStats: { yprr: 1.05, targetShare: 4.7 },
+    advancedStats: null,
     cfbdLookup: { team: "Minnesota", year: 2025 },
     stats: { receptions: 26, receivingYards: 206, receivingTDs: 4, targets: 41, epa: 0.15 },
   },
@@ -3596,7 +3590,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 140, superflex: 144 },
     rank: { oneQB: 134, superflex: 138 },
     injuries: [],
-    advancedStats: { yprr: 1.45, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Maryland", year: 2025 },
     stats: { receptions: 58, receivingYards: 545, receivingTDs: 4, targets: 80 },
   },
@@ -3677,7 +3671,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 144, superflex: 148 },
     rank: { oneQB: 138, superflex: 142 },
     injuries: [],
-    advancedStats: { yprr: 0.81, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Mississippi State", year: 2025 },
     stats: { receptions: 21, receivingYards: 252, receivingTDs: 0, targets: 36 },
   },
@@ -3698,7 +3692,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 145, superflex: 149 },
     rank: { oneQB: 139, superflex: 143 },
     injuries: [],
-    advancedStats: { yprr: 1.71, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Texas", year: 2025 },
     stats: { receptions: 8, receivingYards: 60, receivingTDs: 0, targets: 9 },
   },
@@ -3739,7 +3733,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 147, superflex: 151 },
     rank: { oneQB: 141, superflex: 145 },
     injuries: [],
-    advancedStats: { yprr: 0.66, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "North Carolina", year: 2025 },
     stats: { receptions: 5, receivingYards: 47, receivingTDs: 0, targets: 9 },
   },
@@ -3800,7 +3794,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 150, superflex: 154 },
     rank: { oneQB: 144, superflex: 148 },
     injuries: [],
-    advancedStats: { yprr: 0.69, targetShare: 0.3 },
+    advancedStats: null,
     cfbdLookup: { team: "Illinois", year: 2025 },
     stats: { receptions: 1, receivingYards: 24, receivingTDs: 0, targets: 2, epa: 0.15 },
   },
@@ -3841,7 +3835,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 152, superflex: 156 },
     rank: { oneQB: 146, superflex: 150 },
     injuries: [],
-    advancedStats: { yprr: 1.06, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Utah", year: 2025 },
     stats: { receptions: 8, receivingYards: 110, receivingTDs: 0, targets: 22 },
   },
@@ -3862,7 +3856,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 153, superflex: 157 },
     rank: { oneQB: 147, superflex: 151 },
     injuries: [],
-    advancedStats: { yprr: 0.22, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "California", year: 2025 },
     stats: { receptions: 1, receivingYards: 10, receivingTDs: 0, targets: 7 },
   },
@@ -3923,7 +3917,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 156, superflex: 160 },
     rank: { oneQB: 150, superflex: 154 },
     injuries: [],
-    advancedStats: { yprr: 0.97, targetShare: 1.4 },
+    advancedStats: null,
     cfbdLookup: { team: "Texas A&M", year: 2025 },
     stats: { receptions: 5, receivingYards: 69, receivingTDs: 0, targets: 11, epa: 0.15 },
   },
@@ -3944,7 +3938,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 157, superflex: 161 },
     rank: { oneQB: 151, superflex: 155 },
     injuries: [],
-    advancedStats: { yprr: 1.80, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "Tulsa", year: 2025 },
     stats: { receptions: 18, receivingYards: 115, receivingTDs: 1, targets: 22 },
   },
@@ -3965,7 +3959,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 158, superflex: 162 },
     rank: { oneQB: 152, superflex: 156 },
     injuries: [],
-    advancedStats: { yprr: 2.54, targetShare: null },
+    advancedStats: null,
     cfbdLookup: { team: "UAB", year: 2025 },
     stats: { receptions: 16, receivingYards: 251, receivingTDs: 2, targets: 20 },
   },
@@ -3986,7 +3980,7 @@ const prospects2026Raw = [
     dynastyADP: { oneQB: 159, superflex: 163 },
     rank: { oneQB: 153, superflex: 157 },
     injuries: [],
-    advancedStats: { yprr: 0.79, targetShare: 0.9 },
+    advancedStats: null,
     cfbdLookup: { team: "Indiana", year: 2025 },
     stats: { receptions: 7, receivingYards: 62, receivingTDs: 2, targets: 10, epa: 0.15 },
   },
@@ -4033,11 +4027,7 @@ const prospects2026Raw = [
 
 ];
 
-// Merge receiving perspective data into each prospect
-const prospects2026 = prospects2026Raw.map(p => ({
-  ...p,
-  receivingByPerspective: getReceivingData(p.name),
-}));
+const prospects2026 = prospects2026Raw;
 
 export const getProspects = () => prospects2026;
 export const getProspectByName = (name) =>

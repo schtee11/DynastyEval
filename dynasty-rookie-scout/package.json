@@ -9,20 +9,17 @@
     "react": "^19.2.4",
     "@hello-pangea/dnd": "^18.0.1",
     "react-dom": "^19.2.4",
+    "react-router-dom": "^6.28.0",
+    "react-hot-toast": "^2.5.2",
     "react-scripts": "5.0.1",
     "recharts": "^3.8.0",
     "tailwindcss": "^4.2.2"
   },
   "scripts": {
-    "generate-stats": "node scripts/generateStats.js",
-    "prestart": "node scripts/generateStats.js",
-    "prebuild": "node scripts/generateStats.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "audit-stats": "node scripts/auditPlayerStats.js",
-    "audit-stats:ci": "node scripts/auditPlayerStats.js --ci"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
