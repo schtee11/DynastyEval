@@ -23,6 +23,7 @@ const ScoutBoard = () => {
   });
   const [sortBy, setSortBy] = useState('rank');
   const [perspective, setPerspective] = useState('overall');
+  const [leagueType, setLeagueType] = useState('oneQB');
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -42,7 +43,7 @@ const ScoutBoard = () => {
   }, []);
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
-  const sorted = useMemo(() => sortPlayers(filtered, sortBy, 'oneQB', perspective), [filtered, sortBy, perspective]);
+  const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueType, perspective), [filtered, sortBy, leagueType, perspective]);
   const showTiers = sortBy === 'draftCapital';
 
   const [windowWidth, setWindowWidth] = useState(
@@ -106,6 +107,22 @@ const ScoutBoard = () => {
             justifyContent: 'center',
           }}>
             <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospect{sorted.length !== 1 ? 's' : ''}
+            {['oneQB', 'superflex'].map(lt => (
+              <button
+                key={lt}
+                onClick={() => setLeagueType(lt)}
+                style={{
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 10,
+                  padding: '2px 8px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                  border: leagueType === lt ? '1px solid var(--accent)' : '1px solid var(--border-primary)',
+                  background: leagueType === lt ? 'var(--accent-light)' : 'transparent',
+                  color: leagueType === lt ? 'var(--accent-text)' : 'var(--text-tertiary)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {lt === 'oneQB' ? '1QB' : 'SF'}
+              </button>
+            ))}
             {isUsingLiveData() && (
               <span style={{
                 background: 'var(--success-light)',
@@ -192,6 +209,7 @@ const ScoutBoard = () => {
             perspective={perspective}
             onPlayerClick={setSelectedPlayer}
             showTiers={showTiers}
+            leagueType={leagueType}
           />
         )}
 
@@ -209,6 +227,7 @@ const ScoutBoard = () => {
                 perspective={perspective}
                 onClick={setSelectedPlayer}
                 allPlayers={players}
+                leagueType={leagueType}
               />
             ))}
           </div>

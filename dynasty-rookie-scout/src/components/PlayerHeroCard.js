@@ -110,7 +110,7 @@ const getHeroStats = (player, allPlayers) => {
  * Middle: 4 headline stats
  * Bottom: Action bar
  */
-const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied }) => {
+const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isStudied, leagueType = 'oneQB' }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const chartColor = positionChartColors[player.position] || '#7c3aed';
   const peers = useMemo(() => allPlayers.filter(p => p.position === player.position), [allPlayers, player.position]);
@@ -118,7 +118,7 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
-  const rank1QB = player.rank?.oneQB;
+  const primaryRank = player.rank?.[leagueType];
 
   return (
     <div style={{
@@ -151,7 +151,7 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
         gap: 10,
       }}>
         {/* Rank badge */}
-        {rank1QB && (
+        {primaryRank && (
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 13,
@@ -159,7 +159,7 @@ const PlayerHeroCard = ({ player, allPlayers = [], onViewProfile, onDiscuss, isS
             color: 'var(--text-tertiary)',
             letterSpacing: 1,
           }}>
-            #{rank1QB}
+            #{primaryRank}
           </span>
         )}
 
