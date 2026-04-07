@@ -41,9 +41,9 @@ const loadInitialProfile = () => {
 export const LeagueProfileProvider = ({ children }) => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(loadInitialProfile);
-  // Remember the most recently seen Sleeper profile so the settings
-  // modal can offer a one-click "use my Sleeper league" button.
-  const [sleeperProfile, setSleeperProfile] = useState(null);
+  // Remember every synced Sleeper league so the settings modal can
+  // render one tile per league and let the user switch between them.
+  const [sleeperLeagues, setSleeperLeagues] = useState([]);
 
   // Mirror changes to localStorage + maintain the legacy format key so
   // any un-migrated components still work.
@@ -70,10 +70,10 @@ export const LeagueProfileProvider = ({ children }) => {
     return () => window.removeEventListener('drs_league_profile_updated', onExternalUpdate);
   }, []);
 
-  // For authenticated users: fetch their most recently synced Sleeper
-  // league and (a) remember it for the settings modal, (b) auto-apply
-  // it the very first time so users who had synced before this feature
-  // shipped see their league profile without having to re-sync.
+  // For authenticated users: fetch every synced Sleeper league and
+  // (a) remember them for the settings modal, (b) auto-apply the most
+  // recent one the very first time so users who synced before this
+  // feature shipped see their league profile without re-syncing.
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -81,11 +81,15 @@ export const LeagueProfileProvider = ({ children }) => {
       try {
         const res = await fetchMySleeperLeagues();
         if (cancelled) return;
-        const leagues = res?.leagues || [];
-        // Sorted by synced_at DESC on the backend; take the first.
-        const mostRecent = leagues[0];
-        if (!mostRecent?.league_profile) return;
-        setSleeperProfile(mostRecent.league_profile);
+        const leagues = (res?.leagues || []).filter(l => l?.league_profile);
+        // Stamp each league's profile with its league_id so the UI can
+        // identify which tile is currently active.
+        const normalized = leagues.map(l => ({
+          ...l,
+          league_profile: { ...l.league_profile, leagueId: l.league_id },
+        }));
+        setSleeperLeagues(normalized);
+        if (normalized.length === 0) return;
 
         // Auto-apply once so pre-existing users get their league
         // rankings out of the box. After that, respect the user's
@@ -97,7 +101,7 @@ export const LeagueProfileProvider = ({ children }) => {
           try { return !!localStorage.getItem(STORAGE_KEY); } catch { return false; }
         })();
         if (!alreadyAutoSynced && !hasExplicitProfile) {
-          setProfile(mostRecent.league_profile);
+          setProfile(normalized[0].league_profile);
           try { localStorage.setItem(AUTO_SYNC_FLAG, '1'); } catch {}
         }
       } catch { /* offline / unauth / no leagues — silent */ }
@@ -111,20 +115,16 @@ export const LeagueProfileProvider = ({ children }) => {
     // Always stamp source='manual' unless caller explicitly set it.
     setProfile({ ...next, source: next.source || 'manual' });
   }, []);
-  const applySleeperProfile = useCallback(() => {
-    if (sleeperProfile) setProfile(sleeperProfile);
-  }, [sleeperProfile]);
 
   const value = useMemo(() => ({
     profile,
     setProfile: setCustomProfile,
     setPreset1QB,
     setPresetSF,
-    sleeperProfile,
-    applySleeperProfile,
-    hasSleeper: !!sleeperProfile,
+    sleeperLeagues,
+    hasSleeper: sleeperLeagues.length > 0,
     isCustom: profile.source !== 'preset',
-  }), [profile, setCustomProfile, setPreset1QB, setPresetSF, sleeperProfile, applySleeperProfile]);
+  }), [profile, setCustomProfile, setPreset1QB, setPresetSF, sleeperLeagues]);
 
   return (
     <LeagueProfileContext.Provider value={value}>
@@ -143,8 +143,7 @@ export const useLeagueProfile = () => {
       setProfile: () => {},
       setPreset1QB: () => {},
       setPresetSF: () => {},
-      sleeperProfile: null,
-      applySleeperProfile: () => {},
+      sleeperLeagues: [],
       hasSleeper: false,
       isCustom: false,
     };

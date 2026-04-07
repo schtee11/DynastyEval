@@ -115,7 +115,7 @@ const Segmented = ({ options, value, onChange }) => (
 );
 
 const LeagueProfileSettings = ({ open, onClose }) => {
-  const { profile, setProfile, sleeperProfile, hasSleeper } = useLeagueProfile();
+  const { profile, setProfile, sleeperLeagues, hasSleeper } = useLeagueProfile();
   // Local working copy so the user can cancel without committing.
   const [draft, setDraft] = useState(profile);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -141,9 +141,16 @@ const LeagueProfileSettings = ({ open, onClose }) => {
     onClose?.();
   };
 
-  const currentIsSleeper = draft.source === 'sleeper';
   const currentIs1QB = draft.source === 'preset' && draft.presetId === 'STANDARD_1QB';
   const currentIsSF = draft.source === 'preset' && draft.presetId === 'STANDARD_SF';
+
+  // Build the subtitle string for a Sleeper league tile.
+  const sleeperSubtitle = (lp) => {
+    const fmt = lp.format === 'superflex' ? 'SF' : '1QB';
+    const ppr = lp.ppr === 1 ? 'Full PPR' : lp.ppr === 0.5 ? '½ PPR' : '0 PPR';
+    const tep = lp.tePremium > 0 ? ` · TEP ${lp.tePremium}` : '';
+    return `${fmt} · ${lp.teams} teams · ${ppr}${tep}`;
+  };
 
   return (
     <div
@@ -214,32 +221,79 @@ const LeagueProfileSettings = ({ open, onClose }) => {
 
         {/* Body */}
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Sleeper card — only shown when a synced league is available */}
-          {hasSleeper && sleeperProfile && (
-            <Tile
-              selected={currentIsSleeper}
-              onClick={() => setDraft(sleeperProfile)}
-              title={sleeperProfile.leagueName || 'My Sleeper League'}
-              subtitle={`${sleeperProfile.format === 'superflex' ? 'Superflex' : '1QB'} · ${sleeperProfile.teams} teams${sleeperProfile.tePremium > 0 ? ` · TEP ${sleeperProfile.tePremium}` : ''}${sleeperProfile.ppr === 1 ? ' · Full PPR' : sleeperProfile.ppr === 0.5 ? ' · ½ PPR' : ' · 0 PPR'}`}
-              badge="Sleeper"
-              accent
-            />
+          {/* One tile per synced Sleeper league */}
+          {hasSleeper && (
+            <div>
+              <div style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'var(--text-tertiary)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                marginBottom: 6,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}>
+                <span>Your Sleeper leagues</span>
+                <span style={{
+                  fontSize: 9,
+                  color: 'var(--text-tertiary)',
+                  background: 'var(--bg-input)',
+                  padding: '1px 6px',
+                  borderRadius: 8,
+                }}>
+                  {sleeperLeagues.length}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {sleeperLeagues.map((lg) => {
+                  const lp = lg.league_profile;
+                  const selected = draft.source === 'sleeper' && draft.leagueId === lp.leagueId;
+                  return (
+                    <Tile
+                      key={lg.league_id}
+                      selected={selected}
+                      onClick={() => setDraft(lp)}
+                      title={lp.leagueName || lg.league_name || 'Sleeper League'}
+                      subtitle={sleeperSubtitle(lp)}
+                      badge="Sleeper"
+                      accent
+                    />
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           {/* Preset tiles */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <Tile
-              selected={currentIs1QB}
-              onClick={() => applyPreset(STANDARD_1QB)}
-              title="Standard 1QB"
-              subtitle="12 teams · Full PPR"
-            />
-            <Tile
-              selected={currentIsSF}
-              onClick={() => applyPreset(STANDARD_SF)}
-              title="Standard Superflex"
-              subtitle="12 teams · Full PPR"
-            />
+          <div>
+            <div style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 10,
+              fontWeight: 700,
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+              marginBottom: 6,
+            }}>
+              Generic presets
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <Tile
+                selected={currentIs1QB}
+                onClick={() => applyPreset(STANDARD_1QB)}
+                title="Standard 1QB"
+                subtitle="12 teams · Full PPR"
+              />
+              <Tile
+                selected={currentIsSF}
+                onClick={() => applyPreset(STANDARD_SF)}
+                title="Standard Superflex"
+                subtitle="12 teams · Full PPR"
+              />
+            </div>
           </div>
 
           {/* Advanced disclosure */}

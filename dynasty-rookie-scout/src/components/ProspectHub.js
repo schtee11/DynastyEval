@@ -125,31 +125,58 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           {hasActiveFilters && <span style={{ marginLeft: 2 }}>({sorted.length})</span>}
         </button>
 
-        {/* Single consolidated rankings button — shows active profile, opens settings sheet */}
+        {/* Rankings chip — compact, with a format badge + truncated label */}
         <button
           onClick={() => setShowLeagueSettings(true)}
-          title="Change league / rankings"
+          title={isCustom ? (leagueProfile.leagueName || 'My League') : 'Change league / rankings'}
           style={{
             pointerEvents: 'auto',
-            padding: '6px 12px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            maxWidth: 180,
+            padding: '4px 4px 4px 4px',
             borderRadius: 20,
             border: '1px solid var(--border-primary)',
-            background: isCustom ? 'var(--accent)' : 'var(--bg-header)',
-            color: isCustom ? '#fff' : 'var(--text-secondary)',
-            fontSize: 12,
-            fontWeight: 600,
+            background: 'var(--bg-header)',
+            color: 'var(--text-secondary)',
             fontFamily: "'Inter', sans-serif",
             cursor: 'pointer',
             boxShadow: 'var(--shadow-md)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
+            overflow: 'hidden',
           }}
         >
-          {isCustom
-            ? (leagueProfile.leagueName || 'My League')
-            : (leagueFormat === 'superflex' ? 'Superflex' : '1QB')}
-          <span style={{ fontSize: 10, opacity: 0.7 }}>▾</span>
+          <span style={{
+            flexShrink: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: 28,
+            height: 22,
+            padding: '0 8px',
+            borderRadius: 12,
+            background: 'var(--accent)',
+            color: '#fff',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: 0.5,
+          }}>
+            {leagueFormat === 'superflex' ? 'SF' : '1QB'}
+          </span>
+          <span style={{
+            minWidth: 0,
+            flexShrink: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: 12,
+            fontWeight: 600,
+            paddingRight: 2,
+          }}>
+            {isCustom ? (leagueProfile.leagueName || 'My League') : 'Rankings'}
+          </span>
+          <span style={{ fontSize: 10, opacity: 0.6, flexShrink: 0, paddingRight: 6 }}>▾</span>
         </button>
         </div>
 
