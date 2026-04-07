@@ -64,7 +64,7 @@ const ListHeader = () => (
   </div>
 );
 
-const PlayerListView = ({ players, perspective, onPlayerClick, showTiers, allPlayers, studiedPlayers }) => {
+const PlayerListView = ({ players, perspective, onPlayerClick, showTiers, allPlayers, studiedPlayers, leagueType = 'oneQB' }) => {
   const tierGroups = showTiers ? groupByTier(players) : null;
 
   return (
@@ -83,6 +83,7 @@ const PlayerListView = ({ players, perspective, onPlayerClick, showTiers, allPla
                 isOdd={i % 2 === 1}
                 allPlayers={allPlayers}
                 isStudied={studiedPlayers?.has(player.id)}
+                leagueType={leagueType}
               />
             ))}
           </div>
@@ -97,6 +98,7 @@ const PlayerListView = ({ players, perspective, onPlayerClick, showTiers, allPla
             isOdd={i % 2 === 1}
             allPlayers={allPlayers}
             isStudied={studiedPlayers?.has(player.id)}
+            leagueType={leagueType}
           />
         ))
       )}

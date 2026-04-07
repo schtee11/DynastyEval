@@ -5,11 +5,14 @@ import PercentileBar from './PercentileBar';
 import DraftBadge from './DraftBadge';
 import ValueDelta from './ValueDelta';
 
-const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers = [], isStudied = false }) => {
+const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers = [], isStudied = false, leagueType = 'oneQB' }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const rank1QB = player.rank?.oneQB;
   const rankSF = player.rank?.superflex;
+  const primaryRank = leagueType === 'superflex' ? rankSF : rank1QB;
+  const primaryAdp = player.dynastyADP?.[leagueType];
+  const primaryLabel = leagueType === 'superflex' ? 'SF' : '1QB';
   const breakout = getBreakoutIndicator(player.breakoutAge);
 
   const accessors = useMemo(() => getStatAccessors(player.position, perspective), [player.position, perspective]);
@@ -77,13 +80,13 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
             <div style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontWeight: 800,
-              fontSize: rank1QB === 'UNR' ? 10 : 20,
-              color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              fontSize: primaryRank === 'UNR' ? 10 : 20,
+              color: primaryRank === 'UNR' ? 'var(--text-tertiary)' : 'var(--text-primary)',
               lineHeight: 1,
             }}>
-              {rank1QB === 'UNR' ? 'UNR' : rank1QB ?? '\u2014'}
+              {primaryRank === 'UNR' ? 'UNR' : primaryRank ?? '\u2014'}
             </div>
-            <ValueDelta rank={rank1QB} adp={player.dynastyADP?.oneQB} />
+            <ValueDelta rank={primaryRank} adp={primaryAdp} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
@@ -209,18 +212,18 @@ const PlayerCard = memo(({ player, perspective = 'overall', onClick, allPlayers 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
             <span style={{
               fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
-              color: rank1QB === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
+              color: primaryRank === 'UNR' ? 'var(--text-tertiary)' : 'var(--accent-text)',
             }}>
-              1QB {rank1QB === 'UNR' ? 'UNR' : `#${rank1QB}`}
+              {primaryLabel} {primaryRank === 'UNR' ? 'UNR' : `#${primaryRank}`}
             </span>
             <span style={{
               fontFamily: "'Inter', sans-serif", fontSize: 8, color: 'var(--text-tertiary)',
             }}>{'\u00B7'}</span>
             <span style={{
               fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 600,
-              color: rankSF === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
+              color: (leagueType === 'superflex' ? rank1QB : rankSF) === 'UNR' ? 'var(--text-tertiary)' : 'var(--pos-wr-text)',
             }}>
-              SF {rankSF === 'UNR' ? 'UNR' : `#${rankSF}`}
+              {leagueType === 'superflex' ? '1QB' : 'SF'} {(leagueType === 'superflex' ? rank1QB : rankSF) === 'UNR' ? 'UNR' : `#${leagueType === 'superflex' ? rank1QB : rankSF}`}
             </span>
           </div>
         </div>
