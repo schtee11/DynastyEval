@@ -39,7 +39,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   const isMobile = useIsMobile();
 
   // League profile drives both the format and any personalized re-ranking.
-  const { profile: leagueProfile, setPreset1QB, setPresetSF, isCustom } = useLeagueProfile();
+  const { profile: leagueProfile, isCustom } = useLeagueProfile();
   const leagueFormat = leagueProfile.format;
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
@@ -125,58 +125,32 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           {hasActiveFilters && <span style={{ marginLeft: 2 }}>({sorted.length})</span>}
         </button>
 
-        {/* 1QB / SF toggle + custom league settings */}
-        <div style={{
-          display: 'flex',
-          borderRadius: 20,
-          overflow: 'hidden',
-          border: '1px solid var(--border-primary)',
-          boxShadow: 'var(--shadow-md)',
-          pointerEvents: 'auto',
-        }}>
-          {['oneQB', 'superflex'].map(lt => (
-            <button
-              key={lt}
-              onClick={() => lt === 'oneQB' ? setPreset1QB() : setPresetSF()}
-              style={{
-                padding: '6px 12px',
-                border: 'none',
-                borderRight: '1px solid var(--border-primary)',
-                background: !isCustom && leagueFormat === lt ? 'var(--accent)' : 'var(--bg-header)',
-                color: !isCustom && leagueFormat === lt ? '#fff' : 'var(--text-secondary)',
-                fontSize: 12,
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
-                cursor: 'pointer',
-              }}
-            >
-              {lt === 'oneQB' ? '1QB' : 'SF'}
-            </button>
-          ))}
-          <button
-            onClick={() => setShowLeagueSettings(true)}
-            title="Personalize rankings to your league"
-            style={{
-              padding: '6px 12px',
-              border: 'none',
-              background: isCustom ? 'var(--accent)' : 'var(--bg-header)',
-              color: isCustom ? '#fff' : 'var(--text-secondary)',
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: "'Inter', sans-serif",
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            {isCustom ? 'My League' : 'League'}
-          </button>
-        </div>
+        {/* Single consolidated rankings button — shows active profile, opens settings sheet */}
+        <button
+          onClick={() => setShowLeagueSettings(true)}
+          title="Change league / rankings"
+          style={{
+            pointerEvents: 'auto',
+            padding: '6px 12px',
+            borderRadius: 20,
+            border: '1px solid var(--border-primary)',
+            background: isCustom ? 'var(--accent)' : 'var(--bg-header)',
+            color: isCustom ? '#fff' : 'var(--text-secondary)',
+            fontSize: 12,
+            fontWeight: 600,
+            fontFamily: "'Inter', sans-serif",
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-md)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          {isCustom
+            ? (leagueProfile.leagueName || 'My League')
+            : (leagueFormat === 'superflex' ? 'Superflex' : '1QB')}
+          <span style={{ fontSize: 10, opacity: 0.7 }}>▾</span>
+        </button>
         </div>
 
         <LeagueProfileSettings open={showLeagueSettings} onClose={() => setShowLeagueSettings(false)} />

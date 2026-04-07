@@ -44,11 +44,8 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
   });
   const [sortBy, setSortBy] = useState('adp');
   const [showLeagueSettings, setShowLeagueSettings] = useState(false);
-  const { profile: leagueProfile, setPreset1QB, setPresetSF, isCustom } = useLeagueProfile();
+  const { profile: leagueProfile, isCustom } = useLeagueProfile();
   const leagueType = leagueProfile.format;
-  const setLeagueType = useCallback((lt) => {
-    if (lt === 'oneQB') setPreset1QB(); else setPresetSF();
-  }, [setPreset1QB, setPresetSF]);
   const [perspective, setPerspective] = useState('overall');
   const rightPanelRef = useRef(null);
   const listRef = useRef(null);
@@ -256,35 +253,24 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
             }}>
               <strong style={{ color: 'var(--text-secondary)' }}>{sorted.length}</strong> prospects
             </span>
-            <div style={{ display: 'flex', gap: 0 }}>
-              {['oneQB', 'superflex'].map(lt => (
-                <button key={lt} onClick={() => setLeagueType(lt)} style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700,
-                  padding: '3px 8px', border: '1px solid var(--border-primary)',
-                  borderLeft: lt === 'superflex' ? 'none' : undefined,
-                  borderRadius: lt === 'oneQB' ? '4px 0 0 4px' : 0,
-                  background: !isCustom && leagueType === lt ? 'var(--accent)' : 'transparent',
-                  color: !isCustom && leagueType === lt ? '#fff' : 'var(--text-tertiary)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}>
-                  {lt === 'oneQB' ? '1QB' : 'SF'}
-                </button>
-              ))}
-              <button
-                onClick={() => setShowLeagueSettings(true)}
-                title="Personalize rankings to your league"
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700,
-                  padding: '3px 8px', border: '1px solid var(--border-primary)', borderLeft: 'none',
-                  borderRadius: '0 4px 4px 0',
-                  background: isCustom ? 'var(--accent)' : 'transparent',
-                  color: isCustom ? '#fff' : 'var(--text-tertiary)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                {isCustom ? 'MY LG' : 'LG⚙'}
-              </button>
-            </div>
+            <button
+              onClick={() => setShowLeagueSettings(true)}
+              title="Change league / rankings"
+              style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700,
+                padding: '4px 10px', border: '1px solid var(--border-primary)',
+                borderRadius: 12,
+                background: isCustom ? 'var(--accent)' : 'transparent',
+                color: isCustom ? '#fff' : 'var(--text-secondary)',
+                cursor: 'pointer', transition: 'all 0.15s',
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              {isCustom
+                ? (leagueProfile.leagueName || 'My League')
+                : (leagueType === 'superflex' ? 'Superflex' : '1QB')}
+              <span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {isUsingLiveData() && (

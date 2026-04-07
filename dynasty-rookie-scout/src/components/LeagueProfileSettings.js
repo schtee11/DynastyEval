@@ -46,6 +46,49 @@ const NumInput = ({ value, onChange, min = 0, max = 16 }) => (
   />
 );
 
+const Tile = ({ selected, onClick, title, subtitle, badge, accent }) => (
+  <button
+    onClick={onClick}
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: 4,
+      padding: '12px 14px',
+      fontFamily: "'Inter', sans-serif",
+      textAlign: 'left',
+      background: selected ? 'var(--accent-light, rgba(59,130,246,0.12))' : 'transparent',
+      color: 'var(--text-primary)',
+      border: `1px solid ${selected ? 'var(--accent)' : 'var(--border-primary)'}`,
+      borderRadius: 'var(--radius-sm)',
+      cursor: 'pointer',
+      transition: 'all 0.15s',
+      width: '100%',
+      position: 'relative',
+    }}
+  >
+    {badge && (
+      <span style={{
+        position: 'absolute',
+        top: 10,
+        right: 12,
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+        color: accent ? 'var(--accent)' : 'var(--text-tertiary)',
+        background: accent ? 'var(--accent-light, rgba(59,130,246,0.15))' : 'transparent',
+        padding: '2px 6px',
+        borderRadius: 3,
+      }}>
+        {badge}
+      </span>
+    )}
+    <span style={{ fontSize: 14, fontWeight: 700 }}>{title}</span>
+    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{subtitle}</span>
+  </button>
+);
+
 const Segmented = ({ options, value, onChange }) => (
   <div style={{ display: 'flex', gap: 0, borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--border-primary)' }}>
     {options.map((opt, i) => (
@@ -72,12 +115,16 @@ const Segmented = ({ options, value, onChange }) => (
 );
 
 const LeagueProfileSettings = ({ open, onClose }) => {
-  const { profile, setProfile } = useLeagueProfile();
+  const { profile, setProfile, sleeperProfile, hasSleeper } = useLeagueProfile();
   // Local working copy so the user can cancel without committing.
   const [draft, setDraft] = useState(profile);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
-    if (open) setDraft(profile);
+    if (open) {
+      setDraft(profile);
+      setShowAdvanced(profile.source === 'manual');
+    }
   }, [open, profile]);
 
   if (!open) return null;
@@ -93,6 +140,10 @@ const LeagueProfileSettings = ({ open, onClose }) => {
     setProfile(draft);
     onClose?.();
   };
+
+  const currentIsSleeper = draft.source === 'sleeper';
+  const currentIs1QB = draft.source === 'preset' && draft.presetId === 'STANDARD_1QB';
+  const currentIsSF = draft.source === 'preset' && draft.presetId === 'STANDARD_SF';
 
   return (
     <div
@@ -162,123 +213,136 @@ const LeagueProfileSettings = ({ open, onClose }) => {
         </div>
 
         {/* Body */}
-        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* Quick presets */}
-          <div>
-            <FieldLabel>Quick presets</FieldLabel>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => applyPreset(STANDARD_1QB)}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  background: 'transparent',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 'var(--radius-sm)',
-                  cursor: 'pointer',
-                }}
-              >
-                Standard 1QB
-              </button>
-              <button
-                onClick={() => applyPreset(STANDARD_SF)}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  background: 'transparent',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 'var(--radius-sm)',
-                  cursor: 'pointer',
-                }}
-              >
-                Standard Superflex
-              </button>
-            </div>
-          </div>
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Sleeper card — only shown when a synced league is available */}
+          {hasSleeper && sleeperProfile && (
+            <Tile
+              selected={currentIsSleeper}
+              onClick={() => setDraft(sleeperProfile)}
+              title={sleeperProfile.leagueName || 'My Sleeper League'}
+              subtitle={`${sleeperProfile.format === 'superflex' ? 'Superflex' : '1QB'} · ${sleeperProfile.teams} teams${sleeperProfile.tePremium > 0 ? ` · TEP ${sleeperProfile.tePremium}` : ''}${sleeperProfile.ppr === 1 ? ' · Full PPR' : sleeperProfile.ppr === 0.5 ? ' · ½ PPR' : ' · 0 PPR'}`}
+              badge="Sleeper"
+              accent
+            />
+          )}
 
-          {/* Format */}
-          <div>
-            <FieldLabel>Format</FieldLabel>
-            <Segmented
-              options={[
-                { label: '1QB', value: 'oneQB' },
-                { label: 'Superflex', value: 'superflex' },
-              ]}
-              value={draft.format}
-              onChange={(format) => patch({ format })}
+          {/* Preset tiles */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <Tile
+              selected={currentIs1QB}
+              onClick={() => applyPreset(STANDARD_1QB)}
+              title="Standard 1QB"
+              subtitle="12 teams · Full PPR"
+            />
+            <Tile
+              selected={currentIsSF}
+              onClick={() => applyPreset(STANDARD_SF)}
+              title="Standard Superflex"
+              subtitle="12 teams · Full PPR"
             />
           </div>
 
-          {/* Teams + PPR + TEP row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-            <div>
-              <FieldLabel>Teams</FieldLabel>
-              <NumInput value={draft.teams} onChange={(teams) => patch({ teams })} min={4} max={24} />
-            </div>
-            <div>
-              <FieldLabel>PPR</FieldLabel>
-              <Segmented
-                options={[
-                  { label: '0', value: 0 },
-                  { label: '½', value: 0.5 },
-                  { label: '1', value: 1 },
-                ]}
-                value={draft.ppr}
-                onChange={(ppr) => patch({ ppr })}
-              />
-            </div>
-            <div>
-              <FieldLabel>TE Premium</FieldLabel>
-              <NumInput value={draft.tePremium} onChange={(tePremium) => patch({ tePremium })} min={0} max={2} />
-            </div>
-          </div>
+          {/* Advanced disclosure */}
+          <button
+            onClick={() => setShowAdvanced((v) => !v)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '4px 0',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--text-tertiary)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <span style={{ transform: showAdvanced ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s', display: 'inline-block' }}>›</span>
+            Custom league settings
+          </button>
 
-          {/* Starting lineup */}
-          <div>
-            <FieldLabel>Starters</FieldLabel>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-              {['qb', 'rb', 'wr', 'te', 'flex', 'superflex'].map((key) => (
-                <div key={key}>
-                  <div style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 10,
-                    fontWeight: 600,
-                    color: 'var(--text-tertiary)',
-                    marginBottom: 2,
-                    textTransform: 'uppercase',
-                  }}>
-                    {key === 'superflex' ? 'SF' : key.toUpperCase()}
-                  </div>
-                  <NumInput
-                    value={draft.starters?.[key] ?? 0}
-                    onChange={(v) => patchStarters({ [key]: v })}
-                    min={0}
-                    max={6}
+          {showAdvanced && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Format */}
+              <div>
+                <FieldLabel>Format</FieldLabel>
+                <Segmented
+                  options={[
+                    { label: '1QB', value: 'oneQB' },
+                    { label: 'Superflex', value: 'superflex' },
+                  ]}
+                  value={draft.format}
+                  onChange={(format) => patch({ format, source: 'manual' })}
+                />
+              </div>
+
+              {/* Teams + PPR + TEP row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <div>
+                  <FieldLabel>Teams</FieldLabel>
+                  <NumInput value={draft.teams} onChange={(teams) => patch({ teams, source: 'manual' })} min={4} max={24} />
+                </div>
+                <div>
+                  <FieldLabel>PPR</FieldLabel>
+                  <Segmented
+                    options={[
+                      { label: '0', value: 0 },
+                      { label: '½', value: 0.5 },
+                      { label: '1', value: 1 },
+                    ]}
+                    value={draft.ppr}
+                    onChange={(ppr) => patch({ ppr, source: 'manual' })}
                   />
                 </div>
-              ))}
-            </div>
-          </div>
+                <div>
+                  <FieldLabel>TE Premium</FieldLabel>
+                  <NumInput value={draft.tePremium} onChange={(tePremium) => patch({ tePremium, source: 'manual' })} min={0} max={2} />
+                </div>
+              </div>
 
-          {/* Bench + Taxi */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <FieldLabel>Bench</FieldLabel>
-              <NumInput value={draft.bench ?? 0} onChange={(bench) => patch({ bench })} min={0} max={20} />
+              {/* Starting lineup */}
+              <div>
+                <FieldLabel>Starters</FieldLabel>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  {['qb', 'rb', 'wr', 'te', 'flex', 'superflex'].map((key) => (
+                    <div key={key}>
+                      <div style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: 'var(--text-tertiary)',
+                        marginBottom: 2,
+                        textTransform: 'uppercase',
+                      }}>
+                        {key === 'superflex' ? 'SF' : key.toUpperCase()}
+                      </div>
+                      <NumInput
+                        value={draft.starters?.[key] ?? 0}
+                        onChange={(v) => { patchStarters({ [key]: v }); patch({ source: 'manual' }); }}
+                        min={0}
+                        max={6}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bench + Taxi */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <FieldLabel>Bench</FieldLabel>
+                  <NumInput value={draft.bench ?? 0} onChange={(bench) => patch({ bench, source: 'manual' })} min={0} max={20} />
+                </div>
+                <div>
+                  <FieldLabel>Taxi</FieldLabel>
+                  <NumInput value={draft.taxi ?? 0} onChange={(taxi) => patch({ taxi, source: 'manual' })} min={0} max={10} />
+                </div>
+              </div>
             </div>
-            <div>
-              <FieldLabel>Taxi</FieldLabel>
-              <NumInput value={draft.taxi ?? 0} onChange={(taxi) => patch({ taxi })} min={0} max={10} />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
