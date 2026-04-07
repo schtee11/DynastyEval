@@ -6,7 +6,10 @@ import DesktopSplitView from './DesktopSplitView';
 import BottomSheet from './BottomSheet';
 import FilterBar from './FilterBar';
 import SearchInput from './SearchInput';
+import LeagueProfileSettings from './LeagueProfileSettings';
 import { sortPlayers, filterPlayers } from '../utils/helpers';
+import { buildPersonalizedRankings } from '../utils/personalizedRank';
+import { useLeagueProfile } from '../contexts/LeagueProfileContext';
 
 const useIsMobile = () => {
   const [mobile, setMobile] = useState(() =>
@@ -32,19 +35,22 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
   const [sortBy, setSortBy] = useState('adp');
   const [perspective, setPerspective] = useState('overall');
   const [showFilters, setShowFilters] = useState(false);
+  const [showLeagueSettings, setShowLeagueSettings] = useState(false);
   const isMobile = useIsMobile();
 
-  // Use league format from Sleeper sync if available, otherwise default to 1QB
-  const [leagueFormat, setLeagueFormat] = useState(() => {
-    try {
-      const saved = localStorage.getItem('drs_league_format');
-      if (saved === 'SF') return 'superflex';
-    } catch { /* ignore */ }
-    return 'oneQB';
-  });
+  // League profile drives both the format and any personalized re-ranking.
+  const { profile: leagueProfile, setPreset1QB, setPresetSF, isCustom } = useLeagueProfile();
+  const leagueFormat = leagueProfile.format;
 
   const filtered = useMemo(() => filterPlayers(players, filters), [players, filters]);
-  const sorted = useMemo(() => sortPlayers(filtered, sortBy, leagueFormat, perspective), [filtered, sortBy, leagueFormat, perspective]);
+  const personalizedRankings = useMemo(
+    () => buildPersonalizedRankings(filtered, leagueProfile),
+    [filtered, leagueProfile]
+  );
+  const sorted = useMemo(
+    () => sortPlayers(filtered, sortBy, leagueFormat, perspective, personalizedRankings),
+    [filtered, sortBy, leagueFormat, perspective, personalizedRankings]
+  );
 
   const hasActiveFilters = filters.position !== 'ALL' || filters.draftDay || filters.hideInjured || filters.nameSearch;
 
@@ -119,7 +125,7 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           {hasActiveFilters && <span style={{ marginLeft: 2 }}>({sorted.length})</span>}
         </button>
 
-        {/* 1QB / SF toggle */}
+        {/* 1QB / SF toggle + custom league settings */}
         <div style={{
           display: 'flex',
           borderRadius: 20,
@@ -131,12 +137,13 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
           {['oneQB', 'superflex'].map(lt => (
             <button
               key={lt}
-              onClick={() => setLeagueFormat(lt)}
+              onClick={() => lt === 'oneQB' ? setPreset1QB() : setPresetSF()}
               style={{
                 padding: '6px 12px',
                 border: 'none',
-                background: leagueFormat === lt ? 'var(--accent)' : 'var(--bg-header)',
-                color: leagueFormat === lt ? '#fff' : 'var(--text-secondary)',
+                borderRight: '1px solid var(--border-primary)',
+                background: !isCustom && leagueFormat === lt ? 'var(--accent)' : 'var(--bg-header)',
+                color: !isCustom && leagueFormat === lt ? '#fff' : 'var(--text-secondary)',
                 fontSize: 12,
                 fontWeight: 600,
                 fontFamily: "'Inter', sans-serif",
@@ -146,8 +153,33 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
               {lt === 'oneQB' ? '1QB' : 'SF'}
             </button>
           ))}
+          <button
+            onClick={() => setShowLeagueSettings(true)}
+            title="Personalize rankings to your league"
+            style={{
+              padding: '6px 12px',
+              border: 'none',
+              background: isCustom ? 'var(--accent)' : 'var(--bg-header)',
+              color: isCustom ? '#fff' : 'var(--text-secondary)',
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: "'Inter', sans-serif",
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            {isCustom ? 'My League' : 'League'}
+          </button>
         </div>
         </div>
+
+        <LeagueProfileSettings open={showLeagueSettings} onClose={() => setShowLeagueSettings(false)} />
 
         {/* Filter bottom sheet overlay */}
         <BottomSheet open={showFilters} onClose={() => setShowFilters(false)}>
@@ -190,17 +222,25 @@ const ProspectHub = ({ players, loading, error, studiedPlayers, toggleStudied, o
         {/* Vertical swipe feed */}
         {sorted.length > 0 ? (
           <VerticalFeed players={sorted}>
-            {sorted.map((player, i) => (
-              <PlayerHeroCard
-                key={player.id}
-                player={player}
-                allPlayers={players}
-                displayRank={sortBy === 'adp' ? (player.dynastyADP?.[leagueFormat] ?? player.rank?.[leagueFormat]) : (player.rank?.[leagueFormat])}
-                onViewProfile={onSelectPlayer}
-                onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
-                isStudied={studiedPlayers.has(player.id)}
-              />
-            ))}
+            {sorted.map((player, i) => {
+              const personalized = personalizedRankings.get(player.id);
+              const displayRank = sortBy === 'adp'
+                ? (player.dynastyADP?.[leagueFormat] ?? player.rank?.[leagueFormat])
+                : (personalized?.personalizedRank ?? player.rank?.[leagueFormat]);
+              return (
+                <PlayerHeroCard
+                  key={player.id}
+                  player={player}
+                  allPlayers={players}
+                  displayRank={displayRank}
+                  rankDelta={sortBy === 'adp' ? 0 : (personalized?.delta ?? 0)}
+                  rankReasons={personalized?.reasons ?? []}
+                  onViewProfile={onSelectPlayer}
+                  onDiscuss={(id) => navigate(`/player/${id}/discuss`)}
+                  isStudied={studiedPlayers.has(player.id)}
+                />
+              );
+            })}
           </VerticalFeed>
         ) : (
           <div style={{

@@ -117,12 +117,15 @@ const getHeroStats = (player, allPlayers) => {
  * Middle: 4 headline stats
  * Bottom: Action bar
  */
-const PlayerHeroCard = ({ player, allPlayers = [], displayRank, onViewProfile, onDiscuss, isStudied }) => {
+const PlayerHeroCard = ({ player, allPlayers = [], displayRank, rankDelta = 0, rankReasons = [], onViewProfile, onDiscuss, isStudied }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const heroStats = useMemo(() => getHeroStats(player, allPlayers), [player, allPlayers]);
   const breakout = getBreakoutIndicator(player.breakoutAge);
   const injured = hasInjuryRisk(player);
   const rank1QB = displayRank ?? player.rank?.oneQB;
+  const deltaLabel = rankDelta > 0 ? `↑${rankDelta}` : rankDelta < 0 ? `↓${Math.abs(rankDelta)}` : '';
+  const deltaColor = rankDelta > 0 ? 'var(--success)' : rankDelta < 0 ? 'var(--danger)' : 'var(--text-tertiary)';
+  const deltaTitle = rankReasons.length > 0 ? rankReasons.join(' · ') : '';
 
   return (
     <div style={{
@@ -154,16 +157,31 @@ const PlayerHeroCard = ({ player, allPlayers = [], displayRank, onViewProfile, o
         textAlign: 'center',
         gap: 6,
       }}>
-        {/* Rank badge */}
+        {/* Rank badge + league delta */}
         {rank1QB && (
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 13,
-            fontWeight: 700,
-            color: 'var(--text-tertiary)',
-            letterSpacing: 1,
-          }}>
-            #{rank1QB}
+          <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 13,
+              fontWeight: 700,
+              color: 'var(--text-tertiary)',
+              letterSpacing: 1,
+            }}>
+              #{rank1QB}
+            </span>
+            {deltaLabel && (
+              <span
+                title={deltaTitle}
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: deltaColor,
+                }}
+              >
+                {deltaLabel}
+              </span>
+            )}
           </span>
         )}
 

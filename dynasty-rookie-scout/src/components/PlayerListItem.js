@@ -5,10 +5,13 @@ import { positionColors, hasInjuryRisk } from '../utils/helpers';
  * Compact list row for the desktop split-view panel.
  * Shows: rank, position badge, name, college, draft info, key stat.
  */
-const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, onClick, displayRank }) => {
+const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, onClick, displayRank, rankDelta = 0, rankReasons = [] }) => {
   const posColor = positionColors[player.position] || positionColors.WR;
   const injured = hasInjuryRisk(player);
   const rank1QB = displayRank ?? player.rank?.oneQB;
+  const deltaLabel = rankDelta > 0 ? `↑${rankDelta}` : rankDelta < 0 ? `↓${Math.abs(rankDelta)}` : '';
+  const deltaColor = rankDelta > 0 ? 'var(--success)' : rankDelta < 0 ? 'var(--danger)' : 'var(--text-tertiary)';
+  const deltaTitle = rankReasons.length > 0 ? rankReasons.join(' · ') : undefined;
   // One headline stat per position
   const headlineStat = useMemo(() => {
     const s = player.stats;
@@ -54,6 +57,21 @@ const PlayerListItem = memo(({ player, allPlayers = [], isSelected, isStudied, o
       }}>
         {rank1QB === 'UNR' ? '—' : rank1QB ?? '—'}
       </span>
+
+      {deltaLabel && (
+        <span
+          title={deltaTitle}
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 700,
+            fontSize: 10,
+            color: deltaColor,
+            minWidth: 20,
+          }}
+        >
+          {deltaLabel}
+        </span>
+      )}
 
       {/* Position badge */}
       <span style={{

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useParams, useLocation } fro
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { UserDataProvider } from './contexts/UserDataContext';
+import { LeagueProfileProvider } from './contexts/LeagueProfileContext';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Footer from './components/Footer';
@@ -239,7 +240,9 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <UserDataProvider>
-            <AppInner />
+            <LeagueProfileProvider>
+              <AppInner />
+            </LeagueProfileProvider>
           </UserDataProvider>
         </AuthProvider>
       </ThemeProvider>
