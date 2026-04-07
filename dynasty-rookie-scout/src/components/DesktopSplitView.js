@@ -255,21 +255,53 @@ const DesktopSplitView = ({ players, loading, error, studiedPlayers, onSelectPla
             </span>
             <button
               onClick={() => setShowLeagueSettings(true)}
-              title="Change league / rankings"
+              title={isCustom ? (leagueProfile.leagueName || 'My League') : 'Change league / rankings'}
               style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700,
-                padding: '4px 10px', border: '1px solid var(--border-primary)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                maxWidth: 180,
+                padding: '2px 2px',
                 borderRadius: 12,
-                background: isCustom ? 'var(--accent)' : 'transparent',
-                color: isCustom ? '#fff' : 'var(--text-secondary)',
-                cursor: 'pointer', transition: 'all 0.15s',
-                display: 'inline-flex', alignItems: 'center', gap: 4,
+                border: '1px solid var(--border-primary)',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                fontFamily: "'Inter', sans-serif",
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                overflow: 'hidden',
               }}
             >
-              {isCustom
-                ? (leagueProfile.leagueName || 'My League')
-                : (leagueType === 'superflex' ? 'Superflex' : '1QB')}
-              <span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
+              <span style={{
+                flexShrink: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: 24,
+                height: 16,
+                padding: '0 6px',
+                borderRadius: 8,
+                background: 'var(--accent)',
+                color: '#fff',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 9,
+                fontWeight: 800,
+                letterSpacing: 0.3,
+              }}>
+                {leagueType === 'superflex' ? 'SF' : '1QB'}
+              </span>
+              <span style={{
+                minWidth: 0,
+                flexShrink: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                fontSize: 10,
+                fontWeight: 700,
+              }}>
+                {isCustom ? (leagueProfile.leagueName || 'My League') : 'Rankings'}
+              </span>
+              <span style={{ fontSize: 9, opacity: 0.6, flexShrink: 0, paddingRight: 4 }}>▾</span>
             </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
