@@ -105,24 +105,57 @@ router.get('/debug/cfbd-status', async (req, res) => {
         url: url.toString(),
         status: r.status,
         sentAuth: !!apiKey,
+        retryAfter: r.headers.get('retry-after') || null,
+        rateLimitHeaders: {
+          limit: r.headers.get('x-ratelimit-limit') || null,
+          remaining: r.headers.get('x-ratelimit-remaining') || null,
+          reset: r.headers.get('x-ratelimit-reset') || null,
+        },
         bodyPreview: parsed
-          ? (Array.isArray(parsed) ? `array len=${parsed.length}` : Object.keys(parsed))
-          : text.slice(0, 300),
+          ? (Array.isArray(parsed) ? `array len=${parsed.length}` : parsed)
+          : text.slice(0, 500),
       };
     } catch (err) {
       return { url: url.toString(), error: err.message };
     }
   };
 
-  const [passing2025, ppa2025] = await Promise.all([
+  // Also probe the legacy v1 host — apinext is the new paid-tier endpoint;
+  // many keys still work against api.collegefootballdata.com without throttling.
+  const probeLegacy = async (path, params = {}) => {
+    const url = new URL(`https://api.collegefootballdata.com${path}`);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
+    try {
+      const r = await fetch(url.toString(), {
+        headers: apiKey
+          ? { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }
+          : { Accept: 'application/json' },
+      });
+      const text = await r.text();
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch {}
+      return {
+        url: url.toString(),
+        status: r.status,
+        bodyPreview: parsed
+          ? (Array.isArray(parsed) ? `array len=${parsed.length}` : parsed)
+          : text.slice(0, 500),
+      };
+    } catch (err) {
+      return { url: url.toString(), error: err.message };
+    }
+  };
+
+  const [passing2025, ppa2025, legacyPassing2024] = await Promise.all([
     probe('/stats/player/season', { year: 2025, category: 'passing', seasonType: 'regular' }),
     probe('/ppa/players/season', { year: 2025 }),
+    probeLegacy('/stats/player/season', { year: 2024, category: 'passing', seasonType: 'regular' }),
   ]);
 
   res.json({
     keyConfigured: !!apiKey,
-    keyLength: apiKey ? apiKey.length : 0,  // confirms presence without leaking
-    probes: { passing2025, ppa2025 },
+    keyLength: apiKey ? apiKey.length : 0,
+    probes: { passing2025, ppa2025, legacyPassing2024 },
   });
 });
 
