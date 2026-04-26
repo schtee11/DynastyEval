@@ -1,11 +1,16 @@
 // ESPN Public Core API — fetches actual NFL draft results.
 // Reference: https://github.com/pseudo-r/Public-ESPN-API
 //
-// Top-level: https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{year}/draft
-// Rounds collection ends in /rounds; each round's picks at /rounds/{n}/picks.
-// Pick items contain $ref URLs for athlete and team that must be followed
-// to resolve names and team abbreviations. We do this server-side once per
-// 6 hours and cache the flat result in player_cache.
+// Endpoint: https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{year}/draft/rounds
+// Response shape:
+//   { count, pageIndex, pageSize, pageCount, items: [Round, ...] }
+//   Round = { number, displayName, picks: [Pick, ...] }
+//   Pick  = { pick, overall, round, traded, tradeNote,
+//             athlete: { $ref }, team: { $ref } }
+//
+// athlete.$ref points at /draft/athletes/{id} and team.$ref at /seasons/{year}/teams/{id}.
+// Both must be followed to get displayName + team abbreviation. We do this
+// server-side once per 6 hours and cache the flat result in player_cache.
 
 const pool = require('../db/pool');
 
@@ -46,19 +51,18 @@ const pMap = async (items, fn, concurrency) => {
   return results;
 };
 
-// Fetch all picks for a single round (paginated defensively).
-const fetchRoundPicks = async (roundRef) => {
-  const base = roundRef.split('?')[0];
-  const url = `${base}/picks?limit=64`;
-  const data = await fetchJson(url).catch(() => null);
-  return data?.items || [];
-};
+// ESPN sometimes returns http:// in $ref URLs even though the endpoint also
+// serves https. Normalize so fetch doesn't get redirected unnecessarily.
+const httpsify = (url) => (typeof url === 'string' ? url.replace(/^http:\/\//, 'https://') : url);
 
 // Resolve athlete + team for a pick item.
 const resolvePick = async (item) => {
+  const athleteRef = httpsify(item.athlete?.$ref);
+  const teamRef = httpsify(item.team?.$ref);
+
   const [athlete, team] = await Promise.all([
-    item.athlete?.$ref ? fetchJson(item.athlete.$ref).catch(() => null) : null,
-    item.team?.$ref ? fetchJson(item.team.$ref).catch(() => null) : null,
+    athleteRef ? fetchJson(athleteRef).catch(() => null) : null,
+    teamRef ? fetchJson(teamRef).catch(() => null) : null,
   ]);
 
   const name = athlete?.fullName
@@ -73,6 +77,7 @@ const resolvePick = async (item) => {
     position: athlete?.position?.abbreviation || athlete?.position?.name || null,
     college: athlete?.college?.name || athlete?.collegeAthlete?.college?.name || null,
     team: team?.abbreviation || team?.shortDisplayName || team?.name || null,
+    traded: !!item.traded,
   };
 };
 
@@ -81,20 +86,24 @@ const fetchDraftLive = async (year) => {
   const rounds = roundsRes?.items || [];
   if (rounds.length === 0) return [];
 
-  // Each round may be a $ref or an inline object — handle both.
+  // Each round object already has its picks inlined under round.picks[].
+  // No separate /picks endpoint is needed — that was the original parser bug.
   const allItems = [];
   for (const round of rounds) {
-    const ref = round.$ref || round.href || `${ESPN_BASE}/seasons/${year}/draft/rounds/${round.number || round.value}`;
-    const picks = await fetchRoundPicks(ref);
-    for (const p of picks) {
-      // Make sure round number is present on the pick (ESPN sometimes omits it)
-      if (p.round == null) p.round = round.number ?? round.value ?? null;
+    if (!Array.isArray(round.picks)) continue;
+    for (const p of round.picks) {
+      if (p.round == null) p.round = round.number ?? null;
       allItems.push(p);
     }
   }
 
+  console.info(`[ESPN] Resolving ${allItems.length} picks across ${rounds.length} rounds for ${year}`);
+
   const resolved = await pMap(allItems, resolvePick, REF_CONCURRENCY);
-  return resolved.filter((p) => p && p.name && p.pick != null);
+  const filtered = resolved.filter((p) => p && p.name && p.pick != null);
+
+  console.info(`[ESPN] Resolved ${filtered.length}/${allItems.length} picks (rest dropped: missing name/pick)`);
+  return filtered;
 };
 
 const fetchDraftPicks = async (year = 2026) => {
