@@ -14,6 +14,7 @@ const sleeperRoutes = require('./routes/sleeper');
 const notesRoutes = require('./routes/notes');
 const bookmarkRoutes = require('./routes/bookmarks');
 const draftPlanRoutes = require('./routes/draftPlans');
+const draftRoutes = require('./routes/draft');
 
 // Environment validation
 if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
@@ -59,6 +60,7 @@ app.use('/api/sleeper', sleeperRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/draft-plans', draftPlanRoutes);
+app.use('/api/draft', draftRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
