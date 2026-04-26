@@ -84,6 +84,60 @@ router.get('/debug/stat-types', async (req, res) => {
   }
 });
 
+// GET /api/players/debug/coverage — show Sleeper rookies vs CFBD matches.
+// Reproduces the frontend match logic so we can see exactly which rookies
+// don't have stats and why.
+router.get('/debug/coverage', async (req, res) => {
+  try {
+    const [rookies, careerStats] = await Promise.all([
+      fetchSleeperRookies(),
+      fetchCareerStats([2022, 2023, 2024, 2025]).catch(() => null),
+    ]);
+
+    const stats = careerStats || {};
+    const statKeys = Object.keys(stats);
+
+    const norm = (n) => (n || '').toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+    const stripSuffix = (n) => norm(n).replace(/\b(jr|sr|ii|iii|iv)\s*$/g, '').trim();
+
+    const tryMatch = (name) => {
+      const k1 = norm(name);
+      if (stats[k1]) return { method: 'exact', key: k1 };
+      const k2 = stripSuffix(name);
+      if (k2 !== k1 && stats[k2]) return { method: 'suffix', key: k2 };
+      const parts = k2.split(' ');
+      if (parts.length >= 2) {
+        const last = parts[parts.length - 1];
+        const lastMatches = statKeys.filter((k) => k.endsWith(' ' + last));
+        if (lastMatches.length === 1) return { method: 'lastname', key: lastMatches[0] };
+        if (lastMatches.length > 1) return { method: 'ambiguous-lastname', candidates: lastMatches };
+      }
+      return null;
+    };
+
+    const matched = [];
+    const unmatched = [];
+    for (const r of rookies) {
+      const m = tryMatch(r.name);
+      const row = { name: r.name, position: r.position, team: r.team, college: r.college };
+      if (m && m.key) matched.push({ ...row, ...m });
+      else unmatched.push({ ...row, candidates: m?.candidates || null });
+    }
+
+    res.json({
+      totalRookies: rookies.length,
+      cfbdEntries: statKeys.length,
+      matched: matched.length,
+      unmatched: unmatched.length,
+      byMethod: matched.reduce((acc, m) => { acc[m.method] = (acc[m.method] || 0) + 1; return acc; }, {}),
+      sampleMatched: matched.slice(0, 10),
+      unmatchedList: unmatched,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/players/:id/stats — individual player career stats
 router.get('/:id/stats', async (req, res) => {
   try {
