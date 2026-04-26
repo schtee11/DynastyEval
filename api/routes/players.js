@@ -84,6 +84,48 @@ router.get('/debug/stat-types', async (req, res) => {
   }
 });
 
+// GET /api/players/debug/cfbd-status — probe CFBD with the server's configured
+// key and report what comes back. Used to disambiguate "no key set" from
+// "key invalid" from "rate-limited" when stats come back empty.
+router.get('/debug/cfbd-status', async (req, res) => {
+  const apiKey = process.env.CFBD_API_KEY || '';
+  const probe = async (path, params = {}) => {
+    const url = new URL(`https://apinext.collegefootballdata.com${path}`);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
+    try {
+      const r = await fetch(url.toString(), {
+        headers: apiKey
+          ? { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }
+          : { Accept: 'application/json' },
+      });
+      const text = await r.text();
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch {}
+      return {
+        url: url.toString(),
+        status: r.status,
+        sentAuth: !!apiKey,
+        bodyPreview: parsed
+          ? (Array.isArray(parsed) ? `array len=${parsed.length}` : Object.keys(parsed))
+          : text.slice(0, 300),
+      };
+    } catch (err) {
+      return { url: url.toString(), error: err.message };
+    }
+  };
+
+  const [passing2025, ppa2025] = await Promise.all([
+    probe('/stats/player/season', { year: 2025, category: 'passing', seasonType: 'regular' }),
+    probe('/ppa/players/season', { year: 2025 }),
+  ]);
+
+  res.json({
+    keyConfigured: !!apiKey,
+    keyLength: apiKey ? apiKey.length : 0,  // confirms presence without leaking
+    probes: { passing2025, ppa2025 },
+  });
+});
+
 // GET /api/players/debug/coverage — show Sleeper rookies vs CFBD matches.
 // Reproduces the frontend match logic so we can see exactly which rookies
 // don't have stats and why.
