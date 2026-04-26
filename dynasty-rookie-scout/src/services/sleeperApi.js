@@ -11,8 +11,11 @@ import { attachCollegeStats } from './cfbdTransformer';
 const SLEEPER_BASE = 'https://api.sleeper.app/v1';
 
 // ── Cache layer ──────────────────────────────────────────────────────────────
-const CACHE_KEY = 'sleeper_players_v3'; // v3: added active field for rookie validation
-const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — player data updates infrequently
+// v4: shorter TTL so newly-drafted players (Sleeper sets `team` after the draft)
+// flow through to the UI within an hour instead of half a day. The version bump
+// also forces every existing user's stale v3 cache to be discarded once.
+const CACHE_KEY = 'sleeper_players_v4';
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 const getFromCache = () => {
   try {

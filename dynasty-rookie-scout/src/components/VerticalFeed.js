@@ -76,18 +76,11 @@ const VerticalFeed = ({ children, onActiveChange }) => {
             overflow: 'hidden',
           }}
         >
-          {/* Only render cards that are near the active one for performance */}
-          {Math.abs(i - activeIndex) <= 2 ? child : (
-            <div style={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-tertiary)',
-            }}>
-              Loading...
-            </div>
-          )}
+          {/* Render cards within a 4-card window around the active one for
+              performance. Off-screen slots are intentionally blank — never
+              show "Loading..." here, that misleads users into thinking the
+              data is still fetching when it's actually just deferred render. */}
+          {Math.abs(i - activeIndex) <= 4 ? child : <div style={{ height: '100%' }} />}
         </div>
       ))}
 

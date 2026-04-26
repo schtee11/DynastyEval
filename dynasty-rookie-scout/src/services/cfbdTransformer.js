@@ -1,38 +1,71 @@
 // Attaches college stats to player objects.
 //
-// Data source: CFBD API (live) — basic counting stats + PPA
+// Data source priority:
+//  1. CFBD direct (if REACT_APP_CFBD_API_KEY is set in the frontend env)
+//  2. Backend /api/players (the server holds the CFBD key in production)
 // All proprietary data sources (PFF, RAS) have been removed.
 
 import { fetchCareerStats, isCFBDAvailable } from './cfbdApi';
+
+const API_BASE = process.env.REACT_APP_API_URL || '';
 
 // ── CFBD data cache (loaded once, shared across all players) ────────────────
 
 let cfbdStatsMap = null;
 let cfbdLoadPromise = null;
 
+const fetchCareerFromBackend = async () => {
+  if (!API_BASE) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/players`);
+    if (!res.ok) {
+      console.warn(`[CFBDTransformer] backend /api/players → ${res.status}`);
+      return null;
+    }
+    const body = await res.json();
+    return body?.careerStats && Object.keys(body.careerStats).length > 0
+      ? body.careerStats
+      : null;
+  } catch (err) {
+    console.warn('[CFBDTransformer] backend stats fetch failed:', err.message);
+    return null;
+  }
+};
+
 /**
- * Pre-load all CFBD stats. Call once before attaching stats to players.
+ * Pre-load college stats. Call once before attaching stats to players.
  * Safe to call multiple times — only fetches once.
  */
-export const preloadCFBDStats = async (year = 2025) => {
+export const preloadCFBDStats = async (_year = 2025) => {
   if (cfbdStatsMap) return cfbdStatsMap;
   if (cfbdLoadPromise) return cfbdLoadPromise;
 
-  if (!isCFBDAvailable()) {
-    console.info('[CFBDTransformer] No CFBD API key — no stats available');
-    return null;
-  }
+  cfbdLoadPromise = (async () => {
+    // Try direct CFBD first if a key is present in the frontend env.
+    if (isCFBDAvailable()) {
+      try {
+        const data = await fetchCareerStats([2022, 2023, 2024, 2025]);
+        if (data && Object.keys(data).length > 0) {
+          cfbdStatsMap = data;
+          console.info(`[CFBDTransformer] CFBD direct: ${Object.keys(data).length} players`);
+          return data;
+        }
+      } catch (err) {
+        console.warn('[CFBDTransformer] CFBD direct failed, trying backend:', err.message);
+      }
+    }
 
-  cfbdLoadPromise = fetchCareerStats([2022, 2023, 2024, 2025])
-    .then((data) => {
-      cfbdStatsMap = data;
-      console.info(`[CFBDTransformer] CFBD career data loaded: ${Object.keys(data || {}).length} players`);
-      return data;
-    })
-    .catch((err) => {
-      console.warn('[CFBDTransformer] CFBD fetch failed:', err.message);
-      return null;
-    });
+    // Fall back to backend (which holds the CFBD key server-side).
+    const backend = await fetchCareerFromBackend();
+    if (backend) {
+      cfbdStatsMap = backend;
+      console.info(`[CFBDTransformer] backend stats: ${Object.keys(backend).length} players`);
+      return backend;
+    }
+
+    console.info('[CFBDTransformer] No stats source available');
+    return null;
+  })();
 
   return cfbdLoadPromise;
 };

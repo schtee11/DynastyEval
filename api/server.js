@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const authRoutes = require('./routes/auth');
 const playerRoutes = require('./routes/players');
 const discussionRoutes = require('./routes/discussions');
+const draftRoutes = require('./routes/draft');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,6 +23,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/players', playerRoutes);
 app.use('/api/discussions', discussionRoutes);
+app.use('/api/draft', draftRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
